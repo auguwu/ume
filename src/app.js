@@ -5,7 +5,7 @@ const utils = require('./util');
 
 const logger = new Logger('Master');
 if (!utils.isNode10()) {
-  logger.error(`Sorry, but this system doesn't support Node.js ${logger.colors.red(process.platform)}. We recommend Node.js v10 or higher, please upgrade your Node.js installation.`);
+  logger.error(`Sorry, but this system doesn't support Node.js ${logger.colors.red(process.version)}. We recommend Node.js v10 or higher, please upgrade your Node.js installation.`);
   process.exit(1);
 }
 
