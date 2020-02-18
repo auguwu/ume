@@ -1,0 +1,22 @@
+{
+  "name": "i.noel.ws",
+  "description": "💖 ShareX uploader for personal use",
+  "version": "1.0.0",
+  "main": "src/app.js",
+  "author": "Noel <augu@voided.pw>",
+  "repository": "https://github.com/nowoel/i.noel.ws",
+  "scripts": {
+    "lint": "eslint src --ext .js --fix"
+  },
+  "dependencies": {
+    "@augu/immutable": "0.1.6",
+    "express": "4.17.1",
+    "express-fileupload": "1.1.6",
+    "leeks.js": "0.0.8",
+    "mongodb": "3.5.3"
+  },
+  "devDependencies": {
+    "@augu/eslint-config": "1.2.0",
+    "eslint": "6.8.0"
+  }
+}

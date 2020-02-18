@@ -1,0 +1,7 @@
+node_modules/
+src/uploads/
+src/config.json
+
+uploader.sxcu
+package-lock.json
+yarn.lock
