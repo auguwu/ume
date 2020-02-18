@@ -23,7 +23,7 @@ const generate = (seed) => randomBytes(seed || 16).toString('hex');
  * If the OS is running Node.js 10 or higher
  */
 const isNode10 = () => {
-  const version = process.platform.split('.')[0].replace('v', '');
+  const version = process.version.split('.')[0].replace('v', '');
   return Number(version) < 10;
 };
 
