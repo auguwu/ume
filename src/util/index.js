@@ -24,7 +24,7 @@ const generate = (seed) => randomBytes(seed || 16).toString('hex');
  */
 const isNode10 = () => {
   const version = process.version.split('.')[0].replace('v', '');
-  return Number(version) < 10;
+  return Number(version) > 10;
 };
 
 /**
