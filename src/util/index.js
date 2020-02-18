@@ -28,21 +28,6 @@ const isNode10 = () => {
 };
 
 /**
- * Makes a directory asynchronously
- * @param {string} dir The directory with the current directory appended
- */
-const mkdir = async (dir) => {
-  const path = getArbitrayPath(dir);
-  try {
-    await fs.mkdir(path);
-    return true;
-  }
-  catch(ex) {
-    return false;
-  }
-};
-
-/**
  * Pauses the event loop to run this macrotask.
  * 
  * All promises are a macrotask while a setTimeout/setInterval is a microtask;
@@ -60,7 +45,6 @@ module.exports = {
   dateformat,
   generate,
   isNode10,
-  mkdir,
   sleep,
   sep
 };
