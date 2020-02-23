@@ -20,10 +20,13 @@ module.exports = class Server {
     this.app = express();
   }
 
+  isLocalhost() {
+    return this.config.environment === 'development';
+  }
+
   addMiddleware() {
     // Disable this for no XSS attacks
-    this.app.disable('X-Powered-By');
-    this.app.use(express.static(`${__dirname}/uploads`));
+    this.app.disable('x-powered-by');
     this.app.use(fileUpload({
       preserveExtension: true,
       safeFileNames: true
@@ -41,8 +44,8 @@ module.exports = class Server {
             await route.callee.apply(this, [req, res]);
           }
           catch(ex) {
-            this.logger.error(`Unable to fulfill request to "${route.route}:"`, ex);
-            res.status(500).json({
+            this.logger.error(`Unable to fulfill request to "${route.route}"`, ex);
+            return res.status(500).json({
               statusCode: 500,
               message: 'Unable to fulfill request',
               error: ex.message
@@ -55,20 +58,21 @@ module.exports = class Server {
 
   async launch() {
     this.logger.info('Launching ShareX server...');
-    await utils.sleep(2000);
-
+    
     this.addMiddleware();
     this.addRoutes();
-    await this.database.connect();
+    this.database.connect();
 
+    await utils.sleep(2000);
     this.app.listen(this.config.port, () =>
-      this.logger.info(`Now listening on port ${this.config.port}`)
+      this.logger.info(`Now listening on port ${this.config.port}${this.isLocalhost() ? ', running locally!' : ' (https://i.augu.dev)'}`)
     );
   }
 };
 
 /**
  * @typedef {object} Config
+ * @prop {"development" | "production"} environment The environment state of the server
  * @prop {string} dbUrl The database URL
  * @prop {number} port The port to use to connect
  * @prop {string} key The master key to add images

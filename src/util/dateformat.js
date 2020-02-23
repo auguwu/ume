@@ -77,7 +77,7 @@ class Dateformat {
    * Gets the day of the week
    */
   getDayOfWeek() {
-    const dow = this.date.getDay();
+    let dow = this.date.getDay();
     if (dow === 0) dow = 7;
 
     return dow;

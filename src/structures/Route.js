@@ -1,5 +1,4 @@
 const { Collection } = require('@augu/immutable');
-const Logger = require('./Logger');
 
 class Route {
   /**
@@ -26,7 +25,6 @@ class Router {
      * @type {Collection<Route>}
      */
     this.routes = new Collection();
-    this.logger = new Logger(`Router [${route}]`);
     this.route = route;
   }
 
@@ -36,8 +34,6 @@ class Router {
    */
   addRoute(route) {
     this.routes.set(route.route, route);
-    this.logger.info(`Injected route "${route.route === '/' ? 'main' : route.route}" to the "${this.route}" router`);
-  
     return this;
   }
 };

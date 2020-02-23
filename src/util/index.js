@@ -1,4 +1,3 @@
-const { promises: fs } = require('fs');
 const { randomBytes } = require('crypto');
 const dateformat = require('./dateformat');
 
@@ -17,7 +16,7 @@ const getArbitrayPath = (...paths) => `${process.cwd()}${sep}${paths.join(sep)}`
  * Gets a random generated string from `seed`
  * @param {number} [seed=16] The length of the string
  */
-const generate = (seed) => randomBytes(seed || 16).toString('hex');
+const generate = () => randomBytes(8).toString('hex');
 
 /**
  * If the OS is running Node.js 10 or higher

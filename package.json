@@ -1,7 +1,7 @@
 {
   "name": "i.noel.ws",
   "description": "💖 ShareX uploader for personal use",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/app.js",
   "author": "Noel <augu@voided.pw>",
   "repository": "https://github.com/nowoel/i.noel.ws",
