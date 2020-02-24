@@ -39,8 +39,23 @@ const isNode10 = () => {
  */
 const sleep = (duration) => new Promise(resolve => setTimeout(resolve, duration));
 
+/**
+ * Formats any byte-integers to a humanizable string
+ * @param {number} bytes The number of bytes the file is
+ */
+const formatSize = (bytes) => {
+  const kilo = bytes / 1024;
+  const mega = kilo / 1024;
+  const giga = mega / 1024;
+
+  if (kilo < 1024) return `${kilo.toFixed(1)}KB`;
+  if (kilo > 1024 && mega < 1024) return `${mega.toFixed(1)}MB`;
+  else return `${giga.toFixed(1)}GB`;
+};
+
 module.exports = {
   getArbitrayPath,
+  formatSize,
   dateformat,
   generate,
   isNode10,
