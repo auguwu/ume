@@ -13,7 +13,7 @@
     "express": "4.17.1",
     "express-fileupload": "1.1.6",
     "leeks.js": "0.0.8",
-    "mongodb": "3.5.3"
+    "mongodb": "3.5.4"
   },
   "devDependencies": {
     "@augu/eslint-config": "1.2.0",
