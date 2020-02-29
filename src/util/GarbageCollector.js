@@ -33,7 +33,7 @@ module.exports = class GarbageCollector {
 
         this.logger.info(`Deleted file ${file} from cache.`);
       }
-    }, 1209600000);
+    }, 604800000);
   }
 
   /**
