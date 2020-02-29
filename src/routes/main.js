@@ -40,17 +40,6 @@ const router = new Router('/')
       }
     });
   }))
-  .addRoute(new Route('/files', 'get', async function (_, res) {
-    const files = await this.database.images.find({}).toArray();
-    return res.status(200).json({
-      statusCode: 200,
-      data: files.map(s => ({
-        createdAt: s.createdAt,
-        size: util.formatSize(s.size),
-        file: this.isLocalhost() ? `http://localhost:${this.config.port}/uploads/${s.uuid}.${s.ext}` : `https://i.augu.dev/uploads/${s.uuid}.${s.ext}`
-      }))
-    });
-  }))
   .addRoute(new Route('/upload', 'post', async function (req, res) {
     const file = req.files[Object.keys(req.files)[0]];
     const ext = file.name.split('.').pop();

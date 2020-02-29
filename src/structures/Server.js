@@ -5,6 +5,7 @@ const express = require('express');
 const Logger = require('./Logger');
 const routes = require('../routes');
 const utils = require('../util');
+const GC = require('../util/GarbageCollector');
 
 module.exports = class Server {
   /**
@@ -18,6 +19,7 @@ module.exports = class Server {
     this.logger = new Logger('Server');
     this.config = config;
     this.app = express();
+    this.gc = new GC(this);
   }
 
   isLocalhost() {
@@ -62,11 +64,26 @@ module.exports = class Server {
     this.addMiddleware();
     this.addRoutes();
     this.database.connect();
+    this.gc.start();
 
     await utils.sleep(2000);
-    this.app.listen(this.config.port, () =>
+    this._server = this.app.listen(this.config.port, () =>
       this.logger.info(`Now listening on port ${this.config.port}${this.isLocalhost() ? ', running locally!' : ' (https://i.augu.dev)'}`)
     );
+  }
+
+  /**
+   * Disposes any connections
+   */
+  dispose() {
+    this.logger.warn('Disposing all instances...');
+
+    this.gc.dispose();
+    this._server.close();
+    this.routers.clear();
+    this.database.dispose();
+
+    this.logger.warn('Disposed the ShareX server.');
   }
 };
 

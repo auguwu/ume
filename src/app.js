@@ -22,3 +22,9 @@ server.launch();
 
 process.on('unhandledRejection', reason => logger.error('Received "unhandledRejection" error', reason || new Error('No reason provided')));
 process.on('uncaughtException', ex => logger.error('Received "uncaughtException" error', ex));
+process.on('SIGINT', () => {
+  logger.warn('Received CTRL+C action, now disposing server');
+  server.dispose();
+
+  process.exit(0);
+});
