@@ -35,8 +35,8 @@ const router = new Router('/')
       statusCode: 200,
       data: {
         createdAt: image.createdAt,
-        size: util.formatSize(s.size),
-        file: this.isLocalhost() ? `http://localhost:${this.config.port}/uploads/${image.uuid}.${image.ext}` : `https://i.augu.dev/uploads/${image.uuid}.${image.ext}`
+        size: util.formatSize(image.size),
+        file: this.isDev() ? `http://localhost:${this.config.port}/uploads/${image.uuid}.${image.ext}` : `https://i.augu.dev/uploads/${image.uuid}.${image.ext}`
       }
     });
   }))

@@ -22,7 +22,7 @@ module.exports = class Server {
     this.gc = new GC(this);
   }
 
-  isLocalhost() {
+  isDev() {
     return this.config.environment === 'development';
   }
 
