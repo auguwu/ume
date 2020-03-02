@@ -68,7 +68,7 @@ module.exports = class Server {
 
     await utils.sleep(2000);
     this._server = this.app.listen(this.config.port, () =>
-      this.logger.info(`Now listening on port ${this.config.port}${this.isLocalhost() ? ', running locally!' : ' (https://i.augu.dev)'}`)
+      this.logger.info(`Now listening on port ${this.config.port}${this.isDev() ? ', running locally!' : ' (https://i.augu.dev)'}`)
     );
   }
 
