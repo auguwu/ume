@@ -1,3 +1,4 @@
+const { existsSync, promises: fs } = require('fs');
 const { Collection } = require('@augu/immutable');
 const fileUpload = require('express-fileupload');
 const Database = require('./Database');
@@ -61,10 +62,17 @@ module.exports = class Server {
   async launch() {
     this.logger.info('Launching ShareX server...');
     
+    if (!existsSync(utils.getArbitrayPath('uploads'))) {
+      this.logger.warn('Missing "uploads/" directory, now creating...');
+      await fs.mkdir(utils.getArbitrayPath('uploads'));
+
+      this.logger.info('Created "uploads/" directory for you! Now building middleware and routes...');
+    }
+
     this.addMiddleware();
     this.addRoutes();
 
-    this.logger.info('Now connecting to MongoDB...');
+    this.logger.info('Built all middleware! Now connecting to MongoDB...');
     await this.database.connect();
 
     this.logger.info('Connected to MongoDB! Now building garbage collector...');
