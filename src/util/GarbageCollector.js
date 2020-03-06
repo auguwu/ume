@@ -56,7 +56,8 @@ module.exports = class GarbageCollector {
       const image = await this.server.database.getImage(uuid);
       await this.server.database.delImage(uuid);
 
-      this.logger.info(`Deleted image ${image.uuid === undefined ? uuid : image.uuid} (size=${utils.formatSize(image.size)},extension=${image.ext === undefined ? 'png' : image.ext})`);
+      const message = image === null ? uuid : `${image.uuid} (size=${utils.formatSize(image.size)},ext=${image.ext},created_at=${image.createdAt})`;
+      this.logger.info(`Deleted image ${message}`);
     }
   }
 };
