@@ -63,9 +63,14 @@ module.exports = class Server {
     
     this.addMiddleware();
     this.addRoutes();
-    this.database.connect();
-    this.gc.start();
 
+    this.logger.info('Now connecting to MongoDB...');
+    await this.database.connect();
+
+    this.logger.info('Connected to MongoDB! Now building garbage collector...');
+    await this.gc.start();
+
+    this.logger.info('Started the garbage collector! Now waiting 2 seconds to run the server...');
     await utils.sleep(2000);
     this._server = this.app.listen(this.config.port, () =>
       this.logger.info(`Now listening on port ${this.config.port}${this.isDev() ? ', running locally!' : ' (https://i.augu.dev)'}`)
