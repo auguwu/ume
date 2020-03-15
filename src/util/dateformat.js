@@ -163,7 +163,7 @@ class Dateformat {
       return match.slice(1, match.length - 1);
     });
   }
-};
+}
 
 /**
  * Manipulate a date to whatever you want
