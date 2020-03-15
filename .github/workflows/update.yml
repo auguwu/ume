@@ -1,5 +1,8 @@
 name: Update the server on the VPS
-on: [push]
+on:
+  push:
+    branches:
+      - master
 jobs:
   build:
     runs-on: ubuntu-latest
