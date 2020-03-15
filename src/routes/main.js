@@ -1,3 +1,4 @@
+/* eslint-disable no-invalid-this */
 const { promises: fs, existsSync } = require('fs');
 const { Router, Route } = require('../structures/Route');
 const util = require('../util');

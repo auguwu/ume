@@ -45,8 +45,7 @@ module.exports = class Server {
           try {
             this.requests++;
             await route.callee.apply(this, [req, res]);
-          }
-          catch(ex) {
+          } catch(ex) {
             this.logger.error(`Unable to fulfill request to "${route.route}"`, ex);
             return res.status(500).json({
               statusCode: 500,

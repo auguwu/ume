@@ -12,7 +12,7 @@ class Route {
     this.method = method;
     this.route = route;
   }
-};
+}
 
 class Router {
   /**
@@ -36,7 +36,7 @@ class Router {
     this.routes.set(route.route, route);
     return this;
   }
-};
+}
 
 module.exports = {
   Router,
