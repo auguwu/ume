@@ -9,7 +9,7 @@
     "lint": "eslint src --ext .js --fix"
   },
   "dependencies": {
-    "@augu/immutable": "0.1.6",
+    "@augu/immutable": "0.1.7",
     "express": "4.17.1",
     "express-fileupload": "1.1.6",
     "leeks.js": "0.0.8",
