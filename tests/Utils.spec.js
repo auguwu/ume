@@ -14,22 +14,6 @@ describe('Utils', () => {
     expect(utils.formatSize(834560)).toStrictEqual('815.0KB');
   });
 
-  describe('Dateformatter', () => {
-    it('should equal "04/25/2020"', () => {
-      const date = utils.dateformat(1587869219469).toString('mm/dd/yyyy');
-
-      expect(date).toBeDefined();
-      expect(date).toStrictEqual('04/25/2020');
-    });
-
-    it('should equal "07:46:59"', () => {
-      const date = utils.dateformat(1587869219469).toString('hh:MM:ss');
-
-      expect(date).toBeDefined();
-      expect(date).toStrictEqual('07:46:59');
-    });
-  });
-
   describe('Node Versioning', () => {
     it('should be "false" if the version is "8.7.5"', () => {
       const version = '8.7.5';
