@@ -20,10 +20,13 @@ const generate = () => randomBytes(8).toString('hex');
 
 /**
  * If the OS is running Node.js 10 or higher
+ * @param {string} [version] The version to check
  */
-const isNode10 = () => {
-  const version = process.version.split('.')[0].replace('v', '');
-  return Number(version) > 10;
+const isNode10 = (version) => {
+  const ver = version ? version.split('.')[0] : process.version.split('.')[0].replace('v', '');
+  const num = Number(ver);
+
+  return num === 10 || num > 10;
 };
 
 /**

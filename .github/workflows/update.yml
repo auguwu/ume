@@ -22,6 +22,8 @@ jobs:
         run: npm i
       - name: Lint for any code errors or warnings
         run: eslint src --ext .js --fix
+      - name: Test with Jest
+        run: npm run test
       - name: Update and hot reload the server
         uses: appleboy/ssh-action@master
         with:

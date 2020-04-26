@@ -20,11 +20,16 @@ module.exports = class Server {
     this.logger = new Logger('Server');
     this.config = config;
     this.app = express();
-    this.gc = new GC(this);
+    
+    if (config.features.gc) this.gc = new GC(this);
   }
 
   isDev() {
     return this.config.environment === 'development';
+  }
+
+  isJest() {
+    return this.config.environment === 'jest';
   }
 
   addMiddleware() {
@@ -74,10 +79,14 @@ module.exports = class Server {
     this.logger.info('Built all middleware! Now connecting to MongoDB...');
     await this.database.connect();
 
-    this.logger.info('Connected to MongoDB! Now building garbage collector...');
-    await this.gc.start();
+    if (this.config.features.gc) {
+      this.logger.info('Connected to MongoDB! Now starting garbage collector...');
+      await this.gc.start();
+      this.logger.info('Started the garbage collector! Now waiting 2 seconds to run the server...');
+    } else {
+      this.logger.info('Connected to MongoDB! Now waiting 2 seconds to run the server...');
+    }
 
-    this.logger.info('Started the garbage collector! Now waiting 2 seconds to run the server...');
     await utils.sleep(2000);
     this._server = this.app.listen(this.config.port, () =>
       this.logger.info(`Now listening on port ${this.config.port}${this.isDev() ? ', running locally!' : ' (https://i.augu.dev)'}`)
@@ -90,7 +99,8 @@ module.exports = class Server {
   dispose() {
     this.logger.warn('Disposing all instances...');
 
-    this.gc.dispose();
+    if (this.config.features.gc) this.gc.dispose();
+
     this._server.close();
     this.routers.clear();
     this.database.dispose();
@@ -101,8 +111,12 @@ module.exports = class Server {
 
 /**
  * @typedef {object} Config
- * @prop {"development" | "production"} environment The environment state of the server
+ * @prop {"development" | "production" | "jest"} environment The environment state of the server
+ * @prop {FeatureConfig} features The features to enable/disable
  * @prop {string} dbUrl The database URL
  * @prop {number} port The port to use to connect
  * @prop {string} key The master key to add images
+ * 
+ * @typedef {object} FeatureConfig
+ * @prop {boolean} gc Disable/Enable the garbage collector
  */
