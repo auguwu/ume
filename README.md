@@ -35,7 +35,7 @@
 ```
 
 ### Master Key
-If you want to generate a key instead of spamming, run `node -e 'console.log(require("crypto").randomBytes(32).toString("hex"))'`
+If you want to generate a key instead of spamming your keyboard, run this in a terminal: `node -e 'console.log(require("crypto").randomBytes(32).toString("hex"))'`
 
 ### Server Configuration
 ```js
