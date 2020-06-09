@@ -1,9 +1,9 @@
 const { existsSync, promises: fs } = require('fs');
+const { createLogger } = require('@augu/logging');
 const { Collection } = require('@augu/immutable');
 const fileUpload = require('express-fileupload');
 const Database = require('./Database');
 const express = require('express');
-const Logger = require('./Logger');
 const routes = require('../routes');
 const utils = require('../util');
 const GC = require('../util/GarbageCollector');
@@ -14,10 +14,11 @@ module.exports = class Server {
    * @param {Config} config The config
    */
   constructor(config) {
+    this.bootedAt = Date.now();
     this.requests = 0;
     this.database = new Database(config.dbUrl);
     this.routers = new Collection();
-    this.logger = new Logger('Server');
+    this.logger = createLogger('Server', { file: './logs/server.log' });
     this.config = config;
     this.app = express();
     

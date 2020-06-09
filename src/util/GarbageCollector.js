@@ -1,6 +1,6 @@
 const { promises: fs } = require('fs');
+const { createLogger } = require('@augu/logging');
 const { join } = require('path');
-const Logger = require('../structures/Logger');
 const utils = require('.');
 
 module.exports = class GarbageCollector {
@@ -10,7 +10,7 @@ module.exports = class GarbageCollector {
    */
   constructor(server) {
     this.interval = null;
-    this.logger = new Logger('GC');
+    this.logger = createLogger('GC');
     this.server = server;
   }
 

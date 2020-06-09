@@ -1,5 +1,5 @@
+const { createLogger } = require('@augu/logging');
 const { MongoClient } = require('mongodb');
-const Logger = require('./Logger');
 
 module.exports = class Database {
   /**
@@ -8,7 +8,7 @@ module.exports = class Database {
    */
   constructor(url) {
     this.url = url;
-    this.logger = new Logger('Database');
+    this.logger = createLogger('Database', { file: './logs/database.log' });
     this.client = new MongoClient(url, {
       useUnifiedTopology: true,
       useNewUrlParser: true
@@ -26,10 +26,7 @@ module.exports = class Database {
 
     await this.client.connect();
     this.db = this.client.db('sharex');
-    this.admin = this.db.admin();
-    this.build = await this.admin.buildInfo();
-
-    this.logger.database(`Connected to MongoDB with URI: ${this.url}`);
+    this.logger.info(`Connected to MongoDB with URI: ${this.url}`);
   }
 
   /**
@@ -46,7 +43,7 @@ module.exports = class Database {
     this.admin = null;
     this.build = null;
 
-    this.logger.database('Database connection was disposed');
+    this.logger.warn('Database connection was disposed');
   }
 
   /**

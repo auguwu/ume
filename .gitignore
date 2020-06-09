@@ -1,6 +1,8 @@
+src/static/css
 node_modules/
 src/uploads/
 src/config.json
+src/logs
 
 uploader.sxcu
 package-lock.json
