@@ -11,7 +11,7 @@
     "sass": "sass src/public/scss:src/public/css --no-source-map"
   },
   "dependencies": {
-    "@augu/immutable": "0.2.3",
+    "@augu/immutable": "0.2.5",
     "@augu/logging": "1.0.2",
     "express": "4.17.1",
     "express-fileupload": "1.1.6",
