@@ -32,7 +32,7 @@ const router = new Router('/')
       message: `Unable to find image with UUID "${req.params.file}"`
     });
 
-    const host = this.isDev() ? `https://localhost:${this.config.port}` : 'https://i.augu.dev';
+    const host = this.isDev() ? `localhost:${this.config.port}` : 'i.augu.dev';
     return res.status(200).json({
       statusCode: 200,
       data: {
