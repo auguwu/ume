@@ -7,9 +7,7 @@ describe('Server Features', () => {
       masterKey: '',
       dbUrl: '',
       port: 6969,
-      features: {
-        gc: false
-      }
+      features: {}
     });
 
     expect(server.gc).toBeUndefined();
@@ -22,7 +20,7 @@ describe('Server Features', () => {
       dbUrl: '',
       port: 6969,
       features: {
-        gc: true
+        gc: 6480000
       }
     });
 

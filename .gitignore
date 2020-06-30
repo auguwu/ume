@@ -3,6 +3,7 @@ node_modules/
 src/uploads/
 src/config.json
 src/logs
+.vscode/
 
 uploader.sxcu
 package-lock.json

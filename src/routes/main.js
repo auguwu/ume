@@ -32,12 +32,14 @@ const router = new Router('/')
       message: `Unable to find image with UUID "${req.params.file}"`
     });
 
+    const host = this.isDev() ? `https://localhost:${this.config.port}` : 'https://i.augu.dev';
     return res.status(200).json({
       statusCode: 200,
       data: {
         createdAt: image.createdAt,
+        mime: image.mime,
         size: util.formatSize(image.size),
-        file: this.isDev() ? `http://localhost:${this.config.port}/uploads/${image.uuid}.${image.ext}` : `https://i.augu.dev/uploads/${image.uuid}.${image.ext}`
+        file: `https://${host}/uploads/${image.uuid}.${image.ext}`
       }
     });
   }))
@@ -50,7 +52,7 @@ const router = new Router('/')
       message: `You must have a valid file type (${['png', 'jpg', 'webp', 'gif'].join(' | ')})`
     });
 
-    if (!req.headers.authorization) return res.status(401).json({
+    if (!req.headers.hasOwnProperty('authorization')) return res.status(401).json({
       statusCode: 401,
       message: 'No, I will not let you upload files without an API key'
     });
@@ -67,9 +69,10 @@ const router = new Router('/')
     await fs.writeFile(f, file.data);
 
     this.database.addImage({
-      createdAt: util.dateformat(Date.now()).toString('mm/dd/yyyy hh:MM:ss TT'),
+      createdAt: util.dateformat(Date.now(), 'mm/dd/yyyy hh:MM:ss TT'),
       size: file.data.length,
       uuid: name,
+      mime: file.mimetype,
       path: f,
       ext
     });

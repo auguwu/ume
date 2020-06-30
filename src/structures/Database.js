@@ -87,5 +87,6 @@ module.exports = class Database {
  * @prop {string} size The size of the file
  * @prop {string} path The path to the file
  * @prop {string} uuid The UUID of the image
+ * @prop {string} mime The mime type of the image
  * @prop {"png" | "jpg" | "gif" | "webp"} ext The extension of the file
  */

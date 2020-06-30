@@ -16,19 +16,20 @@ module.exports = class GarbageCollector {
 
   /**
    * Starts the garbage collecting
+   * @param {number} time The amount of time to run the GC
    */
-  async start() {
+  async start(time) {
     this.logger.info('Garbage collecting has started!');
     const files = await fs.readdir(utils.getArbitrayPath('uploads'));
     if (files.length && files.length > 25) {
       this.logger.warn('Detected more then 25 files were detected, now removing...');
-      await this.onTrashed(utils.getArbitrayPath('uploads'));
+      await this.release(utils.getArbitrayPath('uploads'));
     }
 
     this.interval = setInterval(async () => {
       this.logger.info('Garbage collecting is in progress...');
-      await this.onTrashed(utils.getArbitrayPath('uploads'));
-    }, 604800000);
+      await this.release(utils.getArbitrayPath('uploads'));
+    }, time || 604800000);
   }
 
   /**
@@ -43,7 +44,7 @@ module.exports = class GarbageCollector {
    * Does the collecting and removes the file
    * @param {string} cwd The directory to remove the files
    */
-  async onTrashed(cwd) {
+  async release(cwd) {
     const files = await fs.readdir(cwd);
     this.logger.info(`Found ${files.length} files to delete from cache!`);
 

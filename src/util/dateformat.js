@@ -168,6 +168,10 @@ class Dateformat {
 /**
  * Manipulate a date to whatever you want
  * @param {Date | number} date The date to retrive from
- * @returns The `Dateformat` instance of the date
+ * @param {string} mask The mask to use
+ * @returns The Time frame
  */
-module.exports = (date) => new Dateformat(date);
+module.exports = (date, mask) => {
+  const format = new Dateformat(date);
+  return format.toString(mask);
+};

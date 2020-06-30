@@ -80,9 +80,9 @@ module.exports = class Server {
     this.logger.info('Built all middleware! Now connecting to MongoDB...');
     await this.database.connect();
 
-    if (this.config.features.gc) {
+    if (this.config.hasOwnProperty('features') && this.config.features.hasOwnProperty('gc')) {
       this.logger.info('Connected to MongoDB! Now starting garbage collector...');
-      await this.gc.start();
+      await this.gc.start(this.config.features.gc);
       this.logger.info('Started the garbage collector! Now waiting 2 seconds to run the server...');
     } else {
       this.logger.info('Connected to MongoDB! Now waiting 2 seconds to run the server...');
@@ -106,7 +106,7 @@ module.exports = class Server {
     this.routers.clear();
     this.database.dispose();
 
-    this.logger.warn('Disposed the ShareX server.');
+    this.logger.warn('Disposed the ShareX server');
   }
 };
 
