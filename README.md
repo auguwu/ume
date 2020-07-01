@@ -30,7 +30,7 @@
   },
   "Body": "MultipartFormData",
   "FileFormName": "fdata",
-  "URL": "<url>/uploads/$json:filename$"
+  "URL": "<url>/$json:filename$"
 }
 ```
 

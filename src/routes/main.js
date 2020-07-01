@@ -12,7 +12,7 @@ const router = new Router('/')
       files: files.length
     });
   }))
-  .addRoute(new Route('/uploads/:file', 'get', async function (req, res) {
+  .addRoute(new Route('/:file', 'get', async function (req, res) {
     const uuid = req.params.file.split('.').shift();
     const image = await this.database.getImage(uuid);
 
@@ -23,7 +23,7 @@ const router = new Router('/')
 
     return res.sendFile(image.path);
   }))
-  .addRoute(new Route('/file/:file', 'get', async function (req, res) {
+  .addRoute(new Route('/stats/:file', 'get', async function (req, res) {
     const uuid = req.params.file.split('.').shift();
     const image = await this.database.getImage(uuid);
 
