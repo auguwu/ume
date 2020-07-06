@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@augu/immutable": "0.2.5",
-    "@augu/logging": "1.0.2",
+    "@augu/logging": "1.0.3",
     "express": "4.17.1",
     "express-fileupload": "1.1.6",
     "mongodb": "3.5.9"
