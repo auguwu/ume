@@ -13,7 +13,7 @@
     "@augu/immutable": "0.2.5",
     "@augu/logging": "1.0.2",
     "express": "4.17.1",
-    "express-fileupload": "1.1.6",
+    "express-fileupload": "1.1.9",
     "mongodb": "3.5.9"
   },
   "devDependencies": {
