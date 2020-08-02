@@ -1,5 +1,5 @@
-const { createLogger } = require('@augu/logging');
 const { MongoClient } = require('mongodb');
+const { Signale } = require('signale');
 
 module.exports = class Database {
   /**
@@ -8,7 +8,7 @@ module.exports = class Database {
    */
   constructor(url) {
     this.url = url;
-    this.logger = createLogger('Database', { file: './logs/database.log' });
+    this.logger = new Signale({ scope: 'MongoDB' });
     this.client = new MongoClient(url, {
       useUnifiedTopology: true,
       useNewUrlParser: true

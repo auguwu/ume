@@ -1,5 +1,5 @@
 const { promises: fs } = require('fs');
-const { createLogger } = require('@augu/logging');
+const { Signale } = require('signale');
 const { join } = require('path');
 const utils = require('.');
 
@@ -10,7 +10,7 @@ module.exports = class GarbageCollector {
    */
   constructor(server) {
     this.interval = null;
-    this.logger = createLogger('GC');
+    this.logger = new Signale({ scope: 'GColl' });
     this.server = server;
   }
 

@@ -1,6 +1,6 @@
 const { existsSync, promises: fs } = require('fs');
-const { createLogger } = require('@augu/logging');
 const { Collection } = require('@augu/immutable');
+const { Signale } = require('signale');
 const fileUpload = require('express-fileupload');
 const Database = require('./Database');
 const express = require('express');
@@ -18,7 +18,7 @@ module.exports = class Server {
     this.requests = 0;
     this.database = new Database(config.dbUrl);
     this.routers = new Collection();
-    this.logger = createLogger('Server', { file: './logs/server.log' });
+    this.logger = new Signale({ scope: 'Server' });
     this.config = config;
     this.app = express();
     
@@ -35,7 +35,7 @@ module.exports = class Server {
 
   addMiddleware() {
     // Disable this for no XSS attacks
-    this.app.disable('x-powered-by');
+    this.app.set('x-powered-by', 'auguwu tehc (https://github.com/auguwu)');
     this.app.use(fileUpload({
       preserveExtension: true,
       safeFileNames: true

@@ -7,7 +7,6 @@ const router = new Router('/')
   .addRoute(new Route('/', 'get', async function (_, res) {
     const files = await this.database.images.find({}).toArray();
     return res.status(200).json({
-      message: 'Um, I have no idea why you are here, b-but hello?',
       requests: this.requests,
       files: files.length
     });
@@ -39,7 +38,7 @@ const router = new Router('/')
         createdAt: image.createdAt,
         mime: image.mime,
         size: util.formatSize(image.size),
-        file: `https://${host}/uploads/${image.uuid}.${image.ext}`
+        file: `https://${host}/${image.uuid}.${image.ext}`
       }
     });
   }))
@@ -66,6 +65,11 @@ const router = new Router('/')
     const f = util.getArbitrayPath('uploads', `${name}.${ext}`);
 
     if (!existsSync(util.getArbitrayPath('uploads'))) await fs.mkdir(util.getArbitrayPath('uploads'));
+    if (existsSync(f)) return res.status(400).json({
+      statusCode: 400,
+      message: `File "${f}" exists already, UUID cannot be taken.`
+    });
+    
     await fs.writeFile(f, file.data);
 
     this.database.addImage({
