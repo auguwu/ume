@@ -34,12 +34,16 @@ module.exports = class Server {
   }
 
   addMiddleware() {
-    // Disable this for no XSS attacks
-    this.app.set('x-powered-by', 'auguwu tehc (https://github.com/auguwu)');
     this.app.use(fileUpload({
       preserveExtension: true,
       safeFileNames: true
     }));
+
+    // Prevents XSS attacks
+    this.app.use((_, res, next) => {
+      res.setHeader('X-Powered-By', 'auguwu tehc (https://github.com/auguwu/i.augu.dev)');
+      next();
+    });
   }
 
   addRoutes() {
