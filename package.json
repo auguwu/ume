@@ -12,7 +12,7 @@
   "dependencies": {
     "@augu/immutable": "0.3.1",
     "express": "4.17.1",
-    "express-fileupload": "1.1.9",
+    "express-fileupload": "1.2.0",
     "mongodb": "3.6.0",
     "signale": "1.4.0"
   },
