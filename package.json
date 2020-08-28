@@ -10,7 +10,7 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@augu/immutable": "0.3.1",
+    "@augu/immutable": "0.4.2",
     "express": "4.17.1",
     "express-fileupload": "1.1.9",
     "mongodb": "3.6.0",
