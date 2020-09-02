@@ -52,13 +52,8 @@ module.exports = class GarbageCollector {
       this.logger.warn(`Now deleting file ${file} from the database...`);
       await fs.unlink(join(cwd, file))
         .catch(error => this.logger.error(`Unable to delete file ${file}:`, error));
-
-      const uuid = file.split('.').shift();
-      const image = await this.server.database.getImage(uuid);
-      await this.server.database.delImage(uuid);
-
-      const message = image === null ? uuid : `${image.uuid} (size=${utils.formatSize(image.size)},ext=${image.ext},created_at=${image.createdAt})`;
-      this.logger.info(`Deleted image ${message}`);
+        
+      this.logger.info(`Deleted image ${join(cwd, file)}`);
     }
   }
 };
