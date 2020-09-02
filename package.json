@@ -1,7 +1,7 @@
 {
   "name": "i.augu.dev",
   "description": "💖 ShareX uploader for personal use",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "src/app.js",
   "author": "August <august@augu.dev>",
   "repository": "https://github.com/auguwu/i.augu.dev",
