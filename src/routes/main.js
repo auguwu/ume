@@ -1,7 +1,10 @@
 /* eslint-disable no-invalid-this */
 const { promises: fs, existsSync } = require('fs');
 const { Router, Route } = require('../structures/Route');
+const { join } = require('path');
 const util = require('../util');
+
+const uploads = join(process.cwd(), 'uploads');
 
 const router = new Router('/')
   .addRoute(new Route('/', 'get', async function (_, res) {
@@ -12,52 +15,26 @@ const router = new Router('/')
     });
   }))
   .addRoute(new Route('/:file', 'get', async function (req, res) {
-    const uuid = req.params.file.split('.').shift();
-    const image = await this.database.getImage(uuid);
-
-    if (!image || image === null) return res.status(404).json({
-      statusCode: 404,
-      message: `Unable to find image "${req.params.file}"`
+    const uuid = req.params.file;
+    if (!existsSync(join(uploads, uuid))) return res.status(404).json({
+      message: `File "${uuid}" doesn't exist`
     });
 
-    return res.sendFile(image.path);
-  }))
-  .addRoute(new Route('/stats/:file', 'get', async function (req, res) {
-    const uuid = req.params.file.split('.').shift();
-    const image = await this.database.getImage(uuid);
-
-    if (!image || image === null) return res.status(404).json({
-      statusCode: 404,
-      message: `Unable to find image with UUID "${req.params.file}"`
-    });
-
-    const host = this.isDev() ? `localhost:${this.config.port}` : 'i.augu.dev';
-    return res.status(200).json({
-      statusCode: 200,
-      data: {
-        createdAt: image.createdAt,
-        mime: image.mime,
-        size: util.formatSize(image.size),
-        file: `https://${host}/${image.uuid}.${image.ext}`
-      }
-    });
+    return res.sendFile(join(uploads, uuid));
   }))
   .addRoute(new Route('/upload', 'post', async function (req, res) {
     const file = req.files[Object.keys(req.files)[0]];
     const ext = file.name.split('.').pop();
 
     if (!['png', 'jpg', 'webp', 'gif'].includes(ext)) return res.status(406).json({
-      statusCode: 406,
       message: `You must have a valid file type (${['png', 'jpg', 'webp', 'gif'].join(' | ')})`
     });
 
     if (!req.headers.hasOwnProperty('authorization')) return res.status(401).json({
-      statusCode: 401,
       message: 'No, I will not let you upload files without an API key'
     });
 
     if (req.headers.authorization !== this.config.key) return res.status(403).json({
-      statusCode: 403,
       message: 'No, I will not let you upload files.'
     });
 
@@ -71,18 +48,7 @@ const router = new Router('/')
     });
     
     await fs.writeFile(f, file.data);
-
-    this.database.addImage({
-      createdAt: util.dateformat(Date.now(), 'mm/dd/yyyy hh:MM:ss TT'),
-      size: file.data.length,
-      uuid: name,
-      mime: file.mimetype,
-      path: f,
-      ext
-    });
-
     return res.status(201).json({
-      statusCode: 201,
       filename: `${name}.${ext}`
     });
   }));

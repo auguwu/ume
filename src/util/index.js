@@ -14,9 +14,8 @@ const getArbitrayPath = (...paths) => `${process.cwd()}${sep}${paths.join(sep)}`
 
 /**
  * Gets a random generated string from `seed`
- * @param {number} [seed=16] The length of the string
  */
-const generate = () => randomBytes(2).toString('hex');
+const generate = () => randomBytes(3).toString('hex');
 
 /**
  * If the OS is running Node.js 10 or higher

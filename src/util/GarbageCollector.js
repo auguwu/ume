@@ -10,8 +10,8 @@ module.exports = class GarbageCollector {
    */
   constructor(server) {
     this.interval = null;
-    this.logger = new Signale({ scope: 'GColl' });
-    this.server = server;
+    this.logger   = new Signale({ scope: 'GColl' });
+    this.server   = server;
   }
 
   /**

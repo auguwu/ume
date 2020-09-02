@@ -1,25 +1,25 @@
 {
   "name": "i.augu.dev",
   "description": "💖 ShareX uploader for personal use",
-  "version": "1.4.1",
+  "version": "2.0.0",
   "main": "src/app.js",
   "author": "August <august@augu.dev>",
   "repository": "https://github.com/auguwu/i.augu.dev",
   "scripts": {
+    "prepare": "yarn lint",
     "lint": "eslint src --ext .js --fix",
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@augu/immutable": "0.3.1",
+    "@augu/immutable": "0.4.2",
     "express": "4.17.1",
-    "express-fileupload": "1.1.9",
-    "mongodb": "3.6.0",
+    "express-fileupload": "1.2.0",
     "signale": "1.4.0"
   },
   "devDependencies": {
-    "@augu/eslint-config": "1.6.1",
-    "@types/jest": "26.0.8",
-    "eslint": "7.6.0",
-    "jest": "26.2.2"
+    "@augu/eslint-config": "1.7.2",
+    "@types/jest": "26.0.12",
+    "eslint": "7.8.0",
+    "jest": "26.4.2"
   }
 }

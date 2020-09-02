@@ -153,7 +153,7 @@ class Dateformat {
       TT: dict.H < 12 ? this.i18n.timeNames[6] : this.i18n.timeNames[7],
       Z: this.settings.gmt ? 'GMT' : this.settings.utc ? 'UTC' : (String(this.date).match(this.timezone) || ['']).pop().replace(this.timezoneClip, ''),
       o: (dict.o > 0 ? '-' : '+') + this.pad(Math.floor(Math.abs(dict.o) / 60) * 100 + Math.abs(dict.o) % 60, 4),
-      S: ['th', 'st', 'nd', 'rd'][dict.d % 10 > 3 ? 0 : (dict.d % 100 - dict.d % 10 != 10) * dict.d % 10],
+      S: ['th', 'st', 'nd', 'rd'][dict.d % 10 > 3 ? 0 : (dict.d % 100 - dict.d % 10 != 10) * dict.d % 10], // eslint-disable-line eqeqeq
       W: dict.W,
       N: dict.N
     };

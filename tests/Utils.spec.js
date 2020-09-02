@@ -14,9 +14,9 @@ describe('Utils', () => {
     expect(utils.formatSize(834560)).toStrictEqual('815.0KB');
   });
 
-  it('UUID length must be 4', () => {
+  it('UUID length must be 6', () => {
     const uuid = utils.generate();
-    expect(uuid.length).toBe(4);
+    expect(uuid.length).toBe(6);
   });
 
   describe('Node Versioning', () => {

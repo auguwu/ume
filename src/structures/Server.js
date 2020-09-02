@@ -2,7 +2,6 @@ const { existsSync, promises: fs } = require('fs');
 const { Collection } = require('@augu/immutable');
 const { Signale } = require('signale');
 const fileUpload = require('express-fileupload');
-const Database = require('./Database');
 const express = require('express');
 const routes = require('../routes');
 const utils = require('../util');
@@ -16,7 +15,6 @@ module.exports = class Server {
   constructor(config) {
     this.bootedAt = Date.now();
     this.requests = 0;
-    this.database = new Database(config.dbUrl);
     this.routers = new Collection();
     this.logger = new Signale({ scope: 'Server' });
     this.config = config;
@@ -81,15 +79,12 @@ module.exports = class Server {
     this.addMiddleware();
     this.addRoutes();
 
-    this.logger.info('Built all middleware! Now connecting to MongoDB...');
-    await this.database.connect();
-
     if (this.config.hasOwnProperty('features') && this.config.features.hasOwnProperty('gc')) {
-      this.logger.info('Connected to MongoDB! Now starting garbage collector...');
+      this.logger.info('Built all middleware! Now starting garbage collector...');
       await this.gc.start(this.config.features.gc);
       this.logger.info('Started the garbage collector! Now waiting 2 seconds to run the server...');
     } else {
-      this.logger.info('Connected to MongoDB! Now waiting 2 seconds to run the server...');
+      this.logger.info('Built all middleware! Now waiting 2 seconds to run the server...');
     }
 
     await utils.sleep(2000);
@@ -108,7 +103,6 @@ module.exports = class Server {
 
     this._server.close();
     this.routers.clear();
-    this.database.dispose();
 
     this.logger.warn('Disposed the ShareX server');
   }
@@ -118,10 +112,9 @@ module.exports = class Server {
  * @typedef {object} Config
  * @prop {"development" | "production" | "jest"} environment The environment state of the server
  * @prop {FeatureConfig} features The features to enable/disable
- * @prop {string} dbUrl The database URL
  * @prop {number} port The port to use to connect
  * @prop {string} key The master key to add images
  * 
  * @typedef {object} FeatureConfig
- * @prop {boolean} gc Disable/Enable the garbage collector
+ * @prop {number} [gc] Disable/Enable the garbage collector
  */

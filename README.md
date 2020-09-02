@@ -6,7 +6,6 @@
 ## Installation
 ### Requirements
 - Node.js v10+
-- MongoDB v3.6+
 
 ### Process
 - Fork the repository [here](https://github.com/auguwu/i.augu.dev/fork)
@@ -16,7 +15,9 @@
 - Change the directory to the `src` folder and run `node app.js`
 
 ### ShareX Configuration
-> Replace `<url>` with your personal domain! | Replace `<name>` with the name you want to use when you select it!
+> Replace `<url>` with your personal domain!
+>
+> Replace `<name>` with the name you want to use when you select it!
 
 ```json
 {
@@ -35,7 +36,7 @@
 ```
 
 ### Master Key
-If you want to generate a key instead of spamming your keyboard, run this in a terminal: `node -e 'console.log(require("crypto").randomBytes(32).toString("hex"))'`
+If you want to generate a key instead of spamming your keyboard, run this in a terminal: `node -e 'console.log(require("crypto").randomBytes(32).toString("hex"))'` or run `node app.js --gen` under the **src** directory
 
 ### Server Configuration
 ```js
@@ -51,4 +52,4 @@ If you want to generate a key instead of spamming your keyboard, run this in a t
 ```
 
 ## License
-This service is released under the **MIT** License, view more information [here](/LICENSE)
+**i.augu.dev** is released under the **MIT** License, view more information [here](/LICENSE)
