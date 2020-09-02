@@ -7,13 +7,7 @@ const util = require('../util');
 const uploads = join(process.cwd(), 'uploads');
 
 const router = new Router('/')
-  .addRoute(new Route('/', 'get', async function (_, res) {
-    const files = await this.database.images.find({}).toArray();
-    return res.status(200).json({
-      requests: this.requests,
-      files: files.length
-    });
-  }))
+  .addRoute(new Route('/', 'get', (_, res) => res.status(204).send()))
   .addRoute(new Route('/:file', 'get', async function (req, res) {
     const uuid = req.params.file;
     if (!existsSync(join(uploads, uuid))) return res.status(404).json({
