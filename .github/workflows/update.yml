@@ -11,7 +11,7 @@ jobs:
         # Only use Node.js v13 since it's on my local machine and VPS machine
         node-version: [13.x]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Install Node.js v${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
