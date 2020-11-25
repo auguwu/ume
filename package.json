@@ -17,7 +17,7 @@
     "signale": "1.4.0"
   },
   "devDependencies": {
-    "@augu/eslint-config": "1.7.2",
+    "@augu/eslint-config": "1.9.0",
     "@types/jest": "26.0.12",
     "eslint": "7.8.0",
     "jest": "26.4.2"
