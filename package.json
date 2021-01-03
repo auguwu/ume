@@ -7,10 +7,10 @@
   "repository": "https://github.com/auguwu/cute.floofy.dev",
   "bugs": "https://github.com/auguwu/cute.floofy.dev/issues",
   "scripts": {
-    "config:create": "node scripts/config.js",
+    "config:create": "node scripts/config.js create",
     "master": "node scripts/master-key.js",
-    "start": "node scripts/move-config.js && cd build && node main.js",
-    "build": "node scripts/remove.js && tsc",
+    "start": "cp src/config.yml build/config.yml && cd build && node main.js",
+    "build": "node scripts/clean.js && tsc",
     "lint": "eslint src --ext .ts --fix"
   },
   "dependencies": {
