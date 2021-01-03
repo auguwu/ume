@@ -20,3 +20,8 @@
  * SOFTWARE.
  */
 
+export { default as Route } from './decorators/Route';
+export { default as Server } from './Server';
+export { default as Endpoint } from './Endpoint';
+export { default as Logger } from './Logger';
+export { default as Provider } from './Provider';

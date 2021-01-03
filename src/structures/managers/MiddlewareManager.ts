@@ -20,3 +20,50 @@
  * SOFTWARE.
  */
 
+import type { NextFunction, Request, Response } from 'express';
+import { Server, Logger } from '..';
+import { readdir } from '../../util';
+import { join } from 'path';
+
+type ExpressMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => void;
+
+export default class EndpointHandler {
+  private directory: string;
+  private logger: Logger;
+  private server: Server;
+
+  constructor(server: Server) {
+    this.directory = join(__dirname, '..', '..', 'middleware');
+    this.server = server;
+    this.logger = new Logger('Middleware');
+  }
+
+  async load() {
+    this.logger.info('Loading all middleware!');
+
+    const files = await readdir(this.directory);
+    if (!files.length) {
+      this.logger.warn('Missing middleware! Do you have a corrupt installation?');
+      return;
+    }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ctor = await import(file);
+
+      if (!ctor.default) {
+        this.logger.warn(`Middleware at "${file}" is missing a default export`);
+        continue;
+      }
+
+      const middleware: ExpressMiddleware = ctor.default;
+      this.server.app.use(middleware);
+    }
+
+    this.logger.info('Loaded all middleware!');
+  }
+}

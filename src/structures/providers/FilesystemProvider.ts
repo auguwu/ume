@@ -20,3 +20,30 @@
  * SOFTWARE.
  */
 
+import { existsSync, promises as fs } from 'fs';
+import { Provider } from '..';
+import * as util from '../../util';
+import { join } from 'path';
+
+export default class FilesystemProvider extends Provider {
+  constructor() {
+    super('filesystem');
+  }
+
+  async addFile(data: any) {
+    const id = util.generate();
+    const path = this
+      .server
+      .config
+      .get<string>('uploads.filesystem.directory', '../$(root)/uploads')
+      .replace(/[$]\(([\w\.]+)\)/g, (_, key) => {
+        if (key === 'root') return process.cwd();
+        return key;
+      });
+
+    if (!existsSync(path)) await fs.mkdir(path);
+    await fs.writeFile(join(path, `${id}.png`), data);
+
+    return join(path, `${id}.png`);
+  }
+}

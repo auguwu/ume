@@ -20,3 +20,87 @@
  * SOFTWARE.
  */
 
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+import yaml from 'js-yaml';
+
+export interface Configuration {
+  environment: 'development' | 'production';
+  ratelimits?: RatelimitConfiguration;
+  sentryDSN?: string;
+  uploads: UploadsConfiguration;
+  port: number;
+  ssl?: SSLConfiguration;
+  gc?: GarbageCollectorConfiguration;
+}
+
+export interface SSLConfiguration {
+  cert: string;
+  key: string;
+  ca?: string;
+}
+
+interface RatelimitConfiguration {
+  requests: number;
+  time: string | number;
+}
+
+interface UploadsConfiguration {
+  filesystem: FilesystemUploadConfiguration;
+  gcs: GoogleCloudUploadConfiguration;
+}
+
+interface FilesystemUploadConfiguration {
+  uploads: string;
+}
+
+interface GoogleCloudUploadConfiguration {
+  a: 'b';
+}
+
+interface GarbageCollectorConfiguration {
+  interval: string | number;
+  enabled: boolean;
+}
+
+export default class Config {
+  private cache!: Configuration;
+
+  constructor() {
+    this.cache = this.load();
+  }
+
+  load() {
+    const configPath = join(__dirname, '..', 'config.yml');
+    if (!existsSync(configPath))
+      throw new Error(`Missing configuration file in \`${configPath}\`.`);
+
+    const contents = readFileSync(configPath, 'utf8');
+    return yaml.load(contents) as Configuration;
+  }
+
+  get<T>(key: string, defaultValue: T): T;
+  get<T>(key: string): T | null;
+  get<T>(key: string, defaultValue?: T) {
+    const nodes = key.split('.');
+    let prop: any = this.cache;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      try {
+        prop = prop[node];
+      } catch {
+        prop = '<not found>';
+        break;
+      }
+    }
+
+    if (prop === '<not found>') throw new TypeError(`Couldn't find anything in nodes '${nodes.join('.')}'`);
+
+    if (defaultValue) {
+      return (prop === null || prop === void 0) ? defaultValue : prop;
+    } else {
+      return (prop === null || prop === void 0) ? null : prop;
+    }
+  }
+}

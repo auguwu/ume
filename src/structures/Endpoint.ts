@@ -20,3 +20,36 @@
  * SOFTWARE.
  */
 
+import type { RouteDefinition } from './decorators/Route';
+import type Server from './Server';
+import { Collection } from '@augu/collections';
+
+export default class Endpoint {
+  public server!: Server;
+  public prefix: string;
+  public routes: Collection<string, RouteDefinition>;
+
+  static _mergePrefix(endpoint: Endpoint, path: string) {
+    if (endpoint.prefix === path) return endpoint.prefix;
+    return `${endpoint.prefix === '/' ? '' : endpoint.prefix}${path}`;
+  }
+
+  constructor(prefix: string) {
+    this.prefix = prefix;
+    this.routes = new Collection();
+  }
+
+  init(server: Server) {
+    this.server = server;
+    return this;
+  }
+
+  append(routes: RouteDefinition[]) {
+    for (let i = 0; i < routes.length; i++) {
+      const route = routes[i];
+      const path = Endpoint._mergePrefix(this, route.endpoint);
+
+      this.routes.emplace(path, route);
+    }
+  }
+}

@@ -20,3 +20,59 @@
  * SOFTWARE.
  */
 
+import { Endpoint, Server, Logger } from '..';
+import { getRouteDefinitions } from '../decorators/Route';
+import { Collection } from '@augu/collections';
+import { readdir } from '../../util';
+import { join } from 'path';
+
+export default class EndpointHandler extends Collection<string, Endpoint> {
+  private directory: string;
+  private logger: Logger;
+  private server: Server;
+
+  constructor(server: Server) {
+    super();
+
+    this.directory = join(__dirname, '..', '..', 'endpoints');
+    this.server = server;
+    this.logger = new Logger('Endpoints');
+  }
+
+  async load() {
+    this.logger.info('Initializing all endpoints...');
+
+    const files = await readdir(this.directory);
+    if (!files.length) {
+      this.logger.warn('Missing endpoints! Do you have a corrupt installation?');
+      return;
+    }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ctor = await import(file);
+
+      if (!ctor.default) {
+        this.logger.warn(`Endpoint at "${file}" is missing a default export`);
+        continue;
+      }
+
+      const endpoint: Endpoint = new ctor.default().init(this.server);
+      const routes = getRouteDefinitions(endpoint);
+      endpoint.append(routes);
+
+      for (let i = 0; i < routes.length; i++) {
+        const route = routes[i];
+        const prefix = Endpoint._mergePrefix(endpoint, route.endpoint);
+
+        this.logger.info(`Found route ${prefix} in endpoint ${endpoint.prefix}`);
+        this.server.app.get(prefix, (req, res) =>
+          this.server.requests.onRequest(endpoint, route, req, res)
+        );
+      }
+
+      this.set(endpoint.prefix, endpoint);
+      this.logger.info(`Added endpoint "${endpoint.prefix}" successfully with ${routes.length} routes.`);
+    }
+  }
+}

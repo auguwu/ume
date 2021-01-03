@@ -20,3 +20,19 @@
  * SOFTWARE.
  */
 
+import type Server from './Server';
+
+export default abstract class Provider {
+  public server!: Server;
+  public name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  init(server: Server) {
+    this.server = server;
+  }
+
+  abstract addFile(data: any): Promise<string>;
+}
