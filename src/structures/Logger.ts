@@ -120,6 +120,7 @@ export default class Logger {
   }
 
   debug(...messages: LogMessage[]) {
+    if (process.env.NODE_ENV !== 'development') return;
     return this.write(LogLevel.Debug, ...messages);
   }
 

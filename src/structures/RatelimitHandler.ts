@@ -38,7 +38,7 @@ export default class RatelimitHandler {
   private server: Server;
 
   constructor(server: Server) {
-    const purgeAt = server.config.get<string | number>('ratelimits.purgeAt');
+    const purgeAt = server.config.get<string | number>('ratelimits.purgeAt', '1 hour');
 
     this._purgeTimeout = setInterval(() => this.purge(), convertTime(purgeAt));
     this.server = server;
@@ -57,7 +57,7 @@ export default class RatelimitHandler {
 
   private _default(ip: string, limit: number): RatelimitRecord {
     const resetTime = new Date();
-    resetTime.setMilliseconds(resetTime.getMilliseconds() + convertTime(this.server.config.get<string | number>('ratelimits.time')));
+    resetTime.setMilliseconds(resetTime.getMilliseconds() + convertTime(this.server.config.get<string | number>('ratelimits.time', '1 hour')));
 
     return {
       resetTime,
@@ -109,7 +109,7 @@ export default class RatelimitHandler {
 
     if (record.remaning === 0) {
       if (!res.headersSent) {
-        res.setHeader('Retry-After', Math.ceil(convertTime(this.server.config.get<string | number>('ratelimits.time')) / 1000));
+        res.setHeader('Retry-After', Math.ceil(convertTime(this.server.config.get<string | number>('ratelimits.time', '1 hour')) / 1000));
       }
 
       return res.status(429).json({

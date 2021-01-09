@@ -66,10 +66,6 @@ interface GarbageCollectorConfiguration {
 export default class Config {
   private cache!: Configuration;
 
-  constructor() {
-    this.cache = this.load();
-  }
-
   load() {
     const configPath = join(__dirname, '..', 'config.yml');
     if (!existsSync(configPath))

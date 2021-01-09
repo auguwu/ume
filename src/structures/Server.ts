@@ -27,13 +27,110 @@ import EndpointManager from './managers/EndpointManager';
 import type Provider from './Provider';
 import express from 'express';
 import Logger from './Logger';
-import https from 'https';
+import Config from './Config';
 import http from 'http';
 import os from 'os';
 
 import * as middleware from '../middleware';
+import { notStrictEqual } from 'assert';
 
 export type Middleware = (this: Server) =>
   (req: express.Request, res: express.Response, next: express.NextFunction) => void;
 
-export default class Server {}
+type ProviderObject = {
+  [x in 'gcs' | 'filesystem']?: any;
+}
+
+export default class Server {
+  public ratelimits: RatelimitHandler;
+  public endpoints: EndpointManager;
+  public provider!: Provider;
+  private _server!: http.Server;
+  public logger: Logger;
+  public config: Config;
+  public app: express.Application;
+
+  constructor() {
+    this.ratelimits = new RatelimitHandler(this);
+    this.endpoints = new EndpointManager(this);
+    this.logger = new Logger('Server');
+    this.config = new Config();
+    this.app = express();
+  }
+
+  private findProvider(): Provider | null {
+    const provider = this.config.get<ProviderObject>('uploads');
+    if (provider === null) throw new TypeError('Missing provider in `uploads` configuration');
+
+    const keys = Object.keys(provider);
+    if (keys.length > 1) throw new TypeError('Must only have 1 provider registered');
+
+    switch (keys[0]) {
+      case 'filesystem': return new FilesystemProvider().init(this);
+      //case 'gcs': return new GoogleCloudProvider().init(this);
+      default: return null;
+    }
+  }
+
+  start() {
+    this.logger.info('Booting up server...');
+
+    this.config.load();
+
+    const provider = this.findProvider();
+    if (provider === null) throw new TypeError('Provider that was provided isn\'t supported');
+
+    const mods = Object.values(middleware);
+    for (const mod of mods) {
+      this.app.use(mod.call(this));
+    }
+
+    this.provider = provider;
+    this._server = http.createServer(this.app);
+
+    const port = this.config.get<number>('port', 3621);
+    const prefix = 'http';
+
+    this
+      ._server
+      .on('error', (error) => this.logger.error('Unexpected error has occured', error))
+      .once('listening', () => {
+        const address = this._server.address();
+        const networks: string[] = [];
+
+        if (typeof address === 'string') {
+          networks.push(`• UNIX Sock "${address}"`);
+        } else if (address !== null) {
+          if (address.address === '::')
+            networks.push(`• Local: ${prefix}://localhost:${port}`);
+          else
+            networks.push(`• Network: ${prefix}://${address.address}:${port}`);
+        }
+
+        const external = this._getExternalNetwork();
+        if (external !== null) networks.push(`• Network: ${prefix}://${external}:${port}`);
+
+        this.logger.info('Listening under available connections', networks);
+      });
+
+    this._server.listen(port);
+  }
+
+  close() {
+    this.logger.warn('Closing server...');
+    this._server.close();
+  }
+
+  private _getExternalNetwork() {
+    const interfaces = os.networkInterfaces();
+
+    for (const name of Object.keys(interfaces)) {
+      for (const i of interfaces[name]!) {
+        const { address, family, internal } = i;
+        if (family === 'IPv4' && !internal) return address;
+      }
+    }
+
+    return null;
+  }
+}
