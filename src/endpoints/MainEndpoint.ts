@@ -23,13 +23,31 @@
 import type { Request, Response } from 'express';
 import { Endpoint, Route } from '../structures';
 
+const pkg = require('../../package.json');
+
 export default class MainEndpoint extends Endpoint {
   constructor() {
     super('/');
   }
 
   @Route('get', '/')
-  async main(req: Request, res: Response) {
-    return res.status(200).json({ henlo: 'iz weh' });
+  async main(_: Request, res: Response) {
+    return res.status(200).json({
+      message: 'henlo, iz weh!',
+      version: `v${pkg.version}`
+    });
+  }
+
+  @Route('get', '/stats')
+  async stats(_: Request, res: Response) {
+    const files = await Promise.resolve(this.server.provider.files());
+    return res.status(200).json({
+      files
+    });
+  }
+
+  @Route('post', '/upload')
+  async upload(req: Request, res: Response) {
+    // i need to add auth here lol
   }
 }

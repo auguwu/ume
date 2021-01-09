@@ -22,6 +22,8 @@
 
 import type Server from './Server';
 
+type MaybePromise<T> = T | Promise<T>;
+
 export default abstract class Provider {
   public server!: Server;
   public name: string;
@@ -36,4 +38,9 @@ export default abstract class Provider {
   }
 
   abstract addFile(data: any): Promise<string>;
+  abstract files(): MaybePromise<number>;
+
+  start(): MaybePromise<any> {
+    // noop
+  }
 }

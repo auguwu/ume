@@ -30,9 +30,8 @@ export default class FilesystemProvider extends Provider {
     super('filesystem');
   }
 
-  async addFile(data: any) {
-    const id = util.generate();
-    const path = this
+  private get path() {
+    return this
       .server
       .config
       .get<string>('uploads.filesystem.directory', '$(root)/uploads')
@@ -40,10 +39,20 @@ export default class FilesystemProvider extends Provider {
         if (key === 'root') return process.cwd();
         return key;
       });
+  }
 
-    if (!existsSync(path)) await fs.mkdir(path);
-    await fs.writeFile(join(path, `${id}.png`), data);
+  async addFile(data: any) {
+    const id = util.generate();
 
-    return join(path, `${id}.png`);
+    await fs.writeFile(join(this.path, `${id}.png`), data);
+    return join(this.path, `${id}.png`);
+  }
+
+  files() {
+    return util.readdir(this.path).then((files) => files.length);
+  }
+
+  async start() {
+    if (!existsSync(this.path)) await fs.mkdir(this.path);
   }
 }

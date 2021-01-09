@@ -101,6 +101,7 @@ export default class Server {
     this.provider = provider;
     this._server = http.createServer(this.app);
 
+    await this.provider.start();
     const port = this.config.get<number>('port', 3621);
     const prefix = 'http';
 
