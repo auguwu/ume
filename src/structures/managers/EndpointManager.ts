@@ -65,8 +65,8 @@ export default class EndpointHandler extends Collection<string, Endpoint> {
         const route = routes[i];
         const prefix = Endpoint._mergePrefix(endpoint, route.endpoint);
 
-        this.logger.info(`Found route ${prefix} in endpoint ${endpoint.prefix}`);
-        this.server.app.get(prefix, (req, res) =>
+        this.logger.info(`Found route "${route.method} ${prefix}" in endpoint ${endpoint.prefix}`);
+        this.server.app[route.method](prefix, (req, res) =>
           this.server.requests.onRequest(endpoint, route, req, res)
         );
       }

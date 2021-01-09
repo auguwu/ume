@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+export { Middleware } from './Server';
+
 export { default as Route } from './decorators/Route';
 export { default as Server } from './Server';
 export { default as Endpoint } from './Endpoint';

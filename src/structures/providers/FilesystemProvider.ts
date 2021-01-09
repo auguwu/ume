@@ -35,7 +35,7 @@ export default class FilesystemProvider extends Provider {
     const path = this
       .server
       .config
-      .get<string>('uploads.filesystem.directory', '../$(root)/uploads')
+      .get<string>('uploads.filesystem.directory', '$(root)/uploads')
       .replace(/[$]\(([\w\.]+)\)/g, (_, key) => {
         if (key === 'root') return process.cwd();
         return key;

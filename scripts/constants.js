@@ -29,13 +29,10 @@ const constants = {
     sentryDSN: null,
     port: 3621,
 
-    registration: {
-      enabled: false
-    },
-
     ratelimits: {
-      requests: 500,
-      time: '1 minute'
+      purgeAt: '1 hour',
+      limit: 500,
+      time: '1 hour'
     },
 
     gc: {

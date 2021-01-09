@@ -23,6 +23,7 @@
 import { promises as fs } from 'fs';
 import { randomBytes } from 'crypto';
 import { join } from 'path';
+import ms from 'ms';
 
 /**
  * Returns a boolean-represented value if the user is running
@@ -93,4 +94,12 @@ export async function readdir(path: string) {
   }
 
   return results;
+}
+
+export function convertTime(timestamp: string | number) {
+  if (!['string', 'number'].includes(typeof timestamp)) throw new TypeError('expected `string` or `number`');
+
+  return typeof timestamp === 'string'
+    ? ms(timestamp)
+    : timestamp;
 }

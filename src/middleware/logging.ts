@@ -20,38 +20,40 @@
  * SOFTWARE.
  */
 
-const { promises: fs } = require('fs');
-const { randomBytes } = require('crypto');
-const { join } = require('path');
-const leeks = require('leeks.js');
-const yaml = require('js-yaml');
+import type { Middleware } from '../structures';
+import onFinished from 'on-finished';
+import leeks from 'leeks.js';
 
-const log = (message) => process.stdout.write(`${leeks.colors.cyan('[master:key]')}   ${message}\n`);
-
-async function main() {
-  log('generating master key...');
-
-  let config;
-  try {
-    config = await fs.readFile(join(__dirname, '..', 'src', 'config.yml'), 'utf8');
-  } catch(ex) {
-    log(`${leeks.colors.red('fatal')}: Did you generate a configuration file? Run \`npm run config:create\` to create one.`);
-    process.exit(1);
-  }
-
-  const c = yaml.safeLoad(config);
-  log('successfully loaded configuration');
-
-  if (!c.gc.enabled) {
-    log('Garbage Collector isn\'t enabled, not creating one.');
-    process.exit(1);
-  }
-
-  const key = randomBytes(16).toString('hex');
-  c.gc.master_key = key; // eslint-disable-line camelcase
-
-  yaml.safeDump(c, { indent: 4 });
-  log(`master key is set to \`${key}\`, use this with the /users/create endpoint.`);
+function getRequestDuration(start: [number, number]) {
+  const difference = process.hrtime(start);
+  return (difference[0] * 1e9 + difference[1]) / 1e6;
 }
 
-main();
+const mod: Middleware = function logging() {
+  return (req, res, next) => {
+    next(); // continue
+
+    const start = process.hrtime();
+    onFinished(res, (_, res) => {
+      let color;
+
+      // this is gonna get real messy...
+      if (res.statusCode >= 500)
+        color = leeks.colors.red;
+      else if (res.statusCode >= 400)
+        color = leeks.colors.yellow;
+      else if (res.statusCode >= 300)
+        color = leeks.colors.magenta;
+      else if (res.statusCode >= 200)
+        color = leeks.colors.green;
+      else
+        color = leeks.colors.grey;
+
+      const ended = process.hrtime(start);
+      const time = color(`~${getRequestDuration(ended)}`);
+      this.logger.request(`"${res.statusCode} -> ${req.method.toUpperCase()} ${req.url}" | ${time}`);
+    });
+  };
+};
+
+export default mod;

@@ -63,16 +63,6 @@ gc:
   # It can take a string (example "1h") or a time in milliseconds (example "60000")
   interval: 1h
 
-# Registration settings
-registration:
-  # If registration should be enabled or not
-  # You must need PostgreSQL installed if you want to enable this
-  enabled: false
-
-  # The master key for creating new users
-  # You can run `npm run master:key` to let the server create one
-  master_key: '<key>'
-
 # Ratelimiting settings
 ratelimits:
   # The amount of time per request (i.e 1,500 requests per 5 minutes)

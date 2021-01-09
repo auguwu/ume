@@ -20,3 +20,4 @@
  * SOFTWARE.
  */
 
+export default class GCSProvider {}

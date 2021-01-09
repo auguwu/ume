@@ -28,6 +28,7 @@ const SYMBOL = Symbol('$routes');
 export interface RouteDefinition {
   run(req: Request, res: Response): MaybePromise<void>;
   endpoint: string;
+  method: 'get' | 'post';
 }
 
 export function getRouteDefinitions(target: any) {
@@ -39,7 +40,7 @@ export function getRouteDefinitions(target: any) {
   return definitions;
 }
 
-export default function Route(endpoint: string): MethodDecorator {
+export default function Route(method: 'get' | 'post', endpoint: string): MethodDecorator {
   return (target, prop, descriptor) => {
     const property = String(prop);
     if ((<any> target).prototype !== undefined) throw new TypeError(`Method "${target.constructor.name}#${property}" is static`);
@@ -47,7 +48,8 @@ export default function Route(endpoint: string): MethodDecorator {
 
     (target.constructor[SYMBOL] as RouteDefinition[]).push({
       run: descriptor.value as any,
-      endpoint
+      endpoint,
+      method
     });
   };
 }

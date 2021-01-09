@@ -20,3 +20,13 @@
  * SOFTWARE.
  */
 
+import type { Middleware } from '../structures';
+
+const mod: Middleware = function poweredBy() {
+  return (_, res, next) => {
+    res.setHeader('X-Powered-By', 'a cute furry doing cute things >W< (https://github.com/auguwu/cute.floofy.dev)');
+    next();
+  };
+};
+
+export default mod;
