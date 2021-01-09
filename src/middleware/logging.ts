@@ -49,8 +49,7 @@ const mod: Middleware = function logging() {
       else
         color = leeks.colors.grey;
 
-      const ended = process.hrtime(start);
-      const time = color(`~${getRequestDuration(ended)}`);
+      const time = color(`~${getRequestDuration(start)}`);
       this.logger.request(`"${res.statusCode} -> ${req.method.toUpperCase()} ${req.url}" | ${time}`);
     });
   };

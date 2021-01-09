@@ -50,9 +50,9 @@ export default class RatelimitHandler {
 
   dispose() {
     this.logger.warn('Disposing all records...');
-    clearInterval(this._purgeTimeout);
-
     this.purge();
+
+    clearInterval(this._purgeTimeout);
   }
 
   private _default(ip: string, limit: number): RatelimitRecord {
@@ -67,7 +67,12 @@ export default class RatelimitHandler {
   }
 
   private handle(req: Request, res: Response, next: NextFunction) {
-    this.logger.info(`Polling ratelimits on ${req.ip}...`);
+    // Don't do ratelimits on localhost >W>
+    if (req.ip === '::1') {
+      return next();
+    }
+
+    this.logger.debug(`Polling ratelimits on ${req.ip}...`);
     const limit = this.server.config.get<number>('ratelimits.limit', 1000);
     const record = this.records.find(record =>
       record.ip === req.ip

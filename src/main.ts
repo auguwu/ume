@@ -20,4 +20,36 @@
  * SOFTWARE.
  */
 
-console.log('hello, world >w<');
+import { Logger, Server } from './structures';
+import * as util from './util';
+
+const logger = new Logger('Master');
+
+async function main() {
+  if (!util.isNode10()) return Promise.reject(new Error(`Machine is not running Node.js v10 or higher (${process.version})`));
+
+  logger.info('Loading server...');
+
+  const server = new Server();
+  try {
+    await server.start();
+  } catch(ex) {
+    logger.error('Unexpected error has occured while running', ex);
+    process.exit(1);
+  }
+
+  process.on('unhandledRejection', logger.error);
+  process.on('uncaughtException', logger.error);
+  process.on('SIGINT', () => {
+    logger.warn('Closing server');
+    server.close();
+
+    process.exit(1);
+  });
+}
+
+main()
+  .catch(error => {
+    logger.error(error);
+    process.exit(1);
+  });

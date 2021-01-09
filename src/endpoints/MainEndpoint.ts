@@ -20,3 +20,16 @@
  * SOFTWARE.
  */
 
+import type { Request, Response } from 'express';
+import { Endpoint, Route } from '../structures';
+
+export default class MainEndpoint extends Endpoint {
+  constructor() {
+    super('/');
+  }
+
+  @Route('get', '/')
+  async main(req: Request, res: Response) {
+    return res.status(200).json({ henlo: 'iz weh' });
+  }
+}

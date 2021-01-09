@@ -25,6 +25,7 @@ import FilesystemProvider from './providers/FilesystemProvider';
 import RatelimitHandler from './RatelimitHandler';
 import EndpointManager from './managers/EndpointManager';
 import type Provider from './Provider';
+import fileUpload from 'express-fileupload';
 import express from 'express';
 import Logger from './Logger';
 import Config from './Config';
@@ -32,7 +33,6 @@ import http from 'http';
 import os from 'os';
 
 import * as middleware from '../middleware';
-import { notStrictEqual } from 'assert';
 
 export type Middleware = (this: Server) =>
   (req: express.Request, res: express.Response, next: express.NextFunction) => void;
@@ -51,10 +51,12 @@ export default class Server {
   public app: express.Application;
 
   constructor() {
+    this.config = new Config();
+    this.config.load();
+
     this.ratelimits = new RatelimitHandler(this);
     this.endpoints = new EndpointManager(this);
     this.logger = new Logger('Server');
-    this.config = new Config();
     this.app = express();
   }
 
@@ -62,7 +64,7 @@ export default class Server {
     const provider = this.config.get<ProviderObject>('uploads');
     if (provider === null) throw new TypeError('Missing provider in `uploads` configuration');
 
-    const keys = Object.keys(provider);
+    const keys = Object.keys(provider).filter(r => r !== 'extensions');
     if (keys.length > 1) throw new TypeError('Must only have 1 provider registered');
 
     switch (keys[0]) {
@@ -72,9 +74,16 @@ export default class Server {
     }
   }
 
-  start() {
-    this.logger.info('Booting up server...');
+  async start() {
+    const env = this.config.get<'development' | 'production'>('environment', 'development');
+    process.env.NODE_ENV = env;
 
+    if (env === 'development')
+      this.logger.warn('You are running a development build of this server, if any errors occur -- report using the URL below', {
+        reportUrl: 'https://github.com/auguwu/cute.floofy.dev/issues'
+      });
+
+    this.logger.info('Booting up server...');
     this.config.load();
 
     const provider = this.findProvider();
@@ -85,6 +94,10 @@ export default class Server {
       this.app.use(mod.call(this));
     }
 
+    this.app.use(this.ratelimits.middleware);
+    this.app.use(fileUpload());
+
+    await this.endpoints.load();
     this.provider = provider;
     this._server = http.createServer(this.app);
 
@@ -117,7 +130,7 @@ export default class Server {
   }
 
   close() {
-    this.logger.warn('Closing server...');
+    this.ratelimits.dispose();
     this._server.close();
   }
 

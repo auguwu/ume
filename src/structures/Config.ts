@@ -72,7 +72,7 @@ export default class Config {
       throw new Error(`Missing configuration file in \`${configPath}\`.`);
 
     const contents = readFileSync(configPath, 'utf8');
-    return yaml.load(contents) as Configuration;
+    this.cache = yaml.load(contents);
   }
 
   get<T>(key: string, defaultValue: T): T;

@@ -66,9 +66,18 @@ export default class EndpointHandler extends Collection<string, Endpoint> {
         const prefix = Endpoint._mergePrefix(endpoint, route.endpoint);
 
         this.logger.info(`Found route "${route.method} ${prefix}" in endpoint ${endpoint.prefix}`);
-        this.server.app[route.method](prefix, (req, res) =>
-          this.server.requests.onRequest(endpoint, route, req, res)
-        );
+        this.server.app[route.method](prefix, (req, res) => {
+          try {
+            route.run.call(endpoint, req, res);
+          } catch(ex) {
+            this.logger.error(`Unexpected error while running "${route.method.toUpperCase()} ${prefix}"`, ex);
+            return res.status(500).json({
+              message: 'Unexpected error has occured',
+              error: `[${ex.name}] ${ex.message.slice(ex.name.length + 1)}`,
+              code: 'UNEXPECTED_SERVER_ERROR'
+            });
+          }
+        });
       }
 
       this.set(endpoint.prefix, endpoint);

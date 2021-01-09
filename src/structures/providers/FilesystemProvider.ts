@@ -21,8 +21,8 @@
  */
 
 import { existsSync, promises as fs } from 'fs';
-import { Provider } from '..';
 import * as util from '../../util';
+import Provider from '../Provider';
 import { join } from 'path';
 
 export default class FilesystemProvider extends Provider {
