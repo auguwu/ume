@@ -17,7 +17,7 @@
     "express": "4.17.1",
     "express-fileupload": "1.2.0",
     "js-yaml": "4.0.0",
-    "leeks.js": "0.0.9",
+    "leeks.js": "0.1.1",
     "ms": "2.1.2",
     "on-finished": "2.3.0"
   },
