@@ -13,7 +13,7 @@
     "lint": "eslint src --ext .ts --fix"
   },
   "dependencies": {
-    "@augu/collections": "1.0.2",
+    "@augu/collections": "1.0.4",
     "express": "4.17.1",
     "express-fileupload": "1.2.0",
     "js-yaml": "4.0.0",
