@@ -9,6 +9,8 @@ defmodule UmeWeb.Router do
     pipe_through :api
   end
 
+  get "/", UmeWeb.MainController, :index
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put

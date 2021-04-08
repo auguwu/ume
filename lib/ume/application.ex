@@ -12,9 +12,10 @@ defmodule Ume.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Ume.PubSub},
       # Start the Endpoint (http/https)
-      UmeWeb.Endpoint
+      UmeWeb.Endpoint,
       # Start a worker by calling: Ume.Worker.start_link(arg)
       # {Ume.Worker, arg}
+      {Mongo, [name: :mongo, database: "ume", pool_size: 2]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
