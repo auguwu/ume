@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/gridfs"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"time"
 )
 
@@ -20,11 +21,10 @@ func CreateClient() (*mongo.Client, error) {
 		log.Fatal(err)
 	}
 
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		log.Fatal("ume >> connection isn't established!")
+		return nil, err
+	}
 
 	log.Info("ume >> connected -> mongodb")
 	return client, nil

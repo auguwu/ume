@@ -1,10 +1,12 @@
 package routing
 
 import (
+	"context"
 	floof "floofy.dev/ume/mongo"
 	"floofy.dev/ume/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
@@ -15,16 +17,27 @@ type GoAwayResult struct {
 
 type BucketItemResult struct {}
 
-func NewImagesRouter(client *mongo.Client) {
+func NewImagesRouter(client *mongo.Client) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
 	r.Get("/", func (w http.ResponseWriter, r *http.Request) {
 		bucket := floof.RetrieveBucket(client); if bucket == nil {
-			util.WriteJson(w, r, 500, GoAwayResult{
-				Message: "unable to retrieve GridFS bucket :(",
-			})
+			return
 		}
+
+		cursor, err := bucket.GetFilesCollection().Find(context.TODO(), bson.D{}); if err != nil {
+			print(err.Error())
+			return
+		}
+
+		var arr []bson.M
+		if err := cursor.All(context.TODO(), &arr); err != nil {
+			println(err.Error())
+			util.WriteJson(w, r, 200, []BucketItemResult{})
+		}
+
+		util.WriteJson(w, r, 200, arr)
 	})
 
 	r.Post("/upload", func (w http.ResponseWriter, r *http.Request) {
@@ -34,10 +47,23 @@ func NewImagesRouter(client *mongo.Client) {
 			})
 		}
 
-		if r.Header.Get("Authorization") != "somesecurekeyiswear" {
+		auth := util.Auth()
+		if r.Header.Get("Authorization") != auth {
 			util.WriteJson(w, r, 403, GoAwayResult{
 				Message: "you aren't allowed here buckeroo.",
 			})
 		}
+
+		bucket := floof.RetrieveBucket(client); if bucket == nil {
+			return
+		}
+
+		//data, header, _ := r.FormFile("fdata")
+		//file := util.RandomString()
+		//if _, err := bucket.UploadFromStream(file, ); err != nil {
+		//	return
+		//}
 	})
+
+	return r
 }
