@@ -1,0 +1,30 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login registry.floofy.dev -u august --password-stdin
+      - name: Build
+        run: docker build -t registry.floofy.dev/auguwu/ume:${{github.sha}} .
+      - name: Push
+        run: docker push registry.floofy.dev/auguwu/ume:${{github.sha}}
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login
+        run: |
+          mkdir ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+      - name: Set image
+        run: |
+          kubectl set image deployment/sharex timeouts=registry.floofy.dev/auguwu/ume:${{github.sha}}
+      - name: Rollout status
+        run: |
+          kubectl rollout status deployment/sharex
