@@ -15,8 +15,8 @@ func NewIndexRouter() chi.Router {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
-	router.Get("/", func (w http.ResponseWriter, r *http.Request) {
-		util.WriteJson(w, r, 200, IndexResult{ Hi: "world" })
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		util.WriteJson(w, 200, IndexResult{Hi: "world"})
 	})
 
 	return router
