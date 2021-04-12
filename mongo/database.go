@@ -7,17 +7,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/gridfs"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"os"
 	"time"
 )
 
 func CreateClient() (*mongo.Client, error) {
 	log.Info("ume >> connecting -> mongodb")
 
-	uri := "mongodb://localhost:27017"
-	ctx, cancel := context.WithTimeout(context.TODO(), 2 * time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 2*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri).SetAppName("Ume")); if err != nil {
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("DB_URL")).SetAppName("Ume"))
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -31,8 +32,7 @@ func CreateClient() (*mongo.Client, error) {
 }
 
 func RetrieveBucket(client *mongo.Client) *gridfs.Bucket {
-	// TODO: add custom database name?
-	if bucket, err := gridfs.NewBucket(client.Database("ume"), options.GridFSBucket().SetName("images")); err != nil {
+	if bucket, err := gridfs.NewBucket(client.Database(os.Getenv("DB")), options.GridFSBucket().SetName("images")); err != nil {
 		return nil
 	} else {
 		return bucket
