@@ -25,7 +25,7 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
       - name: Set image
         run: |
-          kubectl set image deployment/sharex timeouts=registry.floofy.dev/auguwu/ume:${{github.sha}}
+          kubectl set image deployment/sharex ume=registry.floofy.dev/auguwu/ume:${{github.sha}}
       - name: Rollout status
         run: |
           kubectl rollout status deployment/sharex
