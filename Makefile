@@ -15,28 +15,31 @@ publish-docker:
 	docker push auguwu/ume:$(VERSION)
 
 goreleaser:
-	docker pull goreleaser/goreleaser
+	# xgo takes forever to compile (on pull), so let's just cache it :<
+	docker build release -t auguwu/ume-release:latest
 	docker run --rm --privileged \
 		-v $$PWD:/go/src/floofy.dev/ume \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-w /go/src/floofy.dev/ume \
 		-e GITHUB_TOKEN=$(GITHUB_TOKEN) \
-		goreleaser/goreleaser release --rm-dist
+		auguwu/ume-release:latest --rm-dist --skip-publish --snapshot
 
 goreleaser-check:
-	docker pull goreleaser/goreleaser
+	# xgo takes forever to compile (on pull), so let's just cache it :<
+	docker build release -t auguwu/ume-release:latest
 	docker run --rm --privileged \
 		-v $$PWD:/go/src/floofy.dev/ume \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-w /go/src/floofy.dev/ume \
 		-e GITHUB_TOKEN=$(GITHUB_TOKEN) \
-		goreleaser/goreleaser check
+		auguwu/ume-release:latest --rm-dist --skip-publish --snapshot
 
 goreleaser-test:
-	docker pull goreleaser/goreleaser
+	# xgo takes forever to compile (on pull), so let's just cache it :<
+	docker build release -t auguwu/ume-release:latest
 	docker run --rm --privileged \
 		-v $$PWD:/go/src/floofy.dev/ume \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-w /go/src/floofy.dev/ume \
 		-e GITHUB_TOKEN=$(GITHUB_TOKEN) \
-		goreleaser/goreleaser --rm-dist --skip-publish --snapshot
+		auguwu/ume-release:latest --rm-dist --skip-publish --snapshot
