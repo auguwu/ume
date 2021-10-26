@@ -1,34 +1,26 @@
 # This is an example .goreleaser.yml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
 before:
   hooks:
     - go mod download
 builds:
-  - id: ume-darwin
+  - id: ume
     ldflags:
       - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
     binary: ume
     goos:
       - darwin
-    goarch:
-      - amd64
-  - id: ume-linux
-    ldflags:
-      - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
-    binary: ume
-    goos:
       - linux
-    goarch:
-      - amd64
-  - id: ume-win-x64
-    ldflags:
-      - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
-    binary: ume
-    main: ./main.go
-    goos:
       - windows
     goarch:
       - amd64
+      - arm64
+    goarm:
+      - 6
+      - 7
 archives:
   - replacements:
       darwin: Darwin
