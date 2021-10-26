@@ -4,7 +4,7 @@ BUILD_DATE=$(shell date +"%D")
 
 .PHONY: build
 build:
-	go build -ldflags "-s -w -X main.version=${VERSION} -X main.commitHash=${GIT_COMMIT} -X main.buildDate=${BUILD_DATE}" -o ./build/ume
+	go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${GIT_COMMIT} -X main.buildDate=${BUILD_DATE}" -o ./build/ume
 
 build-docker:
 	docker build . --no-cache -t auguwu/ume:latest

@@ -8,6 +8,6 @@ RUN go get
 RUN make build
 
 FROM alpine:latest
-WORKDIR /
-COPY --from=builder /build/ume /app/ume
-CMD ["/app/ume"]
+WORKDIR /app/ume
+COPY --from=builder /build/ume /app/ume/ume
+CMD ["/app/ume/ume"]

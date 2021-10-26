@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 )
 
 var version string
@@ -15,8 +16,10 @@ var commit string
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{})
-	err := godotenv.Load(".env"); if err != nil {
-		panic(err)
+	if _, err := os.Stat("./.env"); !os.IsNotExist(err) {
+		err := godotenv.Load(".env"); if err != nil {
+			panic(err)
+		}
 	}
 
 	log.Infof("Running v%s (commit: %s) of ume (build date: %s)", version, commit, buildDate)
