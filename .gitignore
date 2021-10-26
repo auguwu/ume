@@ -18,3 +18,7 @@
 ### Go Patch ###
 /vendor/
 /Godeps/
+
+# Goreleaser / Build
+build
+dist

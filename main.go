@@ -4,9 +4,23 @@ import (
 	"floofy.dev/ume/mongo"
 	"floofy.dev/ume/routing"
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
+
+var version string
+var buildDate string
+var commit string
+
+func init() {
+	log.SetFormatter(&log.TextFormatter{})
+	err := godotenv.Load(".env"); if err != nil {
+		panic(err)
+	}
+
+	log.Infof("Running v%s (commit: %s) of ume (build date: %s)", version, commit, buildDate)
+}
 
 func main() {
 	log.Info("ume >> initializing application...")

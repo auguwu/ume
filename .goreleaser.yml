@@ -1,0 +1,58 @@
+# This is an example .goreleaser.yml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+before:
+  hooks:
+    - go mod download
+builds:
+  - id: ume-darwin
+    ldflags:
+      - -s -w -X main.version={{ .Version }} main.buildDate={{ .BuildDate }} main.commitHash={{ .CommitHash }}
+    binary: ume
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang
+      - CXX=o64-clang++
+    goos:
+      - darwin
+    goarch:
+      - amd64
+  - id: ume-linux
+    ldflags:
+      - -s -w -X main.version={{ .Version }} main.buildDate={{ .BuildDate }} main.commitHash={{ .CommitHash }}
+    binary: ume
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - linux
+    goarch:
+      - amd64
+  - id: ume-win-x64
+    ldflags:
+      - -s -w -X main.version={{ .Version }} main.buildDate={{ .BuildDate }} main.commitHash={{ .CommitHash }}
+    binary: ume
+    main: ./main.go
+    goos:
+      - windows
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      amd64: x86_64
+    format_overridfes:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: 'checksums.txt'
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

@@ -15,6 +15,16 @@ jobs:
         run: docker build -t registry.floofy.dev/auguwu/ume:${{github.sha}} .
       - name: Push
         run: docker push registry.floofy.dev/auguwu/ume:${{github.sha}}
+  build-docker-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u auguwu --password-stdin
+      - name: Build
+        run: make build-docker
+      - name: Push
+        run: make publish-docker
   deploy:
     needs: build
     runs-on: ubuntu-latest
