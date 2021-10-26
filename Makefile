@@ -21,7 +21,7 @@ goreleaser:
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-w /go/src/floofy.dev/ume \
 		-e GITHUB_TOKEN=$(GITHUB_TOKEN) \
-		goreleaser/goreleaser release
+		goreleaser/goreleaser release --rm-dist
 
 goreleaser-test:
 	docker pull goreleaser/goreleaser
