@@ -6,7 +6,7 @@ before:
 builds:
   - id: ume-darwin
     ldflags:
-      - -s -w -X main.version={{ .Version }} main.buildDate={{ .BuildDate }} main.commitHash={{ .CommitHash }}
+      - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
     binary: ume
     env:
       - CGO_ENABLED=1
@@ -18,7 +18,7 @@ builds:
       - amd64
   - id: ume-linux
     ldflags:
-      - -s -w -X main.version={{ .Version }} main.buildDate={{ .BuildDate }} main.commitHash={{ .CommitHash }}
+      - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
     binary: ume
     env:
       - CGO_ENABLED=1
@@ -28,7 +28,7 @@ builds:
       - amd64
   - id: ume-win-x64
     ldflags:
-      - -s -w -X main.version={{ .Version }} main.buildDate={{ .BuildDate }} main.commitHash={{ .CommitHash }}
+      - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
     binary: ume
     main: ./main.go
     goos:
@@ -56,3 +56,7 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+release:
+  github:
+    owner: auguwu
+    repo: ume
