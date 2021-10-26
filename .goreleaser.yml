@@ -8,8 +8,6 @@ builds:
     ldflags:
       - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
     binary: ume
-    env:
-      - CGO_ENABLED=1
     goos:
       - darwin
     goarch:
@@ -18,8 +16,6 @@ builds:
     ldflags:
       - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
     binary: ume
-    env:
-      - CGO_ENABLED=1
     goos:
       - linux
     goarch:
@@ -33,8 +29,6 @@ builds:
       - windows
     goarch:
       - amd64
-    env:
-      - CGO_ENABLED=1
 archives:
   - replacements:
       darwin: Darwin
