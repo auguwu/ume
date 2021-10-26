@@ -10,8 +10,6 @@ builds:
     binary: ume
     env:
       - CGO_ENABLED=1
-      - CC=o64-clang
-      - CXX=o64-clang++
     goos:
       - darwin
     goarch:
@@ -37,8 +35,6 @@ builds:
       - amd64
     env:
       - CGO_ENABLED=1
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
 archives:
   - replacements:
       darwin: Darwin
