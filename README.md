@@ -1,5 +1,5 @@
-# ume (梅, "plum")
-> 💖 **梅 / ume is an easy, simple, and flexible image and file host.**
+# 💖 梅 ("ume")
+> *Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS.*
 
 ## Installation
 You are required a **MongoDB** connection (Atlas also works!) and **Go** 1.16 or higher.
@@ -52,4 +52,4 @@ DB_URL=mongodb://localhost:27017
 ```
 
 ## License
-**梅 ("plum")** is released under MIT License. :D
+**ume** is released under MIT License. :D
