@@ -167,7 +167,7 @@ brews:
   - goarm: "6"
     tap:
       owner: Noelware
-      name: homebrew-taps
+      name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     commit_author:
       name: "Noel"
