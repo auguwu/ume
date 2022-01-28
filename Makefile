@@ -61,3 +61,8 @@ clean:
 	rm -rf bin/ .profile/
 	go clean
 	@echo Done!
+
+# Usage: `make fmt`
+fmt:
+	@echo Formatting project...
+	go fmt
