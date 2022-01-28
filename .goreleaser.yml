@@ -174,6 +174,7 @@ brews:
       email: "cutie@floofy.dev"
     homepage: https://github.com/auguwu/ume
     description: Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS.
+    commit_msg_template: "update: {{ .ProjectName }} to v{{ .Version }} :sparkles:"
 
 signs:
   - artifacts: checksum

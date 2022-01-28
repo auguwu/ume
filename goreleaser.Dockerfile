@@ -6,6 +6,9 @@ COPY docker/scripts/liblog.sh    /app/noel/ume/scripts/liblog.sh
 COPY docker/runner.sh            /app/noel/ume/scripts/runner.sh
 COPY ume                         /app/noel/ume/ume
 
+RUN chmod +x /app/noel/ume/scripts/docker-entrypoint.sh
+RUN chmod +x /app/noel/ume/scripts/runner.sh
+
 USER 1001
 ENTRYPOINT ["/app/noel/ume/scripts/docker-entrypoint.sh"]
 CMD ["/app/noel/ume/scripts/runner.sh"]
