@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # 💖 ume: Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS.
 # Copyright (c) 2020-2022 Noel <cutie@floofy.dev>
 #
@@ -19,45 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-VERSION    := $(shell cat version.json | jq .version | tr -d '"')
-COMMIT_SHA := $(shell git rev-parse --short HEAD)
-BUILD_DATE := $(shell go run ./cmd/build-date/main.go)
-GIT_TAG    ?= $(shell git describe --tags --match "v[0-9]*")
+. /app/noel/ume/scripts/liblog.sh
 
-GOOS := $(shell go env GOOS)
-GOARCH := $(shell go env GOARCH)
+info "*** Starting ume! ***"
 
-ifeq ($(GOOS), linux)
-	TARGET_OS ?= linux
-else ifeq ($(GOOS),darwin)
-	TARGET_OS ?= darwin
-else ifeq ($(GOOS),windows)
-	TARGET_OS ?= windows
-else
-	$(error System $(GOOS) is not supported at this time)
-endif
-
-EXTENSION :=
-ifeq ($(TARGET_OS),windows)
-	EXTENSION := .exe
-endif
-
-# Usage: `make deps`
-deps:
-	@echo Updating dependency tree...
-	go mod tidy
-	go mod download
-	@echo Updated dependency tree successfully.
-
-# Usage: `make build`
-build:
-	@echo Now building Tsubaki for platform $(GOOS)/$(GOARCH)!
-	go build -ldflags "-s -w -X floof.gay/ume/internal.Version=${VERSION} -X floof.gay/ume/internal.CommitSHA=${COMMIT_SHA} -X \"floof.gay/ume/internal.BuildDate=${BUILD_DATE}\"" -o ./bin/ume$(EXTENSION)
-	@echo Successfully built the binary. Use './bin/ume$(EXTENSION)' to run!
-
-# Usage: `make clean`
-clean:
-	@echo Now cleaning project..
-	rm -rf bin/ .profile/
-	go clean
-	@echo Done!
+exec "/app/noel/ume/bin/ume" $@

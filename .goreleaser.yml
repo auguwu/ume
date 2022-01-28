@@ -1,68 +1,196 @@
-# This is an example .goreleaser.yml file with some sane defaults.
-# Make sure to check the documentation at http://goreleaser.com
-env:
-  - GO111MODULE=on
-  - CGO_ENABLED=0
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+
+project_name: ume
 before:
   hooks:
+    - go mod tidy
     - go mod download
+
 builds:
-  - id: ume-linux
+  - id: "ume"
+    binary: "ume"
     ldflags:
-      - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
-    binary: ume
+      - -s -w -X floof.gay/ume/internal.Version={{ .Version }} -X floof.gay/ume/internal.CommitSHA={{ .ShortCommit }}
     goos:
       - linux
-    goarch:
-      - amd64
-    env:
-      - CGO_ENABLED=1
-  - id: ume-win-amd64
-    ldflags:
-      - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
-    binary: ume
-    main: ./main.go
-    goos:
+      - darwin
       - windows
     goarch:
       - amd64
-    env:
-      - CGO_ENABLED=1
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
-  - id: ume-darwin
-    ldflags:
-      - -s -w -X main.version={{ .Version }} main.buildDate={{ .Date }} main.commitHash={{ .ShortCommit }}
-    binary: ume
-    goos:
-      - darwin
-    goarch:
-      - amd64
       - arm64
+      - "386"
+      - arm
     goarm:
-      - 6
-      - 7
-    env:
-      - CGO_ENABLED=1
-      - CC=o64-clang
-      - CXX=o64-clang++
+      - "6"
+      - "7"
+    ignore:
+      - goos: windows
+        goarch: arm64
+      - goos: windows
+        goarm: "6"
+      - goos: windows
+        goarm: "7"
+
+dockers:
+  - image_templates:
+      - auguwu/ume:latest-amd64
+      - auguwu/ume:{{ .Version }}-amd64
+      - auguwu/ume:{{ .Major }}.{{ .Minor }}-amd64
+      - ghcr.io/auguwu/ume:latest
+      - ghcr.io/auguwu/ume:latest-amd64
+      - ghcr.io/auguwu/ume:{{ .Version }}-amd64
+      - ghcr.io/auguwu/ume:{{ .Major }}.{{ .Minor }}-amd64
+    ids:
+      - ume
+    goarch: amd64
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - "--label=org.opencontainers.image.description=Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS."
+      - --label=org.opencontainers.image.source=https://github.com/auguwu/ume
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+    dockerfile: goreleaser.Dockerfile
+    use: buildx
+    extra_files:
+      - docker/docker-entrypoint.sh
+      - docker/runner.sh
+      - docker/scripts/liblog.sh
+
+  - image_templates:
+      - auguwu/ume:latest-arm64
+      - auguwu/ume:{{ .Version }}-arm64
+      - auguwu/ume:{{ .Major }}.{{ .Minor }}-arm64
+      - ghcr.io/auguwu/ume:latest-arm64
+      - ghcr.io/auguwu/ume:{{ .Version }}-arm64
+      - ghcr.io/auguwu/ume:{{ .Major }}.{{ .Minor }}-arm64
+    ids:
+      - ume
+    goarch: arm64
+    goarm: ""
+    build_flag_templates:
+      - --platform=linux/arm64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - "--label=org.opencontainers.image.description=Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS."
+      - --label=org.opencontainers.image.source=https://github.com/auguwu/ume
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+    dockerfile: goreleaser.Dockerfile
+    use: buildx
+    extra_files:
+      - docker/docker-entrypoint.sh
+      - docker/runner.sh
+      - docker/scripts/liblog.sh
+
+  - image_templates:
+      - auguwu/ume:latest-armv7
+      - auguwu/ume:{{ .Version }}-armv7
+      - auguwu/ume:{{ .Major }}.{{ .Minor }}-armv7
+      - ghcr.io/auguwu/ume:latest-armv7
+      - ghcr.io/auguwu/ume:{{ .Version }}-armv7
+      - ghcr.io/auguwu/ume:{{ .Major }}.{{ .Minor }}-armv7
+    ids:
+      - ume
+    goarch: arm
+    goarm: "7"
+    build_flag_templates:
+      - --platform=linux/arm/v7
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - "--label=org.opencontainers.image.description=Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS."
+      - --label=org.opencontainers.image.source=https://github.com/auguwu/ume
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+    dockerfile: goreleaser.Dockerfile
+    use: buildx
+    extra_files:
+      - docker/docker-entrypoint.sh
+      - docker/runner.sh
+      - docker/scripts/liblog.sh
+
+docker_manifests:
+  - name_template: auguwu/ume:{{ .Version }}
+    image_templates:
+      - auguwu/ume:{{ .Version }}-amd64
+      - auguwu/ume:{{ .Version }}-arm64
+      - auguwu/ume:{{ .Version }}-armv7
+
+  - name_template: ghcr.io/auguwu/ume:{{ .Version }}
+    image_templates:
+      - ghcr.io/auguwu/ume:{{ .Version }}-amd64
+      - ghcr.io/auguwu/ume:{{ .Version }}-arm64
+      - ghcr.io/auguwu/ume:{{ .Version }}-armv7
+
+  - name_template: auguwu/ume:{{ .Major }}.{{ .Minor }}
+    image_templates:
+      - auguwu/ume:{{ .Major }}.{{ .Minor }}-amd64
+      - auguwu/ume:{{ .Major }}.{{ .Minor }}-arm64
+      - auguwu/ume:{{ .Major }}.{{ .Minor }}-armv7
+
+  - name_template: ghcr.io/auguwu/ume:{{ .Major }}.{{ .Minor }}
+    image_templates:
+      - ghcr.io/auguwu/ume:{{ .Major }}.{{ .Minor }}-amd64
+      - ghcr.io/auguwu/ume:{{ .Major }}.{{ .Minor }}-arm64
+      - ghcr.io/auguwu/ume:{{ .Major }}.{{ .Minor }}-armv7
+
+  - name_template: auguwu/ume:latest
+    image_templates:
+      - auguwu/ume:latest-amd64
+      - auguwu/ume:latest-arm64
+      - auguwu/ume:latest-armv7
+
+  - name_template: ghcr.io/auguwu/ume:latest
+    image_templates:
+      - ghcr.io/auguwu/ume:latest-amd64
+      - ghcr.io/auguwu/ume:latest-arm64
+      - ghcr.io/auguwu/ume:latest-armv7
+
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      amd64: x86_64
+  - id: default
+    builds:
+      - ume
     format_overrides:
       - goos: windows
         format: zip
+    replacements:
+      windows: Windows
+      darwin: Darwin
+      386: i386
+      amd64: x86_64
+
+brews:
+  - goarm: "6"
+    tap:
+      owner: Noelware
+      name: homebrew-taps
+      token: "{{ .Env.HOMEBREW_TAP_GH_PAT }}"
+    commit_author:
+      name: "Noel"
+      email: "cutie@floofy.dev"
+    homepage: https://github.com/auguwu/ume
+    description: Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS.
+
+signs:
+  - artifacts: checksum
+
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-SNAPSHOT"
+
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - "^docs:"
+      - "^test:"
+
 release:
   github:
     owner: auguwu

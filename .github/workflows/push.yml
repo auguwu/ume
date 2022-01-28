@@ -1,0 +1,64 @@
+name: Lint on Commit
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'bug/gh-**'
+      - 'issue/gh-**'
+      - staging
+      - master
+
+    paths-ignore:
+      - '.github/**'
+      - '.vscode/**'
+      - 'assets/**'
+      - 'docker/**'
+      - '.idea/**'
+      - '.dockerignore'
+      - '.gitignore'
+      - '**.md'
+      - 'LICENSE'
+      - 'renovate.json'
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Go 1.17
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Install dependencies
+        run: go mod download && go get
+
+      - name: Build project to see if it compiles
+        run: make build
+
+      - name: Format project for any formatting to apply
+        run: make fmt
+
+      - name: Check if git status is dirty
+        id: git_status
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+              echo '::set-output name=STATUS_DIRTY::true'
+          else
+            echo '::set-output name=STATUS_DIRTY::false'
+          fi
+
+      - name: Commit changes (if dirty)
+        if: contains(steps.git_status.outputs.STATUS_DIRTY, 'true')
+        run: |
+          git config --global user.name "Noel[bot]"
+          git config --global user.email "noelbot@users.noreply.github.com"
+          
+          git add .
+          git commit -m "chore: format project :sparkles:"
+          git push -u origin master

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # 💖 ume: Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS.
 # Copyright (c) 2020-2022 Noel <cutie@floofy.dev>
 #
@@ -19,45 +21,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-VERSION    := $(shell cat version.json | jq .version | tr -d '"')
-COMMIT_SHA := $(shell git rev-parse --short HEAD)
-BUILD_DATE := $(shell go run ./cmd/build-date/main.go)
-GIT_TAG    ?= $(shell git describe --tags --match "v[0-9]*")
+BLUE='\033[38;2;81;81;140m'
+GREEN='\033[38;2;165;204;165m'
+PINK='\033[38;2;241;204;209m'
+RESET='\033[0m'
+BOLD='\033[1m'
+UNDERLINE='\033[4m'
+RED='\033[38;166;76;76m'
+YELLOW='\033[38;233;233;130m'
 
-GOOS := $(shell go env GOOS)
-GOARCH := $(shell go env GOARCH)
+info() {
+  timestamp=$(date +"%D ~ %r")
+  printf "%b\\n" "${GREEN}${BOLD}info${RESET}  | ${PINK}${BOLD}${timestamp}${RESET} ~ $1"
+}
 
-ifeq ($(GOOS), linux)
-	TARGET_OS ?= linux
-else ifeq ($(GOOS),darwin)
-	TARGET_OS ?= darwin
-else ifeq ($(GOOS),windows)
-	TARGET_OS ?= windows
-else
-	$(error System $(GOOS) is not supported at this time)
-endif
+debug() {
+  local debug="${UME_DEBUG:-false}"
+  shopt -s nocasematch
+  timestamp=$(date +"%D ~%r")
 
-EXTENSION :=
-ifeq ($(TARGET_OS),windows)
-	EXTENSION := .exe
-endif
+  if ! [[ "$debug" = "1" || "$debug" =~ ^(no|false)$ ]]; then
+    printf "%b\\n" "${BLUE}${BOLD}debug${RESET} | ${PINK}${BOLD}${timestamp}${RESET} ~ $1"
+  fi
+}
 
-# Usage: `make deps`
-deps:
-	@echo Updating dependency tree...
-	go mod tidy
-	go mod download
-	@echo Updated dependency tree successfully.
+error() {
+  timestamp=$(date +"%D ~%r")
+  printf "%b\\n" "${RED}${BOLD}error${RESET} | ${PINK}${BOLD}${timestamp}${RESET} ~ $1"
+}
 
-# Usage: `make build`
-build:
-	@echo Now building Tsubaki for platform $(GOOS)/$(GOARCH)!
-	go build -ldflags "-s -w -X floof.gay/ume/internal.Version=${VERSION} -X floof.gay/ume/internal.CommitSHA=${COMMIT_SHA} -X \"floof.gay/ume/internal.BuildDate=${BUILD_DATE}\"" -o ./bin/ume$(EXTENSION)
-	@echo Successfully built the binary. Use './bin/ume$(EXTENSION)' to run!
-
-# Usage: `make clean`
-clean:
-	@echo Now cleaning project..
-	rm -rf bin/ .profile/
-	go clean
-	@echo Done!
+warn() {
+  timestamp=$(date +"%D ~%r")
+  printf "%b\\n" "${RED}${BOLD}warn${RESET}  | ${PINK}${BOLD}${timestamp}${RESET} ~ $1"
+}

@@ -19,27 +19,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package util
+package internal
 
-import (
-	"crypto/rand"
-	"encoding/json"
-	"fmt"
-	"net/http"
+import "time"
+
+var (
+	Version   = "master"
+	BuildDate = time.Now().Format(time.RFC1123)
+	CommitSHA = "???"
 )
-
-func WriteJson(w http.ResponseWriter, statusCode int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(statusCode)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		return
-	}
-}
-
-// thanks ice for this uwu
-
-func RandomString() string {
-	bytes := make([]byte, 4)
-	_, _ = rand.Read(bytes)
-	return fmt.Sprintf("%x", bytes)
-}
