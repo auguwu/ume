@@ -168,7 +168,7 @@ brews:
     tap:
       owner: Noelware
       name: homebrew-taps
-      token: "{{ .Env.HOMEBREW_TAP_GH_PAT }}"
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     commit_author:
       name: "Noel"
       email: "cutie@floofy.dev"
