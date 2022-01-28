@@ -50,3 +50,28 @@ jobs:
         env:
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - release
+    steps:
+      - name: Login
+        run: |
+          mkdir ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      - name: Get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          # Optionally strip `v` prefix
+          strip_v: true
+
+      - name: Set image
+        run: |
+          kubectl set image deployment/ume ume=auguwu/ume:${{steps.tag.outputs.tag}}
+
+      - name: Rollout status
+        run: |
+          kubectl rollout status deployment/ume
