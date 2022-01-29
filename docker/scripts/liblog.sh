@@ -41,16 +41,16 @@ debug() {
   timestamp=$(date +"%D ~%r")
 
   if ! [[ "$debug" = "1" || "$debug" =~ ^(no|false)$ ]]; then
-    printf "%b\\n" "${BLUE}${BOLD}debug${RESET} | ${PINK}${BOLD}${timestamp}${RESET} ~ $1"
+    printf "%b\\n" "${BLUE}${BOLD}debug${RESET} | ${PINK}${BOLD}${timestamp}${RESET} $1"
   fi
 }
 
 error() {
   timestamp=$(date +"%D ~%r")
-  printf "%b\\n" "${RED}${BOLD}error${RESET} | ${PINK}${BOLD}${timestamp}${RESET} ~ $1"
+  printf "%b\\n" "${RED}${BOLD}error${RESET} | ${PINK}${BOLD}${timestamp}${RESET} $1"
 }
 
 warn() {
   timestamp=$(date +"%D ~%r")
-  printf "%b\\n" "${RED}${BOLD}warn${RESET}  | ${PINK}${BOLD}${timestamp}${RESET} ~ $1"
+  printf "%b\\n" "${RED}${BOLD}warn${RESET}  | ${PINK}${BOLD}${timestamp}${RESET} $1"
 }

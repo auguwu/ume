@@ -21,15 +21,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 . /app/noel/ume/scripts/liblog.sh
 
-if ! [[ "${UME_DISABLE_WELCOME_PROMPT}" =~ ^(no|false)$ ]]; then
+if ! [[ "${UME_ENABLE_WELCOME_PROMPT}" =~ ^(no|false)$ ]]; then
     info ""
     info "   Welcome to the ${BOLD}ume${RESET} container image."
     info "   Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS."
     info ""
     info "   Subscribe to the project for more updates: https://github.com/auguwu/ume"
-    info "   Any issues occur? Report it! - https://github.com/auguwu/ume"
+    info "   Any issues occur? Report it!               https://github.com/auguwu/ume/issues"
     info ""
 fi
 

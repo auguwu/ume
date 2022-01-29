@@ -21,8 +21,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 . /app/noel/ume/scripts/liblog.sh
 
 info "*** Starting ume! ***"
 
-exec "/app/noel/ume/ume" $@
+/app/noel/ume/ume
