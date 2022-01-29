@@ -25,4 +25,4 @@
 
 info "*** Starting ume! ***"
 
-exec "/app/noel/ume/bin/ume" $@
+exec "/app/noel/ume/ume" $@

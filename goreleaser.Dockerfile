@@ -1,5 +1,7 @@
 FROM alpine:latest
 
+RUN apk update && apk add bash
+
 WORKDIR /app/noel/ume
 COPY docker/docker-entrypoint.sh /app/noel/ume/scripts/docker-entrypoint.sh
 COPY docker/scripts/liblog.sh    /app/noel/ume/scripts/liblog.sh
