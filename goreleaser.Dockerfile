@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk update && apk add bash
+RUN apk update && apk add --no-cache bash musl-dev libc-dev gcompat
 
 WORKDIR /app/noel/ume
 COPY docker/docker-entrypoint.sh /app/noel/ume/scripts/docker-entrypoint.sh

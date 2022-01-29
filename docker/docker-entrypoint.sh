@@ -27,7 +27,7 @@ set -o pipefail
 
 . /app/noel/ume/scripts/liblog.sh
 
-if ! [[ "${UME_ENABLE_WELCOME_PROMPT}" =~ ^(no|false)$ ]]; then
+if ! [[ "${UME_ENABLE_WELCOME_PROMPT:-yes}" =~ ^(no|false)$ ]]; then
     info ""
     info "   Welcome to the ${BOLD}ume${RESET} container image."
     info "   Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS."

@@ -6,6 +6,10 @@ before:
     - go mod tidy
     - go mod download
 
+env:
+  - CGO_ENABLED=0
+  - GO11MODULE=on
+
 builds:
   - id: "ume"
     binary: "ume"
