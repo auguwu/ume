@@ -57,7 +57,7 @@ jobs:
       #
       # https://i-am.floof.gay/images/1fdaa80a.png
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           args: --issues-exit-code=1
           only-new-issues: false
