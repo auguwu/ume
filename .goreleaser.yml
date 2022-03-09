@@ -40,7 +40,6 @@ dockers:
       - auguwu/ume:latest-amd64
       - auguwu/ume:{{ .Version }}-amd64
       - auguwu/ume:{{ .Major }}.{{ .Minor }}-amd64
-      - ghcr.io/auguwu/ume:latest
       - ghcr.io/auguwu/ume:latest-amd64
       - ghcr.io/auguwu/ume:{{ .Version }}-amd64
       - ghcr.io/auguwu/ume:{{ .Major }}.{{ .Minor }}-amd64

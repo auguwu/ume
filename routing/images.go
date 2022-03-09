@@ -94,7 +94,9 @@ func NewImagesRouter(client *mongo.Client) chi.Router {
 		}
 
 		contentType, _ := types[s[len(s)-1]]
+
 		w.Header().Set("Content-Type", contentType)
+		w.Header().Set("Cache-Control", "public, max-age=777600, must-revalidate")
 		w.WriteHeader(200)
 	})
 
