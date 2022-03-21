@@ -1,5 +1,9 @@
-# 💖 梅 ("ume")
+# 💖 梅 "ume" • [![Lint on Commit](https://github.com/auguwu/ume/actions/workflows/push.yml/badge.svg)](https://github.com/auguwu/ume/actions/workflows/push.yml) [![golangci](https://github.com/auguwu/ume/actions/workflows/golangci.yml/badge.svg)](https://github.com/auguwu/ume/actions/workflows/golangci.yml) ![Docker Pulls](https://img.shields.io/docker/pulls/auguwu/ume?label=Docker%3A%20auguwu%2Fume&style=flat-square) ![GitHub Sponsors](https://img.shields.io/github/sponsors/auguwu?style=flat-square)
+
 > *Easy, self-hostable, and flexible image and file host, made in Go using MongoDB GridFS.*
+
+## What is ume?
+**ume** (case sensitive) is a simple image host to use with ShareX or Flameshot to provide a blazing fast way to send images to your friends on Discord, Telegram, and more.
 
 ## Installation
 You are required a **MongoDB** connection (Atlas also works!) and **Go** 1.16 or higher.
@@ -52,4 +56,4 @@ DB_URL=mongodb://localhost:27017
 ```
 
 ## License
-**ume** is released under MIT License. :D
+**ume** is released under MIT License by **Noel**, read [here](/LICENSE) for more information.
