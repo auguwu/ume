@@ -33,11 +33,11 @@ $ git clone https://github.com/auguwu/ume && cd ume
 # 2. Pull the dependencies
 $ go get
 
-# 3. Run `make build` to build a binary in `./build/ume`
+# 3. Run `make build` to build a binary in `./bin/ume`
 $ make build
 
 # 4. Run the binary!
-$ ./build/ume # append `.exe` if on Windows
+$ ./bin/ume # append `.exe` if on Windows
 ```
 
 ## Configuration
