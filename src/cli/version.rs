@@ -20,28 +20,21 @@
 // SOFTWARE.
 
 use anyhow::Result;
-use clap::{CommandFactory, Parser};
-use clap_complete::{generate, Shell};
+use chrono::DateTime;
+use clap::Parser;
 
-use super::{types::Execute, UmeCli};
+use super::types::Execute;
+use crate::{BUILD_DATE, COMMIT_HASH, VERSION};
 
 #[derive(Debug, Clone, Parser)]
-#[command(about = "Generates autocompletion for the `ume` CLI command")]
-pub struct Completions {
-    /// the shell to generate autocompletions for
-    #[arg(value_enum)]
-    shell: Shell,
-}
+pub struct Version;
 
-impl Execute for Completions {
+impl Execute for Version {
     fn execute(&self) -> Result<()> {
-        generate(
-            self.shell,
-            &mut UmeCli::command(),
-            "ume",
-            &mut std::io::stdout(),
-        );
+        let datetime =
+            DateTime::parse_from_rfc3339(BUILD_DATE)?.format("%a, %h %d, %Y at %H:%M:%S %Z");
 
+        println!("ume v{VERSION}+{COMMIT_HASH} ({datetime})");
         Ok(())
     }
 }

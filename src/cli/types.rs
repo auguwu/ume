@@ -18,3 +18,15 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+use anyhow::Result;
+use async_trait::async_trait;
+
+#[async_trait]
+pub trait AsyncExecute {
+    async fn execute(&self) -> Result<()>;
+}
+
+pub trait Execute {
+    fn execute(&self) -> Result<()>;
+}

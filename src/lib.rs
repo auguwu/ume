@@ -19,6 +19,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const COMMIT_HASH: &str = env!("UME_COMMIT_HASH");
+pub const BUILD_DATE: &str = env!("UME_BUILD_DATE");
+
 #[macro_use]
 extern crate log;
 

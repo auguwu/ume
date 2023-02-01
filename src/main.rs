@@ -19,6 +19,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-fn main() {
-    println!("Hello, world!");
+use anyhow::Result;
+use clap::Parser;
+use ume::cli::{execute, UmeCli};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let cli = UmeCli::parse();
+    execute(&cli.command).await?;
+
+    Ok(())
 }

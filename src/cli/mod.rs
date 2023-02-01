@@ -19,13 +19,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-use clap::Parser;
+use anyhow::Result;
+use clap::{Parser, Subcommand};
+
+use self::types::Execute;
 
 pub mod completions;
 pub mod config;
 pub mod generate;
 pub mod server;
 pub mod types;
+pub mod version;
 
 #[derive(Debug, Parser)]
 #[clap(
@@ -33,4 +37,20 @@ pub mod types;
     about = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust",
     author = "Noel Miko <cutie@floofy.dev>"
 )]
-pub struct UmeCli;
+pub struct UmeCli {
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Debug, Clone, Subcommand)]
+pub enum Commands {
+    Completions(crate::cli::completions::Completions),
+    Version(crate::cli::version::Version),
+}
+
+pub async fn execute(command: &Commands) -> Result<()> {
+    match command {
+        Commands::Completions(completions) => completions.execute(),
+        Commands::Version(version) => version.execute(),
+    }
+}

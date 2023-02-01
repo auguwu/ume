@@ -22,7 +22,7 @@
 [package]
 name = "ume"
 description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-version = "0.1.0"
+version = "4.0.0"
 edition = "2021"
 authors = ["Noel Miko <cutie@floofy.dev>"]
 homepage = "https://docs.floofy.dev/services/ume/latest"
@@ -34,6 +34,7 @@ anyhow = "1.0.68"
 async-trait = "0.1.64"
 chrono = { version = "0.4.23", features = ["serde"] }
 clap = { version = "4.1.4", features = ["derive"] }
+clap_complete = "4.1.1"
 dotenv = "0.15.0"
 fern = "0.6.1"
 futures = { version = "0.3.26", default-features = false, features = ["std"] }

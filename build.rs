@@ -19,29 +19,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-use anyhow::Result;
-use clap::{CommandFactory, Parser};
-use clap_complete::{generate, Shell};
+use chrono::{DateTime, Utc};
+use std::{error::Error, ffi::OsStr, process::Command, time::SystemTime};
 
-use super::{types::Execute, UmeCli};
-
-#[derive(Debug, Clone, Parser)]
-#[command(about = "Generates autocompletion for the `ume` CLI command")]
-pub struct Completions {
-    /// the shell to generate autocompletions for
-    #[arg(value_enum)]
-    shell: Shell,
+fn execute<T>(command: T, args: &[&str]) -> Result<String, Box<dyn Error + 'static>>
+where
+    T: Into<String> + AsRef<OsStr>,
+{
+    let res = Command::new(command).args(args).output()?;
+    Ok(String::from_utf8(res.stdout)?)
 }
 
-impl Execute for Completions {
-    fn execute(&self) -> Result<()> {
-        generate(
-            self.shell,
-            &mut UmeCli::command(),
-            "ume",
-            &mut std::io::stdout(),
-        );
+fn main() -> Result<(), Box<dyn Error>> {
+    println!("cargo:rerun-if-changed=build.rs");
 
-        Ok(())
-    }
+    let commit_hash =
+        execute("git", &["rev-parse", "--short=8", "HEAD"]).unwrap_or_else(|_| "noeluwu".into());
+
+    let build_date = {
+        let now = SystemTime::now();
+        let utc: DateTime<Utc> = now.into();
+
+        utc.to_rfc3339()
+    };
+
+    println!("cargo:rustc-env=UME_COMMIT_HASH={commit_hash}");
+    println!("cargo:rustc-env=UME_BUILD_DATE={build_date}");
+
+    Ok(())
 }
