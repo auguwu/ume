@@ -1,0 +1,19 @@
+{
+    "name": "ume",
+    "image": "ghcr.io/auguwu/coder-images/rust",
+    "containerUser": "noel",
+    "remoteUser": "noel",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "tamasfe.even-better-toml",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "features": {
+        // sshd is required for JetBrains Gateway when using Codespaces
+        "ghcr.io/devcontainers/features/sshd:1": {}
+    }
+}

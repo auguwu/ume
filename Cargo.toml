@@ -1,0 +1,58 @@
+# 🐻‍❄️💐 ume: Easy, self-hostable, and flexible image host made in Rust
+# Copyright (c) 2020-2023 Noel <cutie@floofy.dev>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+[package]
+name = "ume"
+description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
+version = "0.1.0"
+edition = "2021"
+authors = ["Noel Miko <cutie@floofy.dev>"]
+homepage = "https://docs.floofy.dev/services/ume/latest"
+license = "MIT"
+
+[dependencies]
+ansi_term = "0.12.1"
+anyhow = "1.0.68"
+async-trait = "0.1.64"
+chrono = { version = "0.4.23", features = ["serde"] }
+clap = { version = "4.1.4", features = ["derive"] }
+dotenv = "0.15.0"
+fern = "0.6.1"
+futures = { version = "0.3.26", default-features = false, features = ["std"] }
+futures-util = "0.3.26"
+log = "0.4.17"
+once_cell = "1.17.0"
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
+sentry = "0.29.2"
+sentry-log = "0.29.2"
+sentry-tracing = "0.29.2"
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.91"
+serde_yaml = "0.9.17"
+thiserror = "1.0.38"
+tokio = { version = "1.25.0", features = ["full"] }
+
+[build-dependencies]
+chrono = "0.4.23"
+
+[[bin]]
+path = "src/main.rs"
+name = "ume"

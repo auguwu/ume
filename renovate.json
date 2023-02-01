@@ -1,4 +1,16 @@
 {
   "automerge": true,
-  "extends": ["config:base"]
+  "extends": ["config:base", "default:timezone(America/Phoenix)", "docker:disableMajor"],
+  "vulnerabilityAlerts": {
+    "labels": ["security"]
+  },
+  "java": {
+    "packageRules": [
+      {
+        "matchPackagePatterns": ["^org\\.noelware[.:]"],
+        "matchManagers": ["gradle"],
+        "registryUrls": ["https://maven.noelware.org", "https://maven.noelware.org/snapshots"]
+      }
+    ]
+  }
 }
