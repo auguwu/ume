@@ -1,8 +1,0 @@
-.github
-build
-dist
-
-.gitignore
-LICENSE
-README.md
-renovate.json
