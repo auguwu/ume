@@ -13,26 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod middleware;
-pub mod routing;
+/// Generates a screenshot with Flameshot and uploads it to a Ume server.
+#[derive(Debug, Clone, clap::Parser)]
+pub struct Screenshot {
+    /// master key to unlock authorization with the Ume server
+    #[arg(long = "master-key", short = 'k', env = "UME_MASTER_KEY")]
+    master_key: String,
 
-use crate::{config::Config, storage::StorageService};
-use std::sync::atomic::{AtomicUsize, Ordering};
-
-/// Represents a Ume server, which is the main HTTP interface.
-#[derive(Debug)]
-pub struct Server {
-    pub storage: StorageService,
-    pub requests: AtomicUsize,
-    pub config: Config,
-}
-
-impl Clone for Server {
-    fn clone(&self) -> Server {
-        Server {
-            requests: AtomicUsize::new(self.requests.load(Ordering::Relaxed)),
-            storage: self.storage.clone(),
-            config: self.config.clone(),
-        }
-    }
+    /// the url to a Ume server
+    #[arg(long = "server-url", short = 's', env = "UME_SERVER_URL")]
+    server: Option<String>,
 }

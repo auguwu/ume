@@ -27,6 +27,7 @@ components = [
     "rustc",
     "cargo",
     "rust-analyzer",
+    "rust-src",
     "rust-std",
     "clippy",
     "rustfmt"

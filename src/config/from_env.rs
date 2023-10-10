@@ -13,26 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod middleware;
-pub mod routing;
+/// Represents a [`From`]-style trait that resolves a output type from the
+/// host's system environment variables.
+pub trait FromEnv {
+    /// Output type.
+    type Output;
 
-use crate::{config::Config, storage::StorageService};
-use std::sync::atomic::{AtomicUsize, Ordering};
-
-/// Represents a Ume server, which is the main HTTP interface.
-#[derive(Debug)]
-pub struct Server {
-    pub storage: StorageService,
-    pub requests: AtomicUsize,
-    pub config: Config,
-}
-
-impl Clone for Server {
-    fn clone(&self) -> Server {
-        Server {
-            requests: AtomicUsize::new(self.requests.load(Ordering::Relaxed)),
-            storage: self.storage.clone(),
-            config: self.config.clone(),
-        }
-    }
+    /// Converts this type into the `Self::Output` type.
+    fn from_env() -> Self::Output;
 }

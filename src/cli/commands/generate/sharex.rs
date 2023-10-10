@@ -13,26 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod middleware;
-pub mod routing;
+use std::path::PathBuf;
 
-use crate::{config::Config, storage::StorageService};
-use std::sync::atomic::{AtomicUsize, Ordering};
-
-/// Represents a Ume server, which is the main HTTP interface.
-#[derive(Debug)]
-pub struct Server {
-    pub storage: StorageService,
-    pub requests: AtomicUsize,
-    pub config: Config,
-}
-
-impl Clone for Server {
-    fn clone(&self) -> Server {
-        Server {
-            requests: AtomicUsize::new(self.requests.load(Ordering::Relaxed)),
-            storage: self.storage.clone(),
-            config: self.config.clone(),
-        }
-    }
+/// Generates a ShareX-compatible configuration file to stderr, or in a file
+#[derive(Debug, Clone, clap::Parser)]
+pub struct ShareX {
+    /// file to write the ShareX configuration in.
+    file: Option<PathBuf>,
 }

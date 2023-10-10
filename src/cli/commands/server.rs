@@ -13,39 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod commands;
-
+use crate::cli::AsyncExecute;
 use async_trait::async_trait;
 use eyre::Result;
+use std::path::PathBuf;
 
-#[async_trait]
-pub trait AsyncExecute {
-    async fn execute(&self) -> Result<()>;
-}
-
+/// Starts the Ume server to handle image uploading.
 #[derive(Debug, Clone, clap::Parser)]
-#[clap(
-    bin_name = "ume",
-    about = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust",
-    author = "Noel Towa <cutie@floofy.dev>",
-    override_usage = "ume <COMMAND> [...ARGS]",
-    arg_required_else_help = true
-)]
-pub struct Program {
-    /// whether or not verbose mode is enabled
-    #[arg(long, short = 'v', env = "UME_VERBOSE")]
-    pub verbose: bool,
+pub struct Server {
+    /// amount of Tokio workers that'll be available, this will default to the amount
+    /// of available CPU cores you have.
+    #[arg(long, short = 'w')]
+    pub workers: Option<usize>,
 
-    #[command(subcommand)]
-    pub command: commands::Cmd,
+    /// whether or not if the configuration should be printed or not.
+    #[arg(long)]
+    print_config: bool,
+
+    /// configuration path, you can use the `UME_CONFIG_PATH` environment
+    /// variable to do the same.
+    #[arg(long, short = 'c')]
+    config: Option<PathBuf>,
 }
 
 #[async_trait]
-impl AsyncExecute for Program {
+impl AsyncExecute for Server {
     async fn execute(&self) -> Result<()> {
-        match &self.command {
-            commands::Cmd::Server(server) => server.execute().await,
-            _ => Ok(()),
-        }
+        Ok(())
     }
 }

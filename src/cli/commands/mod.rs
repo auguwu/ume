@@ -13,26 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod middleware;
-pub mod routing;
+mod generate;
+mod openapi;
+mod screenshot;
+mod server;
 
-use crate::{config::Config, storage::StorageService};
-use std::sync::atomic::{AtomicUsize, Ordering};
+#[derive(Debug, Clone, clap::Subcommand)]
+pub enum Cmd {
+    Screenshot(screenshot::Screenshot),
 
-/// Represents a Ume server, which is the main HTTP interface.
-#[derive(Debug)]
-pub struct Server {
-    pub storage: StorageService,
-    pub requests: AtomicUsize,
-    pub config: Config,
-}
-
-impl Clone for Server {
-    fn clone(&self) -> Server {
-        Server {
-            requests: AtomicUsize::new(self.requests.load(Ordering::Relaxed)),
-            storage: self.storage.clone(),
-            config: self.config.clone(),
-        }
-    }
+    #[command(subcommand)]
+    Generate(generate::Cmd),
+    Server(server::Server),
 }
