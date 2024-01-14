@@ -1,5 +1,5 @@
 # 🐻‍❄️💐 ume: Easy, self-hostable, and flexible image host made in Rust
-# Copyright 2021-2023 Noel Towa <cutie@floofy.dev>
+# Copyright 2021-2024 Noel Towa <cutie@floofy.dev>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
 # limitations under the License.
 
 [toolchain]
-channel = "stable"
+channel = "1.75"
 profile = "minimal"
 targets = [
     "aarch64-unknown-linux-gnu",
     "x86_64-apple-darwin",
     "x86_64-unknown-linux-gnu",
     "x86_64-unknown-linux-musl",
-    "x86_64-pc-windows-msvc"
+    "x86_64-pc-windows-msvc",
 ]
 components = [
     "rustc",
@@ -30,5 +30,5 @@ components = [
     "rust-src",
     "rust-std",
     "clippy",
-    "rustfmt"
+    "rustfmt",
 ]

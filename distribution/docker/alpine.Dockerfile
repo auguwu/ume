@@ -1,5 +1,5 @@
 # 🐻‍❄️💐 ume: Easy, self-hostable, and flexible image host made in Rust
-# Copyright 2021-2023 Noel Towa <cutie@floofy.dev>
+# Copyright 2021-2024 Noel Towa <cutie@floofy.dev>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM rust:1.73-alpine3.18 AS build
+FROM rust:1.75-alpine3.19 AS build
 
-FROM alpine:3.18
+FROM alpine:3.19
