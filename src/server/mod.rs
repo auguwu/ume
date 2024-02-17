@@ -13,26 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod middleware;
-pub mod routing;
+mod config;
+pub use config::*;
 
-use crate::{config::Config, storage::StorageService};
-use std::sync::atomic::{AtomicUsize, Ordering};
+mod extract;
+pub mod middleware;
+mod routes;
 
-/// Represents a Ume server, which is the main HTTP interface.
-#[derive(Debug)]
-pub struct Server {
-    pub storage: StorageService,
-    pub requests: AtomicUsize,
-    pub config: Config,
-}
+use axum::{routing, Router};
 
-impl Clone for Server {
-    fn clone(&self) -> Server {
-        Server {
-            requests: AtomicUsize::new(self.requests.load(Ordering::Relaxed)),
-            storage: self.storage.clone(),
-            config: self.config.clone(),
-        }
-    }
+pub fn create_router() -> Router {
+    Router::new()
+        .route("/heartbeat", routing::get(routes::heartbeat))
+        .route("/images/upload", routing::post(routes::upload_image))
+        .route("/", routing::get(routes::main))
 }

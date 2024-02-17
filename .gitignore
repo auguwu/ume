@@ -547,7 +547,7 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
-config.yml
+config.hcl
 !src/bin/
 .direnv/
 .env

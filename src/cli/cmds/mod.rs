@@ -13,14 +13,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Generates a screenshot with Flameshot and uploads it to a Ume server.
-#[derive(Debug, Clone, clap::Parser)]
-pub struct Screenshot {
-    /// master key to unlock authorization with the Ume server
-    #[arg(long = "master-key", short = 'k', env = "UME_MASTER_KEY")]
-    master_key: String,
+mod completions;
+mod screenshot;
+mod server;
 
-    /// the url to a Ume server
-    #[arg(long = "server-url", short = 's', env = "UME_SERVER_URL")]
-    server: Option<String>,
+#[cfg(windows)]
+mod sharex;
+
+#[derive(Debug, Clone, clap::Subcommand)]
+pub enum Cmd {
+    Completions(completions::Cmd),
+    Screenshot(screenshot::Cmd),
+    Server(server::Cmd),
+
+    #[cfg(windows)]
+    #[command(name = "sharex")]
+    ShareX(sharex::Cmd),
+}
+
+impl Cmd {
+    pub async fn execute(self) -> eyre::Result<()> {
+        match self {
+            Cmd::Completions(cmd) => completions::execute(cmd),
+            Cmd::Screenshot(cmd) => screenshot::execute(cmd).await,
+            Cmd::Server(cmd) => server::execute(cmd).await,
+
+            #[cfg(windows)]
+            Cmd::ShareX(cmd) => sharex::execute(cmd),
+        }
+    }
 }

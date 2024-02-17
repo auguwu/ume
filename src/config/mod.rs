@@ -13,313 +13,170 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{panic_message, storage::config::StorageConfig, var};
-use eyre::{eyre, Result};
-use once_cell::sync::OnceCell;
+pub mod logging;
+pub mod storage;
+pub mod tracing;
+
+use eyre::Context;
+use noelware_config::{env, merge::Merge, TryFromEnv};
+use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 use std::{
-    env::VarError,
-    panic::catch_unwind,
+    fs::File,
+    ops::Deref,
     path::{Path, PathBuf},
+    str::FromStr,
 };
-use tracing::warn;
 
-mod from_env;
-mod merge;
-mod server;
-
-pub use from_env::*;
-pub use merge::*;
-pub use server::*;
-
-static CONFIG: OnceCell<Config> = OnceCell::new();
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Merge)]
 pub struct Config {
-    /// Master key to allow access to upload images.
-    pub master_key: String,
+    #[serde(default)]
+    pub uploader_key: String,
 
-    /// Sentry [DSN](https://docs.sentry.io/product/sentry-basics/concepts/dsn-explainer/) to apply when configuring
-    /// Sentry to report Rust errors if any occur.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default = "__default_base_url")]
+    #[merge(strategy = __merge_urls)]
+    pub base_url: url::Url,
+
+    #[serde(default, skip_serializing_if = "Option::is_some")]
     pub sentry_dsn: Option<String>,
 
-    /// Storage configuration to hold all images.
-    #[serde(default, with = "serde_yaml::with::singleton_map")]
-    pub storage: StorageConfig,
+    #[serde(default, serialize_with = "hcl::ser::block")]
+    pub logging: logging::Config,
+
+    #[serde(default, serialize_with = "hcl::ser::labeled_block")]
+    pub storage: storage::Config,
+
+    #[serde(default, serialize_with = "hcl::ser::labeled_block")]
+    pub tracing: tracing::Config,
+
+    #[serde(default, serialize_with = "hcl::ser::block")]
+    pub server: crate::server::Config,
 }
 
-impl Merge for Config {
-    fn merge(&mut self, other: Self) {
-        self.sentry_dsn.merge(other.sentry_dsn);
+fn __default_base_url() -> url::Url {
+    url::Url::parse("http://localhost:3621").expect("failed to parse as url")
+}
 
-        // master key and storage don't need to be merged
+fn __merge_urls(url: &mut url::Url, right: url::Url) {
+    if *url != right {
+        *url = right;
     }
 }
 
-impl FromEnv for Config {
+impl TryFromEnv for Config {
     type Output = Config;
+    type Error = eyre::Report;
 
-    fn from_env() -> Self::Output {
-        Config {
-            master_key: var!("UME_MASTER_KEY").unwrap_or_default(),
-            sentry_dsn: var!("UME_SENTRY_DSN", is_optional: true),
-            storage: StorageConfig::from_env(),
-        }
+    fn try_from_env() -> Result<Self::Output, Self::Error> {
+        Ok(Config {
+            uploader_key: env!("UME_UPLOADER_KEY", or_else: String::new()),
+            sentry_dsn: env!("UME_SENTRY_DSN", is_optional: true),
+            base_url: env!("UME_BASE_URL", to: url::Url, or_else: __default_base_url()),
+            logging: logging::Config::try_from_env().context("this should never happen")?,
+            storage: storage::Config::try_from_env()?,
+            tracing: tracing::Config::try_from_env()?,
+            server: crate::server::Config::try_from_env()?,
+        })
     }
 }
 
 impl Config {
-    fn find_from_default_location() -> Result<Option<PathBuf>> {
-        // 1. ./config/ume.yaml
-        let config_dir = PathBuf::from("./config");
-        let ume_yaml = config_dir.join("ume.yaml");
-
-        if config_dir.try_exists()?
-            && config_dir.is_dir()
-            && ume_yaml.try_exists()?
-            && ume_yaml.is_file()
-        {
-            return Ok(Some(ume_yaml));
+    pub fn find_default_location() -> Option<PathBuf> {
+        let mut config_dir = Path::new("./config").to_path_buf();
+        if config_dir.is_dir() {
+            config_dir.push("ume.hcl");
+            if config_dir.exists() && config_dir.is_file() {
+                return Some(config_dir.clone());
+            }
         }
 
-        // 2. ./config.yml | config.yaml
-        let config_yml = PathBuf::from("./config.yml");
-        if config_yml.try_exists()? && config_yml.is_file() {
-            return Ok(Some(config_yml));
-        }
-
-        let config_yaml = PathBuf::from("./config.yaml");
-        if config_yaml.try_exists()? && config_yaml.is_file() {
-            return Ok(Some(config_yaml));
-        }
-
-        // 3. UME_CONFIG_PATH environment variable
-        match var!("UME_CONFIG_PATH", to: PathBuf) {
-            Ok(path) if path.try_exists()? && path.is_file() => Ok(Some(path)),
-            Ok(_) => Ok(None),
-            Err(e) => match e {
-                VarError::NotPresent => Ok(None),
-                VarError::NotUnicode(_) => {
-                    Err(eyre!("`UME_CONFIG_PATH` received invalid unicode data"))
+        match std::env::var("UME_CONFIG_FILE") {
+            Ok(path) => {
+                let path = Path::new(&path);
+                if path.exists() && path.is_file() {
+                    return Some(path.to_path_buf());
                 }
-            },
+
+                None
+            }
+
+            Err(_) => {
+                let last_resort = Path::new("./config.hcl");
+                if last_resort.exists() && last_resort.is_file() {
+                    return Some(last_resort.to_path_buf());
+                }
+
+                None
+            }
         }
     }
 
-    /// Returns the loaded [`Config`] reference. This method will panic if
-    /// there is no configuration loaded via [`Config::load`].
-    pub fn get<'a>(&self) -> &'a Config {
-        CONFIG.get().unwrap()
-    }
-
-    /// Loads the configuration in the given `path` if there is a path available. If not,
-    /// it'll try to locate in:
-    ///
-    /// * `./config/ume.yaml`
-    /// * `./config.yml` or `./config.yaml`
-    /// * `UME_CONFIG_PATH` environment variable
-    pub fn load<P: AsRef<Path>>(path: Option<P>) -> Result<()> {
-        // fast path if we already have a loaded config
-        if CONFIG.get().is_some() {
-            warn!("configuration was already loaded!");
-            return Ok(());
-        }
-
-        let path = match path {
-            Some(p) => p.as_ref().to_path_buf(),
-            None => match Config::find_from_default_location() {
-                Ok(Some(p)) => p,
-
-                // last resort is system env
-                Ok(None) => {
-                    let mut default = Config::default();
-                    let config = catch_unwind(Config::from_env).map_err(|e| {
-                        eyre!(
-                            "unable to transform from system env variables to ume configuration: {}",
-                            panic_message(e)
-                        )
-                    })?;
-
-                    Config::merge(&mut default, config);
-                    CONFIG.set(default).unwrap();
-
-                    return Ok(());
-                }
-
-                Err(e) => {
-                    return Err(eyre!(
-                        "unable to find compatible configuration file due to [{e}]"
-                    ))
-                }
-            },
+    /// Creates a new [`Config`] instance from a given path.
+    pub fn new<P: AsRef<Path>>(path: Option<P>) -> eyre::Result<Config> {
+        // priority: config file > env variables
+        let Some(path) = path.as_ref() else {
+            return Config::try_from_env();
         };
 
-        let mut default = Config::default();
-        let from_env = catch_unwind(Config::from_env).map_err(|e| {
-            eyre!(
-                "unable to transform from system env variables to ume configuration: {}",
-                panic_message(e)
-            )
-        })?;
+        let path = path.as_ref();
+        if !path.try_exists()? {
+            eprintln!(
+                "[ume WARN] file {} doesn't exist, using system env variables",
+                path.display()
+            );
 
-        let from_file = serde_yaml::from_reader::<_, Config>(std::fs::File::open(path)?)?;
+            return Config::try_from_env();
+        }
 
-        // merge defaults and environment variables
-        Config::merge(&mut default, from_env);
+        let mut cfg = Config::try_from_env()?;
+        let file = hcl::from_reader::<Config, _>(File::open(path)?)?;
 
-        // merge default from the on-file configuration
-        Config::merge(&mut default, from_file);
+        cfg.merge(file);
+        if cfg.uploader_key.is_empty() {
+            let key = __generated_uploader_key();
+            eprintln!("[ume WARN] Missing a uploader key for encoding JWT tokens, but I have generated one for you: {key}\n
+Set this in the `UME_UPLOADER_KEY` environment variable when loading the server or in the `uploader_key` in your `config.hcl` file.\n
+If any other key replaces this, then all JWT tokens will no longer be able to be verified, so it is recommended to keep this safe somewhere");
 
-        CONFIG.set(default).unwrap();
-        Ok(())
+            cfg.uploader_key = key;
+        }
+
+        Ok(cfg)
     }
 }
 
-// stolen from https://github.com/charted-dev/charted/blob/main/crates/config/src/lib.rs
-/// Generic Rust functional macro to help with locating an environment variable
-/// in the host machine.
-///
-/// ## Variants
-/// ### `var!($key: literal)`
-/// This will just expand `$key` into a Result<[`String`][alloc::string::String], [`VarError`][std::env::VarError]> variant.
-///
-/// ```
-/// # use ume::var;
-/// #
-/// let result = var!("SOME_ENV_VARIABLE");
-/// // expanded: ::std::env::var("SOME_ENV_VARIABLE");
-/// #
-/// # assert!(result.is_err());
-/// ```
-///
-/// ### `var!($key: literal, is_optional: true)`
-/// Expands the `$key` into a Option type if a [`VarError`][std::env::VarError] occurs.
-///
-/// ```
-/// # use ume::var;
-/// #
-/// let result = var!("SOME_ENV_VARIABLE", is_optional: true);
-/// // expanded: ::std::env::var("SOME_ENV_VARIABLE").ok();
-/// #
-/// # assert!(result.is_none());
-/// ```
-///
-/// ### `var!($key: literal, or_else: $else: expr)`
-/// Expands `$key` into a String, but if a [`VarError`][std::env::VarError] occurs, then a provided `$else`
-/// is used as the default.
-///
-/// ```
-/// # use ume::var;
-/// #
-/// let result = var!("SOME_ENV_VARIABLE", or_else: "".into());
-/// // expanded: ::std::env::var("SOME_ENV_VARIABLE").unwrap_or("".into());
-/// #
-/// # assert!(result.is_empty());
-/// ```
-///
-/// ### `var!($key: literal, or_else_do: $else: expr)`
-/// Same as [`var!($key: literal, or_else: $else: expr)`][crate::var], but uses `.unwrap_or_else` to
-/// accept a [`Fn`][std::ops::Fn].
-///
-/// ```
-/// # use ume::var;
-/// #
-/// let result = var!("SOME_ENV_VARIABLE", or_else_do: |_| Default::default());
-/// // expanded: ::std::env::var("SOME_ENV_VARIABLE").unwrap_or_else(|_| Default::default());
-/// #
-/// # assert!(result.is_empty());
-/// ```
-///
-/// ### `var!($key: literal, use_default: true)`
-/// Same as [`var!($key: literal, or_else_do: $else: expr)`][crate::var], but will use the
-/// [Default][core::default::Default] implementation, if it can be resolved.
-///
-/// ```
-/// # use ume::var;
-/// #
-/// let result = var!("SOME_ENV_VARIABLE", use_default: true);
-/// // expanded: ::std::env::var("SOME_ENV_VARIABLE").unwrap_or_else(|_| Default::default());
-/// #
-/// # assert!(result.is_empty());
-/// ```
-///
-/// ### `var!($key: literal, mapper: $mapper: expr)`
-/// Uses the [`.map`][result-map] method with an accepted `mapper` to map to a different type.
-///
-/// ```
-/// # use ume::var;
-/// #
-/// let result = var!("SOME_ENV_VARIABLE", mapper: |val| &val == "true");
-///
-/// /*
-/// expanded:
-/// ::std::env::var("SOME_ENV_VARIABLE").map(|val| &val == "true");
-/// */
-/// #
-/// # assert!(result.is_err());
-/// ```
-///
-/// [result-map]: https://doc.rust-lang.org/nightly/core/result/enum.Result.html#method.map
-#[macro_export]
-macro_rules! var {
-    ($key:literal, to: $ty:ty, or_else: $else_:expr) => {
-        var!($key, mapper: |p| {
-            p.parse::<$ty>().expect(concat!(
-                "Unable to resolve env var [",
-                $key,
-                "] to a [",
-                stringify!($ty),
-                "] value"
-            ))
-        })
-        .unwrap_or($else_)
-    };
+fn __generated_uploader_key() -> String {
+    Alphanumeric.sample_string(&mut rand::thread_rng(), 32)
+}
 
-    ($key:literal, to: $ty:ty, is_optional: true) => {
-        var!($key, mapper: |p| p.parse::<$ty>().ok()).unwrap_or(None)
-    };
+/// Represents a [`url::Url`] wrapper which implements [`Merge`].
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Url(url::Url);
+impl PartialEq for Url {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
 
-    ($key:literal, to: $ty:ty) => {
-        var!($key, mapper: |p| {
-            p.parse::<$ty>().expect(concat!(
-                "Unable to resolve env var [",
-                $key,
-                "] to a [",
-                stringify!($ty),
-                "] value"
-            ))
-        })
-    };
+impl Merge for Url {
+    fn merge(&mut self, other: Self) {
+        if self.0 != other.0 {
+            *self = Url(other.0);
+        }
+    }
+}
 
-    ($key:literal, {
-        or_else: $else_:expr;
-        mapper: $mapper:expr;
-    }) => {
-        var!($key, mapper: $mapper).unwrap_or($else_)
-    };
+impl Deref for Url {
+    type Target = url::Url;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
-    ($key:literal, mapper: $expr:expr) => {
-        var!($key).map($expr)
-    };
+impl FromStr for Url {
+    type Err = url::ParseError;
 
-    ($key:literal, use_default: true) => {
-        var!($key, or_else_do: |_| Default::default())
-    };
-
-    ($key:literal, or_else_do: $expr:expr) => {
-        var!($key).unwrap_or_else($expr)
-    };
-
-    ($key:literal, or_else: $else_:expr) => {
-        var!($key).unwrap_or($else_)
-    };
-
-    ($key:literal, is_optional: true) => {
-        var!($key).ok()
-    };
-
-    ($key:literal) => {
-        ::std::env::var($key)
-    };
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        url::Url::from_str(s).map(Url)
+    }
 }

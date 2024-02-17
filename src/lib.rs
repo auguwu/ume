@@ -13,48 +13,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[macro_use]
+extern crate tracing;
+
+#[macro_use]
+extern crate eyre;
+
 pub mod cli;
 pub mod config;
-pub mod logging;
-pub mod metrics;
 pub mod server;
-pub mod storage;
-
-use once_cell::sync::Lazy;
-use rand::distributions::{Alphanumeric, DistString};
-use regex::Regex;
-use std::any::Any;
 
 /// Generic [`Regex`] implementation for possible truthy boolean values.
-pub static TRUTHY_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#"^(yes|true|si*|e|enable|1)$"#).unwrap());
+pub static TRUTHY_REGEX: once_cell::sync::Lazy<regex::Regex> =
+    once_cell::sync::Lazy::new(|| regex::Regex::new(r#"^(yes|true|si*|e|enable|1)$"#).unwrap());
 
-/// Returns the Rust compiler version that ume was built from
-pub const RUSTC_VERSION: &str = env!("UME_RUSTC_VERSION");
+/// Constant that refers to the version of the Rust compiler that was used. This is mainly
+/// for diagnostics and is never accessed by third parties.
+pub const RUSTC: &str = env!("UME_RUSTC_VERSION");
 
-/// Returns the Git commit from the canonical repository of ume.
-pub const COMMIT_HASH: &str = env!("UME_COMMIT_HASH");
-
-/// Returns the build date in the RFC3339 format of when ume was last built at.
+/// Constant in the format of [RFC3339] date format that refers to when `ume` was last built
+///
+/// [RFC3339]: https://www.rfc-editor.org/rfc/rfc3339
 pub const BUILD_DATE: &str = env!("UME_BUILD_DATE");
 
-/// Returns the current version of ume.
+/// Constant that refers to the Git commit hash from the [canonical repository]
+///
+/// [canonical repository]: https://github.com/auguwu/ume
+pub const COMMIT_HASH: &str = env!("UME_COMMIT_HASH");
+
+/// Constant that refers to the version of the `ume` software
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// Retrieves a panic message from a [`Box`]<dyn [`Any`]>
-pub fn panic_message(error: Box<dyn Any + Send + 'static>) -> String {
-    if let Some(s) = error.downcast_ref::<String>() {
-        s.clone()
-    } else if let Some(s) = error.downcast_ref::<&str>() {
-        s.to_string()
-    } else if let Some(e) = error.downcast_ref::<&(dyn std::error::Error)>() {
-        format!("{e}")
-    } else {
-        String::from("invalid panic message received")
-    }
-}
+/// Returns a formatted version of `v4.0.0+d1cebae` or `v4.0.0` if no commit hash
+/// was found.
+#[inline(always)]
+pub fn version() -> &'static str {
+    static ONCE: std::sync::Once = std::sync::Once::new();
+    static mut VERSION: String = String::new();
 
-/// Returns a random string that is seeded by the system.
-pub fn rand_string(len: usize) -> String {
-    Alphanumeric.sample_string(&mut rand::thread_rng(), len)
+    // Safety: `VERSION` is only mutated on the first call of `version` and is never
+    //         mutated again afterwards.
+    unsafe {
+        ONCE.call_once(move || {
+            use std::fmt::Write;
+
+            let mut buf = String::new();
+            write!(buf, "{}", crate::VERSION).unwrap();
+
+            if crate::COMMIT_HASH != "d1cebae" {
+                write!(buf, "+{}", crate::COMMIT_HASH).unwrap();
+            }
+
+            VERSION = buf;
+        });
+
+        &VERSION
+    }
 }

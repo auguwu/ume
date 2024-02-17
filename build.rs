@@ -14,27 +14,19 @@
 // limitations under the License.
 
 use chrono::{DateTime, Utc};
-use std::{ffi::OsStr, process::Command, time::SystemTime};
-
-fn execute<T: AsRef<OsStr>>(command: T, args: &[&str]) -> String {
-    let res = Command::new(command.as_ref())
-        .args(args)
-        .output()
-        .unwrap_or_else(|_| {
-            panic!(
-                "unable to execute command [$ {:?} {}]",
-                command.as_ref(),
-                args.join(" ")
-            )
-        });
-
-    String::from_utf8_lossy(&res.stdout).to_string()
-}
+use std::{process::Command, time::SystemTime};
+use which::which;
 
 fn main() {
+    // if build.rs changes in any way, then re-run it!
     println!("cargo:rerun-if-changed=build.rs");
 
-    let commit_hash = execute("git", &["rev-parse", "--short=8", "HEAD"]);
+    let rust_version = rustc_version::version()
+        .expect("unable to get 'rustc' version")
+        .to_string();
+
+    println!("cargo:rustc-env=UME_RUSTC_VERSION={rust_version}");
+
     let build_date = {
         let now = SystemTime::now();
         let date: DateTime<Utc> = now.into();
@@ -42,11 +34,31 @@ fn main() {
         date.to_rfc3339()
     };
 
-    let rustc_version = rustc_version::version()
-        .expect("unable to get 'rustc' version")
-        .to_string();
-
-    println!("cargo:rustc-env=UME_RUSTC_VERSION={rustc_version}");
-    println!("cargo:rustc-env=UME_COMMIT_HASH={commit_hash}");
     println!("cargo:rustc-env=UME_BUILD_DATE={build_date}");
+
+    // First, we need to get the Git commit hash. There is ways we can do it:
+    //      1. Use `git rev-parse --short=8 HEAD`, if `git` exists
+    //      2. fuck it and ball with `d1cebae` as the dummy hash
+    match which("git") {
+        Ok(git) => {
+            let mut cmd = Command::new(git);
+            cmd.args(["rev-parse", "--short=8", "HEAD"]);
+
+            let output = cmd.output().expect("to succeed");
+            let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            println!("cargo:rustc-env=UME_COMMIT_HASH={stdout}");
+        }
+
+        Err(which::Error::CannotFindBinaryPath) => {
+            println!(
+                "cargo:warning=missing `git` binary, using `d1cebae` as the commit hash instead"
+            );
+
+            println!("cargo:rustc-env=UME_COMMIT_HASH=d1cebae");
+        }
+
+        Err(e) => {
+            panic!("failed to get `git` from `$PATH`: {e}");
+        }
+    }
 }

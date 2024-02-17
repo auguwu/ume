@@ -25,12 +25,9 @@
       };
     };
 
-    crane = {
-      url = "github:ipetkov/crane";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
+    flake-compat = {
+      url = github:edolstra/flake-compat;
+      flake = false;
     };
   };
 
@@ -39,79 +36,73 @@
     nixpkgs,
     flake-utils,
     rust-overlay,
-    crane,
+    ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
         inherit system;
+
         overlays = [(import rust-overlay)];
+        config.allowUnfree = true;
       };
 
+      package = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+      rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       stdenv =
         if pkgs.stdenv.isLinux
         then pkgs.stdenv
         else pkgs.clangStdenv;
 
-      rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
-      craneLib = crane.lib.${system};
-      commonArgs = {
-        src = craneLib.cleanCargoSource (craneLib.path ./.);
-        buildInputs = with pkgs; [
-          openssl
-        ];
-
-        nativeBuildInputs = with pkgs; [
-          pkg-config
-        ];
-      };
-
       rustflags =
-        if stdenv.isLinux
+        if pkgs.stdenv.isLinux
         then ''-C link-arg=-fuse-ld=mold -C target-cpu=native $RUSTFLAGS''
-        else "$RUSTFLAGS";
+        else ''$RUSTFLAGS'';
+    in rec {
+      packages = {
+        ume = pkgs.rustPlatform.buildRustPackage {
+          nativeBuildInputs = with pkgs; [pkg-config];
+          buildInputs = with pkgs; [openssl];
+          cargoSha256 = pkgs.lib.fakeSha256;
+          version = "${package.version}";
+          name = "ume";
+          src = ./.;
 
-      # builds only the dependencies
-      artifacts = craneLib.buildDepsOnly (commonArgs
-        // {
-          pname = "ume-deps";
-        });
+          cargoLock = {
+            lockFile = ./Cargo.lock;
+            outputHashes = {
+              "noelware-config-0.1.0" = pkgs.lib.fakeSha256;
+              "noelware-config-derive-0.1.0" = pkgs.lib.fakeSha256;
+              "noelware-log-0.1.0" = pkgs.lib.fakeSha256;
+              "noelware-remi-0.1.0" = pkgs.lib.fakeSha256;
+              "noelware-serde-0.1.0" = pkgs.lib.fakeSha256;
+            };
+          };
+          meta = with pkgs.lib; {
+            description = "Easy, self-hostable, and flexible image host made in Rust";
+            homepage = "https://github.com/auguwu/ume";
+            license = with licenses; [asl20];
+            maintainers = with maintainers; [auguwu];
+            mainProgram = "ume";
+          };
+        };
 
-      # runs `cargo clippy`
-      clippy = craneLib.cargoClippy (commonArgs
-        // {
-          inherit artifacts;
-
-          pname = "ume-clippy";
-        });
-
-      # build the ume cli and server
-      ume = craneLib.buildPackage (commonArgs
-        // {
-          inherit artifacts;
-        });
-    in {
-      packages.default = ume;
-      checks = {
-        # checks for `nix flake check`
-        inherit ume clippy;
+        default = packages.ume;
       };
 
       devShells.default = pkgs.mkShell {
+        LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [openssl]);
         nativeBuildInputs = with pkgs;
           [pkg-config]
-          ++ (lib.optional stdenv.isLinux [mold lldb])
+          ++ (lib.optional stdenv.isLinux [mold lldb gdb])
           ++ (lib.optional stdenv.isDarwin [darwin.apple_sdk.frameworks.CoreFoundation]);
 
         buildInputs = with pkgs; [
           cargo-expand
           openssl
-          cargo
+          glibc
           rust
+          git
         ];
-
-        shellHook = ''
-          export RUSTFLAGS="--cfg tokio_unstable ${rustflags}"
-        '';
       };
     });
 }

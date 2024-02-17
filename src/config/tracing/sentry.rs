@@ -13,16 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod generate;
-mod openapi;
-mod screenshot;
-mod server;
+use noelware_config::{env, merge::Merge, FromEnv};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, clap::Subcommand)]
-pub enum Cmd {
-    Screenshot(screenshot::Screenshot),
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Merge)]
+pub struct Config {
+    #[serde(default = "__default_sample_set")]
+    pub sample_set: f32,
+}
 
-    #[command(subcommand)]
-    Generate(generate::Cmd),
-    Server(server::Server),
+impl FromEnv for Config {
+    type Output = Config;
+
+    fn from_env() -> Self::Output {
+        Config {
+            sample_set: env!("UME_TRACING_SENTRY_SAMPLE_SET", to: f32, or_else: __default_sample_set()),
+        }
+    }
+}
+
+// compute 75% of all trace sample
+const fn __default_sample_set() -> f32 {
+    0.75
 }
