@@ -128,7 +128,7 @@ jobs:
             - name: Build binary
               run: cargo build --release --locked --target=${{matrix.target}}
               env:
-                RUSTFLAGS: "${{matrix.flags}} $RUSTFLAGS"
+                RUSTFLAGS: ${{matrix.flags}}
 
             - name: Create SHA256 checksum (Unix-like)
               if: ${{matrix.runner != 'windows-latest'}}
