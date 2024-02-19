@@ -46,12 +46,16 @@
         config.allowUnfree = true;
       };
 
-      package = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       stdenv =
         if pkgs.stdenv.isLinux
         then pkgs.stdenv
         else pkgs.clangStdenv;
+
+      rustPlatform = pkgs.makeRustPlatform {
+        rustc = rust;
+        cargo = rust;
+      };
 
       rustflags =
         if pkgs.stdenv.isLinux
@@ -59,24 +63,21 @@
         else ''$RUSTFLAGS'';
     in rec {
       packages = {
-        ume = pkgs.rustPlatform.buildRustPackage {
+        ume = rustPlatform.buildRustPackage {
           nativeBuildInputs = with pkgs; [pkg-config];
           buildInputs = with pkgs; [openssl];
           cargoSha256 = pkgs.lib.fakeSha256;
-          version = "${package.version}";
+          version = "4.0.0";
           name = "ume";
           src = ./.;
 
           cargoLock = {
             lockFile = ./Cargo.lock;
             outputHashes = {
-              "noelware-config-0.1.0" = pkgs.lib.fakeSha256;
-              "noelware-config-derive-0.1.0" = pkgs.lib.fakeSha256;
-              "noelware-log-0.1.0" = pkgs.lib.fakeSha256;
-              "noelware-remi-0.1.0" = pkgs.lib.fakeSha256;
-              "noelware-serde-0.1.0" = pkgs.lib.fakeSha256;
+              "noelware-config-0.1.0" = "sha256-gfQiyqne0AH0SDy5Q5lX1NNVqQfSIdDGiIkg2aq9WF0=";
             };
           };
+
           meta = with pkgs.lib; {
             description = "Easy, self-hostable, and flexible image host made in Rust";
             homepage = "https://github.com/auguwu/ume";

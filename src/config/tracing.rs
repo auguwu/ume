@@ -87,8 +87,16 @@ impl TryFromEnv for Config {
 impl Merge for Config {
     fn merge(&mut self, other: Self) {
         match (self.clone(), other) {
-            (Config::OpenTelemetry(mut otel), Config::OpenTelemetry(otel2)) => otel.merge(otel2),
-            (Config::Sentry(mut sentry), Config::Sentry(sentry2)) => sentry.merge(sentry2),
+            (Config::OpenTelemetry(mut otel), Config::OpenTelemetry(otel2)) => {
+                otel.merge(otel2);
+                *self = Config::OpenTelemetry(otel);
+            }
+
+            (Config::Sentry(mut sentry), Config::Sentry(sentry2)) => {
+                sentry.merge(sentry2);
+                *self = Config::Sentry(sentry);
+            }
+
             (Config::Disabled, Config::Disabled) => {}
             (_, config) => {
                 *self = config;

@@ -54,7 +54,7 @@ jobs:
                 rust-version: [stable, nightly]
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Setup Rust toolchain
               uses: dtolnay/rust-toolchain@master
@@ -66,13 +66,13 @@ jobs:
               uses: Swatinem/rust-cache@v2
 
             - name: Pull dependencies
-              run: cargo build
+              run: cargo build --all-features
     clippy:
         name: Clippy
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Setup Rust toolchain
               uses: dtolnay/rust-toolchain@master

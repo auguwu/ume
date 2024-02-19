@@ -51,6 +51,14 @@ pub struct Cmd {
 }
 
 pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
+    let loc = match cmd.config {
+        Some(ref path) => format!("in path [{}]", path.display()),
+        None => match Config::find_default_location() {
+            Some(path) => format!("in path [{}]", path.display()),
+            None => String::from("via system environment variables"),
+        },
+    };
+
     let config = match cmd.config {
         Some(ref path) => Config::new(Some(path)),
         None => match Config::find_default_location() {
@@ -110,6 +118,7 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
         )
         .init();
 
+    info!("loaded configuration from {loc}");
     info!("starting Ume server...");
     let storage = match config.storage {
         crate::config::storage::Config::Filesystem(ref fs) => {

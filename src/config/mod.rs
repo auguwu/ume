@@ -82,12 +82,9 @@ impl TryFromEnv for Config {
 
 impl Config {
     pub fn find_default_location() -> Option<PathBuf> {
-        let mut config_dir = Path::new("./config").to_path_buf();
-        if config_dir.is_dir() {
-            config_dir.push("ume.hcl");
-            if config_dir.exists() && config_dir.is_file() {
-                return Some(config_dir.clone());
-            }
+        let config_path = PathBuf::from("./config/ume.hcl");
+        if config_path.exists() {
+            return Some(config_path);
         }
 
         match std::env::var("UME_CONFIG_FILE") {

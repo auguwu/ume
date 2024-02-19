@@ -5,7 +5,21 @@
 
 **ume**'s plan is to be minimal as possible when self-hosting, so no external configuration is *required* but is there if you wish to customize every aspect of **ume**.
 
-## License
-**ume** is released under the **Apache 2.0 License** with love by [Noel Towa](https://floofy.dev)! :polar_bear::purple_heart:
+## Usage
+This will spawn a Ume server that will listen under `:3621`:
 
-Read the [LICENSE](https://github.com/auguwu/ume/blob/master/LICENSE) for more information!~
+```shell
+$ docker run --name ume -e UME_UPLOADER_KEY="a random string" -d -p 3621:3621 auguwu/ume
+```
+
+The `ume` CLI is available as the Docker image, you can overwrite the default `CMD` instruction:
+
+```shell
+$ docker run --rm auguwu/ume ume -h
+```
+
+and will print the following:
+
+```shell
+
+```

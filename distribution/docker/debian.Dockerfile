@@ -27,31 +27,36 @@ COPY . .
 ENV CARGO_INCREMENTAL=1
 ENV RUSTFLAGS="-Ctarget-cpu=native"
 
-RUN cargo build --locked --release --bin charted
+# Remove the `rust-toolchain.toml` file since we expect to use `rustc` from the Docker image
+# rather from rustup.
+RUN rm rust-toolchain.toml
+RUN cargo build --release --bin ume
 
 ############ FINAL STAGE
 
 FROM debian:bullseye-slim
 
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y bash tini curl libssl-dev pkg-config
+WORKDIR /app/noel/ume
 
 COPY --from=build /build/target/release/ume /app/noel/ume/bin/ume
 COPY distribution/docker/scripts            /app/noel/ume/scripts
 COPY distribution/docker/config             /app/noel/ume/config
 
-EXPOSE 3651
+EXPOSE 3621
 VOLUME /var/lib/noel/ume/data
+ENV UME_STORAGE_FILESYSTEM_DIRECTORY=/var/lib/noel/ume/data
 
-RUN mkdir -p /var/lib/noelware/charted/data
-RUN groupadd -g 1001 noelware && \
-    useradd -rm -s /bin/bash -g noelware -u 1001 noelware &&  \
-    chown noelware:noelware /app/noel/ume &&   \
-    chown noelware:noelware /var/lib/noelware/charted/data && \
+RUN mkdir -p /var/lib/noel/ume/data
+RUN groupadd -g 1001 noel && \
+    useradd -rm -s /bin/bash -g noel -u 1001 noel &&  \
+    chown -R noel:noel /app/noel/ume && \
+    chown -R noel:noel /var/lib/noel/ume/data && \
     chmod +x /app/noel/ume/scripts/docker-entrypoint.sh
 
 # Create a symlink to `ume`
-RUN ln -s /app/noel/ume/bin/charted /usr/bin/ume
+RUN ln -s /app/noel/ume/bin/ume /usr/bin/ume
 
-USER noelware
+USER noel
 ENTRYPOINT ["/app/noel/ume/scripts/docker-entrypoint.sh"]
-CMD ["ume", "server"]
+CMD ["/app/noel/ume/bin/ume", "server"]

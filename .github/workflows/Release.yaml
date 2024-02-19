@@ -155,6 +155,14 @@ jobs:
                 files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}.sha256
                 region: us-east-1
                 bucket: august
+
+            - name: Update Docker Hub description
+              uses: peter-evans/dockerhub-description@v4
+              with:
+                username: auguwu
+                password: ${{secrets.DOCKER_PASSWORD}}
+                repository: auguwu/ume
+                readme-filepath: ./distribution/docker/README.md
     docker-debian:
         name: Build Docker Image (Debian) [${{matrix.platform}}]
         runs-on: ubuntu-latest

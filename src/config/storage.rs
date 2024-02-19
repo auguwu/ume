@@ -99,7 +99,12 @@ impl TryFromEnv for Config {
                     "expected [filesystem/fs, azure, s3]; received '{loc}'"
                 )),
             },
-            Err(_) => Ok(Default::default()),
+
+            Err(std::env::VarError::NotPresent) => Ok(Config::Filesystem(remi_fs::Config {
+                directory: env!("UME_STORAGE_FILESYSTEM_DIRECTORY", to: PathBuf, or_else: PathBuf::from("./data")),
+            })),
+
+            Err(e) => Err(Report::from(e)),
         }
     }
 }
@@ -108,12 +113,25 @@ impl Merge for Config {
     fn merge(&mut self, other: Self) {
         match (self.clone(), other) {
             (Config::GridFS(mut gridfs1), Config::GridFS(gridfs2)) => {
-                merge_gridfs(&mut gridfs1, gridfs2)
+                merge_gridfs(&mut gridfs1, gridfs2);
+                *self = Config::GridFS(gridfs1);
             }
 
-            (Config::Azure(mut azure1), Config::Azure(azure2)) => merge_azure(&mut azure1, azure2),
-            (Config::S3(mut s3_1), Config::S3(s3_2)) => merge_s3(&mut s3_1, s3_2),
-            (Config::Filesystem(mut fs1), Config::Filesystem(fs2)) => merge_fs(&mut fs1, fs2),
+            (Config::Azure(mut azure1), Config::Azure(azure2)) => {
+                merge_azure(&mut azure1, azure2);
+                *self = Config::Azure(azure1);
+            }
+
+            (Config::S3(mut s3_1), Config::S3(s3_2)) => {
+                merge_s3(&mut s3_1, s3_2);
+                *self = Config::S3(s3_1);
+            }
+
+            (Config::Filesystem(mut fs1), Config::Filesystem(fs2)) => {
+                merge_fs(&mut fs1, fs2);
+                *self = Config::Filesystem(fs1);
+            }
+
             (_, other) => {
                 *self = other;
             }

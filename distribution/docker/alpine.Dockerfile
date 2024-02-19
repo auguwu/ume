@@ -17,9 +17,7 @@
 
 FROM --platform=${TARGETPLATFORM} rust:1.76-alpine3.19 AS build
 
-# We use the `protobuf` package instead of `protobuf-dev` since we vendor `google/protobuf` in the `protos/`
-# directory and we use `prost-types` which Prost does on each release for the well-known google.protobuf.* types.
-RUN apk update && apk add --no-cache git ca-certificates curl musl-dev libc6-compat gcompat pkgconfig openssl-dev build-base protobuf
+RUN apk update && apk add --no-cache git ca-certificates curl musl-dev libc6-compat gcompat pkgconfig openssl-dev build-base
 WORKDIR /build
 
 COPY . .
@@ -29,7 +27,7 @@ COPY . .
 RUN rm rust-toolchain.toml
 
 ENV RUSTFLAGS="-Ctarget-cpu=native -Ctarget-feature=-crt-static"
-RUN cargo build --locked --release
+RUN cargo build --release --bin ume
 
 ############ FINAL STAGE
 
@@ -44,18 +42,19 @@ COPY distribution/docker/config                 /app/noel/ume/config
 
 EXPOSE 3621
 VOLUME /var/lib/noel/ume/data
+ENV UME_STORAGE_FILESYSTEM_DIRECTORY=/var/lib/noel/ume/data
 
 RUN mkdir -p /var/lib/noel/ume/data
-RUN addgroup -g 1001 noelware && \
-    adduser -DSH -u 1001 -G noelware noelware && \
-    chown -R noelware:noelware /app/noel/ume && \
-    chown -R noelware:noelware /var/lib/noel/ume/data && \
-    chmod +x /app/noel/ume/bin/charted /app/noel/ume/scripts/docker-entrypoint.sh
+RUN addgroup -g 1001 noel && \
+    adduser -DSH -u 1001 -G noel noel && \
+    chown -R noel:noel /app/noel/ume && \
+    chown -R noel:noel /var/lib/noel/ume/data && \
+    chmod +x /app/noel/ume/scripts/docker-entrypoint.sh
 
 # Create a symbolic link so you can just run `ume` without specifying
 # the full path.
-RUN ln -s /app/noel/ume/bin/charted /usr/bin/ume
+RUN ln -s /app/noel/ume/bin/ume /usr/bin/ume
 
-USER noelware
+USER noel
 ENTRYPOINT ["/app/noel/ume/scripts/docker-entrypoint.sh"]
 CMD ["/app/noel/ume/bin/ume", "server"]
