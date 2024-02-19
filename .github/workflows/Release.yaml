@@ -74,6 +74,10 @@ jobs:
               if: ${{matrix.runner == 'ubuntu-latest' && matrix.arch == 'arm64' }}
               run: sudo apt install -y gcc-aarch64-linux-gnu
 
+            - name: Install recommended compilers (`musl-gcc`)
+              if: ${{matrix.runner == 'ubuntu-latest' && endsWith(matrix.arch, 'musl') }}
+              run: sudo apt install -y musl-tools
+
             - name: Checkout source code
               uses: actions/checkout@v4
 
@@ -173,7 +177,11 @@ jobs:
             fail-fast: true
             matrix:
                 platform: [linux/amd64, linux/arm64]
-                suffix: [amd64, arm64]
+                include:
+                    - platform: linux/amd64
+                      suffix: amd64
+                    - platform: linux/arm64
+                      suffix: arm64
         steps:
             - name: Checkout source code
               uses: actions/checkout@v4
@@ -240,7 +248,11 @@ jobs:
             fail-fast: true
             matrix:
                 platform: [linux/amd64, linux/arm64]
-                suffix: [amd64, arm64]
+                include:
+                    - platform: linux/amd64
+                      suffix: amd64
+                    - platform: linux/arm64
+                      suffix: arm64
         steps:
             - name: Checkout source code
               uses: actions/checkout@v4
