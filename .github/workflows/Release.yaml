@@ -23,7 +23,7 @@ permissions:
 jobs:
     binary:
         name: "Build `ume` binary (${{matrix.runner}}: ${{matrix.target}})"
-        runs-on: ubuntu-latest
+        runs-on: ${{matrix.runner}}
         strategy:
             fail-fast: true
             matrix:
