@@ -40,7 +40,7 @@ jobs:
                     - runner: ubuntu-latest
                       target: x86_64-unknown-linux-musl
                       arch: x86_64-musl
-                      flags: "--features=vendored"
+                      flags: ""
                       ext: ''
                       os: linux
 
@@ -48,7 +48,7 @@ jobs:
                     - runner: ubuntu-latest
                       target: aarch64-unknown-linux-gnu
                       arch: arm64
-                      flags: "--features=vendored"
+                      flags: ""
                       ext: ''
                       os: linux
 
@@ -76,14 +76,6 @@ jobs:
                       ext: .exe
                       os: windows
         steps:
-            - name: Install recommended compilers (`gcc-aarch64-linux-gnu`)
-              if: ${{matrix.runner == 'ubuntu-latest' && matrix.arch == 'arm64' }}
-              run: sudo apt install -y gcc-aarch64-linux-gnu
-
-            - name: Install recommended compilers (`musl-gcc`)
-              if: ${{matrix.runner == 'ubuntu-latest' && endsWith(matrix.arch, 'musl') }}
-              run: sudo apt install -y musl-tools
-
             - name: Checkout source code
               uses: actions/checkout@v4
 
@@ -102,6 +94,9 @@ jobs:
                   toolchain: stable
                   components: clippy, rustfmt
                   target: ${{matrix.target}}
+
+            - name: Install `cross`
+              run: cargo install cross
 
             - name: Setup Rust cache
               uses: Swatinem/rust-cache@v2
@@ -126,7 +121,7 @@ jobs:
               run: vcpkg install openssl:x64-windows-static-md
 
             - name: Build binary
-              run: cargo build --release --locked --target=${{matrix.target}} ${{matrix.flags}}
+              run: cross build --release --locked --target=${{matrix.target}} ${{matrix.flags}}
 
             - name: Create SHA256 checksum (Unix-like)
               if: ${{matrix.runner != 'windows-latest'}}
@@ -142,7 +137,7 @@ jobs:
                 enforce-path-access-style: true
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
                 secret-key: ${{secrets.S3_SECRET_KEY}}
-                path-format: /ume/${{steps.tag.outputs.tag}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
+                path-format: /ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
                 files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}

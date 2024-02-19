@@ -99,6 +99,7 @@
 
         buildInputs = with pkgs; [
           cargo-expand
+          cargo-cross
           openssl
           glibc
           rust
