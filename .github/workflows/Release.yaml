@@ -42,17 +42,10 @@ jobs:
                       ext: ''
                       os: linux
 
-                    # ume (Linux ARM64 :: GNU)
+                    # ume (Linux ARM64)
                     - runner: ubuntu-latest
                       target: aarch64-unknown-linux-gnu
-                      arch: arm64-gnu
-                      ext: ''
-                      os: linux
-
-                    # ume (Linux ARM64 :: Musl)
-                    - runner: ubuntu-latest
-                      target: aarch64-unknown-linux-musl
-                      arch: arm64-musl
+                      arch: arm64
                       ext: ''
                       os: linux
 
@@ -77,6 +70,10 @@ jobs:
                       ext: .exe
                       os: windows
         steps:
+            - name: Install recommended compilers (`gcc-aarch64-linux-gnu`)
+              if: ${{matrix.runner == 'ubuntu-latest' && matrix.arch == 'arm64-gnu' }}
+              run: apt install -y gcc-aarch64-linux-gnu
+
             - name: Checkout source code
               uses: actions/checkout@v4
 
