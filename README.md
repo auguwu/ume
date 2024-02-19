@@ -8,6 +8,6 @@
 **ume**'s plan is to be minimal as possible when self-hosting, so no external configuration is *required* but is there if you wish to customize every aspect of **ume**.
 
 ## License
-**ume** is released under the **Apache 2.0 License** with love by [Noel](https://floofy.dev)! :polar_bear::purple_heart:
+**ume** is released under the **Apache 2.0 License** with love by [Noel Towa](https://floofy.dev)! :polar_bear::purple_heart:
 
 Read the [LICENSE](https://github.com/auguwu/ume/blob/master/LICENSE) for more information!~

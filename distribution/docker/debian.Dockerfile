@@ -13,6 +13,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM rust:1.75-slim-bullseye AS build
+############ BINARY
+
+FROM --platform=${TARGETPLATFORM} rust:1.76-slim-bullseye AS build
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update && apt install -y libssl-dev pkg-config git ca-certificates protobuf-compiler
+WORKDIR /build
+
+COPY . .
+
+ENV CARGO_INCREMENTAL=1
+ENV RUSTFLAGS="-Ctarget-cpu=native"
+
+RUN cargo build --locked --release --bin charted
+
+############ FINAL STAGE
 
 FROM debian:bullseye-slim
+
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y bash tini curl libssl-dev pkg-config
+
+COPY --from=build /build/target/release/ume /app/noel/ume/bin/ume
+COPY distribution/docker/scripts            /app/noel/ume/scripts
+COPY distribution/docker/config             /app/noel/ume/config
+
+EXPOSE 3651
+VOLUME /var/lib/noel/ume/data
+
+RUN mkdir -p /var/lib/noelware/charted/data
+RUN groupadd -g 1001 noelware && \
+    useradd -rm -s /bin/bash -g noelware -u 1001 noelware &&  \
+    chown noelware:noelware /app/noel/ume &&   \
+    chown noelware:noelware /var/lib/noelware/charted/data && \
+    chmod +x /app/noel/ume/scripts/docker-entrypoint.sh
+
+# Create a symlink to `ume`
+RUN ln -s /app/noel/ume/bin/charted /usr/bin/ume
+
+USER noelware
+ENTRYPOINT ["/app/noel/ume/scripts/docker-entrypoint.sh"]
+CMD ["ume", "server"]

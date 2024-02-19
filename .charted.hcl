@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-repository: noel/ume
-registry: https://charts.noelware.org/api # force unless `--registry` was passed
-readme: ./README.md
+charted {
+  version = "~0.1.0-beta"
+  helm    = "~3.12"
+}
+
+repository "ume" {
+  registry = registry.default
+  source   = "${cwd}/distribution/helm"
+  path     = "noel/ume"
+}

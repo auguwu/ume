@@ -3,7 +3,7 @@
     "enabled": false,
     "automerge": true,
     "extends": ["config:base", "default:timezone(America/Los_Angeles)", "docker:disableMajor"],
-    "enabledManagers": ["docker", "helm", "rust", "terraform"],
+    "assigneesFromCodeOwners": true,
     "vulnerabilityAlerts": {
         "labels": ["security"]
     }

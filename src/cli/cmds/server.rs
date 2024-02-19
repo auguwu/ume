@@ -232,65 +232,6 @@ fn panic_handler(message: Box<dyn Any + Send + 'static>) -> Response<Body> {
 
 fn print_banner() {
     let mut stdout = io::stdout().lock();
-    let _ = writeln!(
-        stdout,
-        "{}",
-        "«~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~»"
-            .if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>())
-    );
-
-    let _ = writeln!(
-        stdout,
-        "{}        {}                {}           {}                                     {}",
-        "«".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>()),
-        "_".if_supports_color(Stdout, |x| x.fg_rgb::<212, 171, 216>()),
-        "_".if_supports_color(Stdout, |x| x.fg_rgb::<212, 171, 216>()),
-        "_".if_supports_color(Stdout, |x| x.fg_rgb::<212, 171, 216>()),
-        "»".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>())
-    );
-
-    let _ = writeln!(
-        stdout,
-        "{}    {}  {}",
-        "«".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>()),
-        "___| |__   __ _ _ __| |_ ___  __| |      ___  ___ _ ____   _____ _ __"
-            .if_supports_color(Stdout, |x| x.fg_rgb::<212, 171, 216>()),
-        "»".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>())
-    );
-
-    let _ = writeln!(
-        stdout,
-        "{}   {} {}",
-        "«".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>()),
-        "/ __| '_ \\ / _` | '__| __/ _ \\/ _` |_____/ __|/ _ \\ '__\\ \\ / / _ \\ '__|"
-            .if_supports_color(Stdout, |x| x.fg_rgb::<212, 171, 216>()),
-        "»".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>())
-    );
-
-    let _ = writeln!(
-        stdout,
-        "{}  {}    {}",
-        "«".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>()),
-        "| (__| | | | (_| | |  | ||  __/ (_| |_____\\__ \\  __/ |   \\ V /  __/ |"
-            .if_supports_color(Stdout, |x| x.fg_rgb::<212, 171, 216>()),
-        "»".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>())
-    );
-
-    let _ = writeln!(
-        stdout,
-        "{}   {}    {}",
-        "«".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>()),
-        "\\___|_| |_|\\__,_|_|   \\__\\___|\\__,_|     |___/\\___|_|    \\_/ \\___|_|"
-            .if_supports_color(Stdout, |x| x.fg_rgb::<212, 171, 216>()),
-        "»".if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>())
-    );
-
-    let _ = writeln!(
-        stdout,
-        "{}",
-        "«~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~»"
-            .if_supports_color(Stdout, |x| x.fg_rgb::<134, 134, 134>())
-    );
 
     let _ = writeln!(stdout);
     let _ = writeln!(
