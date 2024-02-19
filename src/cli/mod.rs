@@ -16,11 +16,8 @@
 mod cmds;
 pub use cmds::*;
 
-use indicatif::ProgressState;
-use owo_colors::{OwoColorize, Stream};
 use tracing::{level_filters::LevelFilter, Level};
-use tracing_indicatif::IndicatifLayer;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer, Registry};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
 #[derive(Debug, Clone, clap::Parser)]
 #[clap(
@@ -49,36 +46,40 @@ pub struct Program {
     pub command: cmds::Cmd,
 }
 
-pub(crate) fn elapsed_subsec(state: &ProgressState, writer: &mut dyn std::fmt::Write) {
-    let seconds = state.elapsed().as_secs();
-    let sub_seconds = (state.elapsed().as_millis() % 1000) / 100;
-    let formatted = format!("{seconds}.{sub_seconds}")
-        .if_supports_color(Stream::Stderr, |x| x.fg_rgb::<134, 134, 134>())
-        .to_string();
+// pub(crate) fn elapsed_subsec(state: &ProgressState, writer: &mut dyn std::fmt::Write) {
+//     let seconds = state.elapsed().as_secs();
+//     let sub_seconds = (state.elapsed().as_millis() % 1000) / 100;
+//     let formatted = format!("{seconds}.{sub_seconds}")
+//         .if_supports_color(Stream::Stderr, |x| x.fg_rgb::<134, 134, 134>())
+//         .to_string();
 
-    let _ = writer.write_str(&formatted);
-}
+//     let _ = writer.write_str(&formatted);
+// }
 
 impl Program {
     pub fn init_logging(&self) {
         if !self.quiet {
             let filter = LevelFilter::from_level(self.level);
-            let layer = tracing_subscriber::fmt::layer().with_target(true);
+            let layer = tracing_subscriber::fmt::layer()
+                .with_target(true)
+                .with_filter(filter);
 
-            match self.no_progress {
-                true => tracing_subscriber::registry().with(layer).init(),
-                false => {
-                    let indicatif_layer: IndicatifLayer<Registry> = IndicatifLayer::new();
+            tracing_subscriber::registry().with(layer).init();
 
-                    tracing_subscriber::registry()
-                        .with(
-                            layer
-                                .with_writer(indicatif_layer.get_stderr_writer())
-                                .with_filter(filter),
-                        )
-                        .init()
-                }
-            }
+            // match self.no_progress {
+            //     true => tracing_subscriber::registry().with(layer).init(),
+            //     false => {
+            //         let indicatif_layer: IndicatifLayer<Registry> = IndicatifLayer::new();
+
+            //         tracing_subscriber::registry()
+            //             .with(
+            //                 layer
+            //                     .with_writer(indicatif_layer.get_stderr_writer())
+            //                     .with_filter(filter),
+            //             )
+            //             .init()
+            //     }
+            // }
         }
     }
 }

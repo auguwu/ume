@@ -122,14 +122,18 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
             noelware_remi::StorageService::Azure(remi_azure::StorageService::new(azure.clone()))
         }
 
-        // crate::config::storage::Config::GridFS(ref gridfs) => {
-        //     noelware_remi::StorageService::GridFS(remi_gridfs::StorageService::new(gridfs.clone()))
-        // }
+        crate::config::storage::Config::GridFS(ref gridfs) => {
+            let client = mongodb::Client::with_options(gridfs.client_options.clone())?;
+
+            noelware_remi::StorageService::GridFS(remi_gridfs::StorageService::from_client(
+                &client,
+                gridfs.clone(),
+            ))
+        }
+
         crate::config::storage::Config::S3(ref s3) => {
             noelware_remi::StorageService::S3(remi_s3::StorageService::new(s3.clone()))
         }
-
-        _ => todo!(),
     };
 
     storage.init().await?;

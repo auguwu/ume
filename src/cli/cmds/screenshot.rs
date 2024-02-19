@@ -15,13 +15,14 @@
 
 use chrono::Local;
 use eyre::Context;
-use indicatif::ProgressStyle;
+use reqwest::multipart::{self, Part};
+use serde_json::Value;
 use std::{
     fs::{self, create_dir_all, remove_file, OpenOptions},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{exit, Command, Stdio},
 };
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tokio_util::bytes::Bytes;
 use url::Url;
 
 /// Takes a screenshot with [Flameshot](https://flameshot.org)
@@ -49,7 +50,7 @@ pub struct Cmd {
 }
 
 pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
-    let tempdir = cmd.tempdir.unwrap_or(std::env::temp_dir());
+    let tempdir = cmd.tempdir.clone().unwrap_or(std::env::temp_dir());
     let screenshots = tempdir.join("screenshots");
     if !screenshots.try_exists()? {
         create_dir_all(&screenshots)?;
@@ -57,6 +58,7 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
 
     let flameshot = cmd
         .flameshot
+        .clone()
         .unwrap_or(which::which("flameshot").context("unable to find `flameshot` program")?);
 
     info!(flameshot = %flameshot.display(), "found `flameshot` program :3");
@@ -70,13 +72,13 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
 
     info!("$ {} gui -r > {}", flameshot.display(), name.display());
 
-    let mut cmd = Command::new(&flameshot);
-    cmd.args(["gui", "-r"])
+    let mut ccmd = Command::new(&flameshot);
+    ccmd.args(["gui", "-r"])
         .stdout(file.try_clone()?)
         .stderr(Stdio::inherit())
         .stdin(Stdio::null());
 
-    let output = cmd.output()?;
+    let output = ccmd.output()?;
     if !output.status.success() {
         error!(file = %name.display(), "failed to run `flameshot gui -r` onto file");
         remove_file(&name)?;
@@ -86,21 +88,43 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
 
     info!(file = %name.display(), "uploading file to Ume server...");
 
-    let len = file.metadata()?.len();
-
     // upload the image
-    let progress = info_span!("ume.screenshot.upload", file = %name.display());
-    progress.pb_set_style(
-        &ProgressStyle::with_template("{wide_bar:.cyan/blue} {bytes}/{total_bytes} {elapsed}")
-            .expect("to compile progress style template")
-            .progress_chars("#>-")
-            .with_key("elapsed", crate::cli::elapsed_subsec),
-    );
+    upload_file(&cmd, &name).await
+}
 
-    progress.pb_set_length(len);
+async fn upload_file(cmd: &Cmd, loc: &Path) -> eyre::Result<()> {
+    info!(file = %loc.display(), "Now uploading file...");
 
-    // it no longer should be available since it'll be copied to
-    // the clipboard if the `cfg(feature = "clipboard")` feature
-    // is enabled or if `--no-copy` is specified.
-    fs::remove_file(name).context("unable to delete file")
+    let client = reqwest::Client::builder()
+        .user_agent(format!(
+            "auguwu/ume-cli (+https://github.com/auguwu/ume; {}",
+            crate::version()
+        ))
+        .build()?;
+
+    let contents = fs::read(loc).map(Bytes::from)?;
+    let res = client
+        .post(format!("{}images/upload", cmd.server))
+        .header("Authorization", &cmd.master_key)
+        .multipart(multipart::Form::new().part("fdata", Part::stream(contents)))
+        .send()
+        .await?;
+
+    let status = res.status();
+    let data: Value = res.json().await?;
+    if !data.is_object() {
+        error!("unexpected json payload from Ume server: {}", data);
+        exit(1);
+    }
+
+    let obj = data.as_object().unwrap();
+    if obj.contains_key("message") {
+        let msg = obj["message"].as_str().unwrap();
+
+        error!("received message from Ume server [{status}]: {msg}");
+        exit(1);
+    }
+
+    eprintln!("{}", obj["filename"].as_str().unwrap());
+    Ok(())
 }

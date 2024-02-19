@@ -42,7 +42,7 @@ fn main() -> eyre::Result<()> {
 
                     format!("ume-worker-pool[#{id}]")
                 })
-                .enable_io()
+                .enable_all()
                 .build()
         }
 
@@ -56,7 +56,7 @@ fn main() -> eyre::Result<()> {
             program.init_logging();
             Builder::new_current_thread()
                 .worker_threads(1)
-                .enable_io()
+                .enable_all()
                 .build()
         }
     }?;

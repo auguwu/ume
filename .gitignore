@@ -550,4 +550,5 @@ FodyWeavers.xsd
 config.hcl
 !src/bin/
 .direnv/
+data/
 .env

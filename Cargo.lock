@@ -149,6 +149,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-stream"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd56dd203fef61ac097dd65721a419ddccb106b2d2b70ba60a6b529f03961a51"
+dependencies = [
+ "async-stream-impl",
+ "futures-core",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "async-stream-impl"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16e62a023e7c117e27523144c5d2459f4397fcc3cab0085af8e2224f643a0193"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.49",
+]
+
+[[package]]
 name = "async-trait"
 version = "0.1.77"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1371,9 +1393,9 @@ dependencies = [
 
 [[package]]
 name = "file-format"
-version = "0.23.0"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "865ed54301d7e5136763302a3c9e595317e08a3119e19a078ab1ed269eb18edc"
+checksum = "4ba1b81b3c213cf1c071f8bf3b83531f310df99642e58c48247272eef006cae5"
 
 [[package]]
 name = "findshlibs"
@@ -1490,6 +1512,19 @@ dependencies = [
  "parking",
  "pin-project-lite",
  "waker-fn",
+]
+
+[[package]]
+name = "futures-lite"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "445ba825b27408685aaecefd65178908c36c6e96aaf6d8599419d46e624192ba"
+dependencies = [
+ "fastrand 2.0.1",
+ "futures-core",
+ "futures-io",
+ "parking",
+ "pin-project-lite",
 ]
 
 [[package]]
@@ -1809,7 +1844,7 @@ dependencies = [
  "anyhow",
  "async-channel",
  "base64 0.13.1",
- "futures-lite",
+ "futures-lite 1.13.0",
  "infer 0.2.3",
  "pin-project-lite",
  "rand 0.7.3",
@@ -2202,6 +2237,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
+name = "mime_guess"
+version = "2.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4192263c238a5f0d0c6bfd21f336a313a4ce1c450542449ca191bb657b4642ef"
+dependencies = [
+ "mime",
+ "unicase",
+]
+
+[[package]]
 name = "miniz_oxide"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2241,6 +2286,7 @@ dependencies = [
  "hex",
  "hmac",
  "lazy_static",
+ "log",
  "md-5",
  "pbkdf2",
  "percent-encoding",
@@ -2261,6 +2307,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tokio-util",
+ "tracing",
  "trust-dns-proto",
  "trust-dns-resolver",
  "typed-builder",
@@ -2307,7 +2354,7 @@ dependencies = [
 [[package]]
 name = "noelware-config"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=fdbb253fd424de509eefaf5c740fc7feac75825f#fdbb253fd424de509eefaf5c740fc7feac75825f"
+source = "git+https://github.com/Noelware/core-rs?rev=3283e0231b52de3f731cdd19403f2ba0148bb946#3283e0231b52de3f731cdd19403f2ba0148bb946"
 dependencies = [
  "noelware-config-derive",
 ]
@@ -2315,7 +2362,7 @@ dependencies = [
 [[package]]
 name = "noelware-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=fdbb253fd424de509eefaf5c740fc7feac75825f#fdbb253fd424de509eefaf5c740fc7feac75825f"
+source = "git+https://github.com/Noelware/core-rs?rev=3283e0231b52de3f731cdd19403f2ba0148bb946#3283e0231b52de3f731cdd19403f2ba0148bb946"
 dependencies = [
  "proc-macro-error",
  "proc-macro2",
@@ -2326,7 +2373,7 @@ dependencies = [
 [[package]]
 name = "noelware-log"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=fdbb253fd424de509eefaf5c740fc7feac75825f#fdbb253fd424de509eefaf5c740fc7feac75825f"
+source = "git+https://github.com/Noelware/core-rs?rev=3283e0231b52de3f731cdd19403f2ba0148bb946#3283e0231b52de3f731cdd19403f2ba0148bb946"
 dependencies = [
  "chrono",
  "owo-colors 4.0.0",
@@ -2338,9 +2385,11 @@ dependencies = [
 [[package]]
 name = "noelware-remi"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=fdbb253fd424de509eefaf5c740fc7feac75825f#fdbb253fd424de509eefaf5c740fc7feac75825f"
+source = "git+https://github.com/Noelware/core-rs?rev=3283e0231b52de3f731cdd19403f2ba0148bb946#3283e0231b52de3f731cdd19403f2ba0148bb946"
 dependencies = [
+ "azure_core",
  "bytes",
+ "mongodb",
  "remi",
  "remi-azure",
  "remi-fs",
@@ -2351,7 +2400,7 @@ dependencies = [
 [[package]]
 name = "noelware-serde"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=fdbb253fd424de509eefaf5c740fc7feac75825f#fdbb253fd424de509eefaf5c740fc7feac75825f"
+source = "git+https://github.com/Noelware/core-rs?rev=3283e0231b52de3f731cdd19403f2ba0148bb946#3283e0231b52de3f731cdd19403f2ba0148bb946"
 dependencies = [
  "serde",
  "tracing",
@@ -2874,9 +2923,9 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 
 [[package]]
 name = "remi"
-version = "0.5.0"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83247f07ce229ea31f36926fa9bf2a72dab8031a32ba63bac50154f6694d0aab"
+checksum = "95e4f0987a37ec809f24eb092befd09da76b2023d863d1dcbb1919951e25221a"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2885,9 +2934,9 @@ dependencies = [
 
 [[package]]
 name = "remi-azure"
-version = "0.5.0"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0b471d5b5971f623d44433233df5faed143fba02f76ebf77d7693374d369b76"
+checksum = "5aa082b184ba44cac31ba7ac64884b3053c96155ba741ef8d180ff8da84d022c"
 dependencies = [
  "async-trait",
  "azure_core",
@@ -2902,9 +2951,9 @@ dependencies = [
 
 [[package]]
 name = "remi-fs"
-version = "0.5.0"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f603281d176b4975064df0d30b64479c149ef8716078365f12a2e913354c2f9"
+checksum = "d44a7d0b4d54577287967993068cee0350b04459324fc6fcb6df530cd56b7e54"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2920,9 +2969,9 @@ dependencies = [
 
 [[package]]
 name = "remi-gridfs"
-version = "0.5.0"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "986b75c403562ea1e091352fc322daa5169c191dc5ef52c0012422d3563c390d"
+checksum = "6963f5125859d8e0985b3b947b65b1c29b886b208cf7f534ff9cbfe3c5a5e08d"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2936,9 +2985,9 @@ dependencies = [
 
 [[package]]
 name = "remi-s3"
-version = "0.5.0"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877046f169a9345f9ec778819a77afa376bc1b0729b6e8dbd17ea891e584aeeb"
+checksum = "123926062e7308f7841e93eb2f211d157d1d87104eb7383a887566a159f1c095"
 dependencies = [
  "async-trait",
  "aws-config",
@@ -2947,7 +2996,6 @@ dependencies = [
  "bytes",
  "remi",
  "serde",
- "tokio",
  "tracing",
 ]
 
@@ -2971,6 +3019,7 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
+ "mime_guess",
  "native-tls",
  "once_cell",
  "percent-encoding",
@@ -4032,6 +4081,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 name = "ume"
 version = "4.0.0"
 dependencies = [
+ "async-stream",
  "async-trait",
  "aws-sdk-s3",
  "axum",
@@ -4045,9 +4095,11 @@ dependencies = [
  "color-eyre",
  "dotenvy",
  "eyre",
+ "futures-lite 2.2.0",
  "hcl-rs",
  "indicatif",
  "mimalloc",
+ "mime",
  "mongodb",
  "multer",
  "noelware-config",
@@ -4064,6 +4116,7 @@ dependencies = [
  "remi-fs",
  "remi-gridfs",
  "remi-s3",
+ "reqwest",
  "rustc_version 0.4.0",
  "sentry",
  "sentry-tower",
@@ -4072,6 +4125,7 @@ dependencies = [
  "serde_json",
  "syn 2.0.49",
  "tokio",
+ "tokio-util",
  "tower-http",
  "tracing",
  "tracing-indicatif",
@@ -4089,6 +4143,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b72f89f0ca32e4db1c04e2a72f5345d59796d4866a1ee0609084569f73683dc8"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "unicase"
+version = "2.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7d2d4dafb69621809a81864c9c1b864479e1235c0dd4e199924b9742439ed89"
+dependencies = [
+ "version_check",
 ]
 
 [[package]]
