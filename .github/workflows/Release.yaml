@@ -31,6 +31,7 @@ jobs:
                     # ume (Linux x86_64 :: GNU)
                     - runner: ubuntu-latest
                       target: x86_64-unknown-linux-gnu
+                      flags: ""
                       arch: x86_64-gnu
                       ext: ''
                       os: linux
@@ -39,6 +40,7 @@ jobs:
                     - runner: ubuntu-latest
                       target: x86_64-unknown-linux-musl
                       arch: x86_64-musl
+                      flags: "--feature=vendored"
                       ext: ''
                       os: linux
 
@@ -46,6 +48,7 @@ jobs:
                     - runner: ubuntu-latest
                       target: aarch64-unknown-linux-gnu
                       arch: arm64
+                      flags: ""
                       ext: ''
                       os: linux
 
@@ -53,6 +56,7 @@ jobs:
                     - runner: macos-latest
                       target: x86_64-apple-darwin
                       arch: x86_64
+                      flags: ""
                       ext: ''
                       os: darwin
 
@@ -60,12 +64,14 @@ jobs:
                     - runner: macos-latest
                       target: aarch64-apple-darwin
                       arch: arm64
+                      flags: ""
                       ext: ''
                       os: darwin
 
                     # charted (Windows x86_64)
                     - runner: windows-latest
                       target: x86_64-pc-windows-msvc
+                      flags: ""
                       arch: x86_64
                       ext: .exe
                       os: windows
@@ -100,8 +106,29 @@ jobs:
             - name: Setup Rust cache
               uses: Swatinem/rust-cache@v2
 
+            - name: Setup `VCPKG_ROOT` environment variable
+              if: matrix.runner == 'windows-latest'
+              id: vcpkg
+              run: |
+                  echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+                  echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+            - name: Setup vcpkg cache
+              if: matrix.runner == 'windows-latest'
+              uses: actions/cache@v4
+              with:
+                  key: vcpkg-cache
+                  path: |
+                      ${{steps.vcpkg.outputs.VCPKG_ROOT}}
+
+            - name: Install OpenSSL on Windows with `vcpkg`
+              if: matrix.runner == 'windows-latest'
+              run: vcpkg install openssl:x64-windows-static-md
+
             - name: Build binary
               run: cargo build --release --locked --target=${{matrix.target}}
+              env:
+                RUSTFLAGS: "${{matrix.flags}} $RUSTFLAGS"
 
             - name: Create SHA256 checksum (Unix-like)
               if: ${{matrix.runner != 'windows-latest'}}
