@@ -52,7 +52,7 @@ jobs:
                       ext: ''
                       os: linux
 
-                    # charted (macOS x86_64 ~ Intel)
+                    # ume (macOS x86_64 ~ Intel)
                     - runner: macos-latest
                       target: x86_64-apple-darwin
                       arch: x86_64
@@ -60,7 +60,7 @@ jobs:
                       ext: ''
                       os: darwin
 
-                    # charted (macOS ARM64 ~ Apple Silicon)
+                    # ume (macOS ARM64 ~ Apple Silicon)
                     - runner: macos-latest
                       target: aarch64-apple-darwin
                       arch: arm64
@@ -68,7 +68,7 @@ jobs:
                       ext: ''
                       os: darwin
 
-                    # charted (Windows x86_64)
+                    # ume (Windows x86_64)
                     - runner: windows-latest
                       target: x86_64-pc-windows-msvc
                       flags: "--features=mimalloc"

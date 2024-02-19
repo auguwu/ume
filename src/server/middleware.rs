@@ -109,7 +109,7 @@ pub async fn log(metadata: Metadata, req: Request<Body>, next: Next) -> impl Int
         .map(|f| String::from_utf8_lossy(f.as_bytes()).to_string());
 
     let http_span = info_span!(
-        "charted.http.request",
+        "ume.http.request",
         req.ua = user_agent,
         req.id = %id,
         http.uri = uri,

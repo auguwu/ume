@@ -36,7 +36,7 @@ FROM alpine:3.19
 RUN apk update && apk add --no-cache bash tini curl libgcc
 WORKDIR /app/noel/ume
 
-COPY --from=build /build/target/release/charted /app/noel/ume/bin/ume
+COPY --from=build /build/target/release/ume     /app/noel/ume/bin/ume
 COPY distribution/docker/scripts                /app/noel/ume/scripts
 COPY distribution/docker/config                 /app/noel/ume/config
 
