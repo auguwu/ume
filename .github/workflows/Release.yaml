@@ -40,7 +40,7 @@ jobs:
                     - runner: ubuntu-latest
                       target: x86_64-unknown-linux-musl
                       arch: x86_64-musl
-                      flags: ""
+                      flags: "--features=vendored"
                       ext: ''
                       os: linux
 
