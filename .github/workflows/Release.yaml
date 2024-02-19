@@ -130,11 +130,11 @@ jobs:
 
             - name: Create SHA256 checksum (Unix-like)
               if: ${{matrix.runner != 'windows-latest'}}
-              run: sha256sum ./target/${{matrix.runner}}/release/ume > ./target/${{matrix.runner}}/release/ume.sha256
+              run: sha256sum ./target/${{matrix.target}}/release/ume > ./target/${{matrix.target}}/release/ume.sha256
 
             - name: Create SHA256 checksum (Windows)
               if: ${{matrix.runner == 'windows-latest'}}
-              run: ((Get-FileHash -Path ./target/${{matrix.runner}}/release/ume.exe).Hash).ToLower() | Out-File ./target/${{matrix.runner}}/release/ume.exe.sha256
+              run: ((Get-FileHash -Path ./target/${{matrix.target}}/release/ume.exe).Hash).ToLower() | Out-File ./target/${{matrix.target}}/release/ume.exe.sha256
 
             - name: Upload binary (artifacts.floofy.dev/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}})
               uses: Noelware/s3-action@2.2.2
