@@ -15,9 +15,9 @@
 
 name: Release
 on:
-    push:
-        tags:
-            - 'v?[0-9]+.[0-9]+.[0-9]+'
+    release:
+        types:
+            - published
 permissions:
     packages: write
 jobs:
@@ -89,6 +89,7 @@ jobs:
               with:
                   toolchain: stable
                   components: clippy, rustfmt
+                  target: ${{matrix.target}}
 
             - name: Setup Rust cache
               uses: Swatinem/rust-cache@v2
