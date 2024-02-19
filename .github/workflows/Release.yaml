@@ -125,7 +125,7 @@ jobs:
 
             - name: Create SHA256 checksum (Unix-like)
               if: ${{matrix.runner != 'windows-latest'}}
-              run: sha256sum ./target/${{matrix.target}}/release/ume > ./target/${{matrix.target}}/release/ume.sha256
+              run: ${{matrix.runner == 'macos-latest' && 'shasum -a 256' || 'sha256sum'}} ./target/${{matrix.target}}/release/ume > ./target/${{matrix.target}}/release/ume.sha256
 
             - name: Create SHA256 checksum (Windows)
               if: ${{matrix.runner == 'windows-latest'}}
