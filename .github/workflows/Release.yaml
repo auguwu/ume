@@ -13,11 +13,401 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Release CI (Stable)
+name: Release
 on:
-    release:
-        types: [published]
+    push:
+        tags:
+            - 'v?[0-9]+.[0-9]+.[0-9]+'
+permissions:
+    packages: write
 jobs:
     binary:
-        name: Build `ume` binary
+        name: "Build `ume` binary (${{matrix.runner}}: ${{matrix.target}})"
         runs-on: ubuntu-latest
+        strategy:
+            fail-fast: true
+            matrix:
+                include:
+                    # ume (Linux x86_64 :: GNU)
+                    - runner: ubuntu-latest
+                      target: x86_64-unknown-linux-gnu
+                      arch: x86_64-gnu
+                      ext: ''
+                      os: linux
+
+                    # ume (Linux x86_64 :: Musl)
+                    - runner: ubuntu-latest
+                      target: x86_64-unknown-linux-musl
+                      arch: x86_64-musl
+                      ext: ''
+                      os: linux
+
+                    # ume (Linux ARM64 :: GNU)
+                    - runner: ubuntu-latest
+                      target: aarch64-unknown-linux-gnu
+                      arch: arm64-gnu
+                      ext: ''
+                      os: linux
+
+                    # ume (Linux ARM64 :: Musl)
+                    - runner: ubuntu-latest
+                      target: aarch64-unknown-linux-musl
+                      arch: arm64-musl
+                      ext: ''
+                      os: linux
+
+                    # charted (macOS x86_64 ~ Intel)
+                    - runner: macos-latest
+                      target: x86_64-apple-darwin
+                      arch: x86_64
+                      ext: ''
+                      os: darwin
+
+                    # charted (macOS ARM64 ~ Apple Silicon)
+                    - runner: macos-latest
+                      target: aarch64-apple-darwin
+                      arch: arm64
+                      ext: ''
+                      os: darwin
+
+                    # charted (Windows x86_64)
+                    - runner: windows-latest
+                      target: x86_64-pc-windows-msvc
+                      arch: x86_64
+                      ext: .exe
+                      os: windows
+        steps:
+            - name: Checkout source code
+              uses: actions/checkout@v4
+
+            - name: Get Git tag
+              uses: auguwu/git-tag-action@master
+              id: tag
+
+            - name: Setup Rust toolchain
+              uses: dtolnay/rust-toolchain@master
+              with:
+                  toolchain: stable
+                  components: clippy, rustfmt
+
+            - name: Setup Rust cache
+              uses: Swatinem/rust-cache@v2
+
+            - name: Build binary
+              run: cargo build --release --locked --target=${{matrix.target}}
+
+            - name: Create SHA256 checksum (Unix-like)
+              if: ${{matrix.runner != 'windows-latest'}}
+              run: sha256sum ./target/${{matrix.runner}}/release/ume > ./target/${{matrix.runner}}/release/ume.sha256
+
+            - name: Create SHA256 checksum (Windows)
+              if: ${{matrix.runner == 'windows-latest'}}
+              run: ((Get-FileHash -Path ./target/${{matrix.runner}}/release/ume.exe).Hash).ToLower() | Out-File ./target/${{matrix.runner}}/release/ume.exe.sha256
+
+            - name: Upload binary (artifacts.floofy.dev/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}})
+              uses: Noelware/s3-action@2.2.2
+              with:
+                enforce-path-access-style: true
+                access-key-id: ${{secrets.S3_ACCESS_KEY}}
+                secret-key: ${{secrets.S3_SECRET_KEY}}
+                path-format: /ume/${{steps.tag.outputs.tag}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
+                endpoint: ${{secrets.S3_ENDPOINT}}
+                prefix: /noel/artifacts
+                files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}
+                region: us-east-1
+                bucket: august
+
+            - name: Upload binary (artifacts.floofy.dev/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256)
+              uses: Noelware/s3-action@2.2.2
+              with:
+                enforce-path-access-style: true
+                access-key-id: ${{secrets.S3_ACCESS_KEY}}
+                secret-key: ${{secrets.S3_SECRET_KEY}}
+                path-format: /ume/${{steps.tag.outputs.tag}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
+                endpoint: ${{secrets.S3_ENDPOINT}}
+                prefix: /noel/artifacts
+                files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}.sha256
+                region: us-east-1
+                bucket: august
+
+            - name: Upload binary (artifacts.floofy.dev/ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}})
+              uses: Noelware/s3-action@2.2.2
+              with:
+                enforce-path-access-style: true
+                access-key-id: ${{secrets.S3_ACCESS_KEY}}
+                secret-key: ${{secrets.S3_SECRET_KEY}}
+                path-format: /ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
+                endpoint: ${{secrets.S3_ENDPOINT}}
+                prefix: /noel/artifacts
+                files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}
+                region: us-east-1
+                bucket: august
+
+            - name: Upload binary (artifacts.floofy.dev/ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256)
+              uses: Noelware/s3-action@2.2.2
+              with:
+                enforce-path-access-style: true
+                access-key-id: ${{secrets.S3_ACCESS_KEY}}
+                secret-key: ${{secrets.S3_SECRET_KEY}}
+                path-format: /ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
+                endpoint: ${{secrets.S3_ENDPOINT}}
+                prefix: /noel/artifacts
+                files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}.sha256
+                region: us-east-1
+                bucket: august
+    docker-debian:
+        name: Build Docker Image (Debian) [${{matrix.platform}}]
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: true
+            matrix:
+                platform: [linux/amd64, linux/arm64]
+                suffix: [amd64, arm64]
+        steps:
+            - name: Checkout source code
+              uses: actions/checkout@v4
+
+            - name: Get Git tag
+              uses: auguwu/git-tag-action@master
+              id: tag
+
+            - name: Get commit hash
+              id: commit-hash
+              run: echo "commit=$(git rev-parse --short=8 $GITHUB_SHA)" >> $GITHUB_OUTPUT
+
+            - name: Login into Docker Hub
+              uses: docker/login-action@v3
+              with:
+                username: auguwu
+                password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Login into GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                registry: ghcr.io
+                username: ${{github.repository_owner}}
+                password: ${{github.token}}
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build and push!
+              uses: docker/build-push-action@v5
+              with:
+                  provenance: false
+                  platforms: ${{matrix.platform}}
+                  cache-from: type=gha,scope=debian
+                  cache-to: type=gha,scope=debian
+                  context: .
+                  file: ./distribution/docker/debian.Dockerfile
+                  push: true
+                  sbom: true
+                  tags: |
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}-${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}-${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:latest-${{matrix.suffix}}
+                      auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-${{matrix.suffix}},
+                      auguwu/ume:${{steps.tag.outputs.major}}-${{matrix.suffix}},
+                      auguwu/ume:${{steps.tag.outputs.version}}-${{matrix.suffix}},
+                      auguwu/ume:latest-${{matrix.suffix}}
+                  labels: |
+                      org.opencontainers.image.title=ume
+                      org.opencontainers.image.description="🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
+                      org.opencontainers.image.version=${{steps.tag.outputs.version}}
+                      org.opencontainers.image.revision=${{steps.commit-hash.outputs.commit}}
+                      org.opencontainers.image.licenses=Apache-2.0
+                      org.opencontainers.image.documentation=https://floofy.dev/oss/ume
+                      org.opencontainers.image.source=https://github.com/auguwu/ume/tree/${{steps.commit-hash.outputs.commit}}
+    docker-alpine:
+        name: Build Docker Image (Alpine) [${{matrix.platform}}]
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: true
+            matrix:
+                platform: [linux/amd64, linux/arm64]
+                suffix: [amd64, arm64]
+        steps:
+            - name: Checkout source code
+              uses: actions/checkout@v4
+
+            - name: Get Git tag
+              uses: auguwu/git-tag-action@master
+              id: tag
+
+            - name: Get commit hash
+              id: commit-hash
+              run: echo "commit=$(git rev-parse --short=8 $GITHUB_SHA)" >> $GITHUB_OUTPUT
+
+            - name: Login into Docker Hub
+              uses: docker/login-action@v3
+              with:
+                username: auguwu
+                password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Login into GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                registry: ghcr.io
+                username: ${{github.repository_owner}}
+                password: ${{github.token}}
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build and push!
+              uses: docker/build-push-action@v5
+              with:
+                  provenance: false
+                  platforms: ${{matrix.platform}}
+                  cache-from: type=gha,scope=alpine
+                  cache-to: type=gha,scope=alpine
+                  context: .
+                  file: ./distribution/docker/alpine.Dockerfile
+                  push: true
+                  sbom: true
+                  tags: |
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine-${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}-alpine-${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}-alpine-${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:latest-alpine-${{matrix.suffix}}
+                      auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine-${{matrix.suffix}},
+                      auguwu/ume:${{steps.tag.outputs.major}}-alpine-${{matrix.suffix}},
+                      auguwu/ume:${{steps.tag.outputs.version}}-alpine-${{matrix.suffix}},
+                      auguwu/ume:latest-alpine-${{matrix.suffix}}
+                  labels: |
+                      org.opencontainers.image.title=ume
+                      org.opencontainers.image.description="🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
+                      org.opencontainers.image.version=${{steps.tag.outputs.version}}
+                      org.opencontainers.image.revision=${{steps.commit-hash.outputs.commit}}
+                      org.opencontainers.image.licenses=Apache-2.0
+                      org.opencontainers.image.documentation=https://floofy.dev/oss/ume
+                      org.opencontainers.image.source=https://github.com/auguwu/ume/tree/${{steps.commit-hash.outputs.commit}}
+    manifests:
+        name: Docker Manifests
+        runs-on: ubuntu-latest
+        needs: [docker-alpine, docker-debian]
+        steps:
+            - name: Checkout source code
+              uses: actions/checkout@v4
+
+            - name: Get Git tag
+              uses: auguwu/git-tag-action@master
+              id: tag
+
+            - name: Login into Docker Hub
+              uses: docker/login-action@v3
+              with:
+                username: auguwu
+                password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Login into GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                registry: ghcr.io
+                username: ${{github.repository_owner}}
+                password: ${{github.token}}
+
+            - name: Push manifest [auguwu/ume:latest]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: auguwu/ume:latest
+                images: auguwu/ume:latest-amd64,auguwu/ume:latest-arm64
+                push: true
+
+            - name: Push manifest [auguwu/ume:alpine]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: auguwu/ume:alpine
+                images: auguwu/ume:latest-alpine-amd64,auguwu/ume:latest-alpine-arm64
+                push: true
+
+            - name: Push manifest [auguwu/ume:${{steps.tag.outputs.major}}]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: auguwu/ume:${{steps.tag.outputs.major}}
+                images: auguwu/ume:${{steps.tag.outputs.major}}-amd64,auguwu/ume:${{steps.tag.outputs.major}}-arm64
+                push: true
+
+            - name: Push manifest [auguwu/ume:${{steps.tag.outputs.major}}-alpine]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: auguwu/ume:${{steps.tag.outputs.major}}-alpine
+                images: auguwu/ume:${{steps.tag.outputs.major}}-alpine-amd64,auguwu/ume:${{steps.tag.outputs.major}}-alpine-arm64
+                push: true
+
+            - name: Push manifest [auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}
+                images: auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-amd64,auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-arm64
+                push: true
+
+            - name: Push manifest [auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine
+                images: auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine-amd64,auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine-arm64
+                push: true
+
+            - name: Push manifest [auguwu/ume:${{steps.tag.outputs.version}}-alpine]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: auguwu/ume:${{steps.tag.outputs.version}}-alpine
+                images: auguwu/ume:${{steps.tag.outputs.version}}-alpine-amd64,auguwu/ume:${{steps.tag.outputs.version}}-alpine-arm64
+                push: true
+
+            - name: Push manifest [ghcr.io/auguwu/ume:latest]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: ghcr.io/auguwu/ume:latest
+                images: ghcr.io/auguwu/ume:latest-amd64,auguwu/ume:latest-arm64
+                push: true
+
+            - name: Push manifest [ghcr.io/auguwu/ume:alpine]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: ghcr.io/auguwu/ume:alpine
+                images: ghcr.io/auguwu/ume:latest-alpine-amd64,auguwu/ume:latest-alpine-arm64
+                push: true
+
+            - name: Push manifest [ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}
+                images: ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}-amd64,auguwu/ume:${{steps.tag.outputs.major}}-arm64
+                push: true
+
+            - name: Push manifest [ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}-alpine]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}-alpine
+                images: ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}-alpine-amd64,auguwu/ume:${{steps.tag.outputs.major}}-alpine-arm64
+                push: true
+
+            - name: Push manifest [ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}
+                images: ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-amd64,auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-arm64
+                push: true
+
+            - name: Push manifest [ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine
+                images: ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine-amd64,auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}-alpine-arm64
+                push: true
+
+            - name: Push manifest [ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}-alpine]
+              uses: Noelware/docker-manifest-action@0.4.1
+              with:
+                inputs: ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}-alpine
+                images: ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}-alpine-amd64,auguwu/ume:${{steps.tag.outputs.version}}-alpine-arm64
+                push: true

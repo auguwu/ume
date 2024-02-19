@@ -8,6 +8,10 @@
     "[rust]": {
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
     },
+    "[hcl]": {
+        "editor.defaultFormatter": "hashicorp.hcl",
+        "editor.tabSize": 2
+    },
     "[terraform]": {
         "editor.defaultFormatter": "hashicorp.terraform",
         "editor.tabSize": 2

@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # 🐻‍❄️💐 ume: Easy, self-hostable, and flexible image host made in Rust
 # Copyright 2021-2024 Noel Towa <cutie@floofy.dev>
 #
@@ -15,21 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+# This is the default configuration file when running `ume` from the Docker
+# images [ghcr.io/auguwu/ume or auguwu/ume].
+#
+# this is a placeholder uploader key, it is recommended that you
+# use a random generated one than this one.
 
-. /app/noel/ume/scripts/liblog.sh
+# (this can be overwritten with the `UME_UPLOADER_KEY` environment variable
+# or use `-e UME_UPLOADER_KEY=<some key here>` when running with Docker and
+# this won't be used)
+uploader_key = "a uploader key that is here because no one has bothered to update this, please update this or you will be laughed at"
 
-if ! [[ "${UME_ENABLE_WELCOME_PROMPT:-yes}" =~ ^(no|false|0)$ ]]; then
-  info ""
-  info "  Welcome to the ${BOLD}ume${RESET} container image."
-  info "  🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-  info ""
-  info "  * Subscribe to the project for updates:        https://github.com/auguwu/ume"
-  info "  * Any issues occur? Report it to us at GitHub: https://github.com/auguwu/ume/issues"
-  info ""
-fi
-
-debug "$ tini -s $@"
-tini -s "$@"
+storage "filesystem" {
+  directory = "/var/lib/noel/ume/data"
+}
