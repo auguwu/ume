@@ -71,8 +71,8 @@ jobs:
                       os: windows
         steps:
             - name: Install recommended compilers (`gcc-aarch64-linux-gnu`)
-              if: ${{matrix.runner == 'ubuntu-latest' && matrix.arch == 'arm64-gnu' }}
-              run: apt install -y gcc-aarch64-linux-gnu
+              if: ${{matrix.runner == 'ubuntu-latest' && matrix.arch == 'arm64' }}
+              run: sudo apt install -y gcc-aarch64-linux-gnu
 
             - name: Checkout source code
               uses: actions/checkout@v4
