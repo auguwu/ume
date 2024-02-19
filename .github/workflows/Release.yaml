@@ -145,7 +145,7 @@ jobs:
                 path-format: /ume/${{steps.tag.outputs.tag}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}
+                files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}
                 region: us-east-1
                 bucket: august
 
@@ -155,10 +155,10 @@ jobs:
                 enforce-path-access-style: true
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
                 secret-key: ${{secrets.S3_SECRET_KEY}}
-                path-format: /ume/${{steps.tag.outputs.tag}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
+                path-format: /ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}.sha256
+                files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}.sha256
                 region: us-east-1
                 bucket: august
 
@@ -171,7 +171,7 @@ jobs:
                 path-format: /ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}
+                files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}
                 region: us-east-1
                 bucket: august
 
@@ -184,7 +184,7 @@ jobs:
                 path-format: /ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./target/${{matrix.runner}}/releases/ume${{matrix.ext}}.sha256
+                files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}.sha256
                 region: us-east-1
                 bucket: august
 
