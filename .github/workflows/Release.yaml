@@ -227,7 +227,7 @@ jobs:
               with:
                 registry: ghcr.io
                 username: ${{github.repository_owner}}
-                password: ${{github.token}}
+                password: ${{secrets.GH_TOKEN}}
 
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v3
@@ -298,7 +298,7 @@ jobs:
               with:
                 registry: ghcr.io
                 username: ${{github.repository_owner}}
-                password: ${{github.token}}
+                password: ${{secrets.GH_TOKEN}}
 
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v3
@@ -357,7 +357,7 @@ jobs:
               with:
                 registry: ghcr.io
                 username: ${{github.repository_owner}}
-                password: ${{github.token}}
+                password: ${{secrets.GH_TOKEN}}
 
             - name: Push manifest [auguwu/ume:latest]
               uses: Noelware/docker-manifest-action@0.4.1
