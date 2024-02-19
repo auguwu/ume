@@ -1,4 +1,10 @@
 {
-  "automerge": true,
-  "extends": ["config:base"]
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "enabled": false,
+    "automerge": true,
+    "extends": ["config:base", "default:timezone(America/Los_Angeles)", "docker:disableMajor"],
+    "enabledManagers": ["docker", "helm", "rust", "terraform"],
+    "vulnerabilityAlerts": {
+        "labels": ["security"]
+    }
 }
