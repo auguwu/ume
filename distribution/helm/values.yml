@@ -1,0 +1,80 @@
+# 🐻‍❄️💐 ume: Easy, self-hostable, and flexible image host made in Rust
+# Copyright 2021-2024 Noel Towa <cutie@floofy.dev>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+## @section Global Parameters
+## @descriptionStart
+## Contains any global parameters that will affected all objects in the `ume` Helm chart.
+## @descriptionEnd
+##
+## @param global.replicas Amount of replicas to spawn
+## @param global.resources Resource list to apply to all containers.
+## @param global.fullNameOverride String to fully override the Helm installation name for all objects
+## @param global.nameOverride String to override the Helm installation name for all objects, will be in conjunction with a prefix of `<install-name>-`
+## @param global.clusterDomain Domain host that maps to the cluster
+## @param global.nodeSelector Selector labels to apply to contraint the pods to specific nodes. Read more in the [Kubernetes documentation](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector).
+## @param global.tolerations List of all taints/tolerations to apply in conjunction with `global.affinity`. Read more in the [Kubernetes documentation](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration)
+## @param global.affinity Map of all the affinity to apply to the spawned Pods. Read more in the [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/).
+## @param global.annotations Map of annotations to append to on all objects that this Helm chart creates.
+## @param global.extraEnvVars List of extra environment variables to append to all init/sidecar containers and normal containers.
+## @param global.initContainers List of init containers to create.
+## @param global.podSecurityContext Security context for all spawned Pods. Read more in the [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/).
+## @param global.containerSecurityContext Security context for all init, sidecar, and normal containers. Read more in the [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/).
+global:
+  replicas: 1
+  fullNameOverride: ""
+  nameOverride: ""
+  clusterDomain: cluster.local
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  annotations: {}
+  extraEnvVars: []
+  initContainers: []
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  resources: {}
+    ## Example:
+    ##  limits:
+    ##    memory: 2Gi
+    ##    cpu: 1500m
+    ##  requests:
+    ##    memory: 512Mi
+    ##    cpu: 150m
+
+## @section Docker Image Parameters
+## @descriptionStart
+## Parameters to modify the Docker image that is ran.
+## @descriptionEnd
+##
+## @param image.pullPolicy [string] [Pull policy](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy) when pulling the image.
+## @param image.registry Registry URL to point to. For Docker Hub, use an empty string.
+## @param image.image Image name.
+## @param image.tag The tag of the image. Keep this as a empty string if you wish to use the default app's version.
+## @param image.digest Digest in the form of `<alg>:<hex>`, this will replace the `image.tag` property if this is not empty.
+image:
+  pullPolicy: IfNotPresent
+  registry: "" # keep empty to use docker hub
+  image: auguwu/ume
+  tag: "" # keep empty for the app version
+  digest: ""
+
+## @section Service Account Parameters
+## @param serviceAccount.create Whether or not if the service account should be created for this Helm installation.
+## @param serviceAccount.annotations Any additional annotations to append to this ServiceAccount
+## @param serviceAccount.name The name of the service account, this will be the Helm installation name if this is empty.
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""

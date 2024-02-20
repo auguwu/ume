@@ -98,12 +98,14 @@
           ++ (lib.optional stdenv.isDarwin [darwin.apple_sdk.frameworks.CoreFoundation]);
 
         buildInputs = with pkgs; [
+          kubernetes-helm
           cargo-expand
           cargo-cross
           openssl
           glibc
           rust
           git
+          bun # only used for the `update-values` script
         ];
       };
     });
