@@ -1,0 +1,47 @@
+# 🐻‍❄️💐 ume: Easy, self-hostable, and flexible image host made in Rust
+# Copyright 2021-2024 Noel Towa <cutie@floofy.dev>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Update Values
+on:
+    workflow_dispatch: {}
+    push:
+        paths:
+            - './distribution/helm/values.yml'
+jobs:
+    update-values:
+        name: Update README.md for `values.yml` parameters
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout source code
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v1
+
+            - name: Write values.yaml into README
+              working-directory: ./distribution/helm
+              run: ./scripts/emit-values
+
+            - name: Prettier!
+              run: bunx prettier --config=${GITHUB_WORKSPACE}/distribution/helm/.prettierrc.json --write charts/**/README.md
+
+            - name: Commit!
+              uses: EndBug/add-and-commit@v9
+              with:
+                  author_name: Noel
+                  default_author: user_info
+                  author_email: cutie@floofy.dev
+                  message: '[skip ci] :sparkles: Update `values.yml` in Helm chart'
+                  push: true
