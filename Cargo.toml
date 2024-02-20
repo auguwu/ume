@@ -67,7 +67,7 @@ noelware-serde = { git = "https://github.com/Noelware/core-rs", rev = "3283e0231
 ] }
 num_cpus = "1.16.0"
 once_cell = "1.19.0"
-openssl = "0.10.63"
+openssl = "0.10.64"
 owo-colors = "4.0.0"
 rand = "0.8.5"
 regex = "1.10.3"
