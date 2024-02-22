@@ -194,19 +194,19 @@ jobs:
                 password: ${{secrets.DOCKER_PASSWORD}}
                 repository: auguwu/ume
                 readme-filepath: ./distribution/docker/README.md
-    docker-debian:
+    docker:
         name: Build Docker Image [${{matrix.dockerfile}}]
         runs-on: ubuntu-latest
         strategy:
             fail-fast: true
             matrix:
                 dockerfile:
-                    - ./distribution/docker/debian.Dockerfile
-                    - ./distribution/docker/alpine.Dockerfile
+                    - debian
+                    - alpine
                 include:
-                    - dockerfile: ./distribution/docker/debian.Dockerfile
+                    - dockerfile: debian
                       suffix: ""
-                    - dockerfile: ./distribution/docker/alpine.Dockerfile
+                    - dockerfile: alpine
                       suffix: "-alpine"
         steps:
             - name: Checkout source code
@@ -247,18 +247,18 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha
                   context: .
-                  file: ${{matrix.dockerfile}}
+                  file: ./distribution/docker/${{matrix.dockerfile}}.Dockerfile
                   push: true
                   sbom: true
                   tags: |
                       ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
                       ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
                       ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
-                      ghcr.io/auguwu/ume:latest-${{matrix.suffix}}
+                      ghcr.io/auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
                       auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
                       auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
                       auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
-                      auguwu/ume:latest${{matrix.suffix}}
+                      auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
                   labels: |
                       org.opencontainers.image.title=ume
                       org.opencontainers.image.description="🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"

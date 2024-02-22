@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::config::{self, Config};
+use crate::config::{self, tracing::otel::Kind, Config};
 use axum::{
     body::Body,
     extract::DefaultBodyLimit,
@@ -23,6 +23,8 @@ use axum::{
 use axum_server::{tls_rustls::RustlsConfig, Handle};
 use eyre::Context;
 use noelware_log::{writers, WriteLayer};
+use opentelemetry::trace::TracerProvider as _;
+use opentelemetry_sdk::trace::TracerProvider;
 use owo_colors::{OwoColorize, Stream::Stdout};
 use remi::StorageService;
 use sentry::types::Dsn;
@@ -86,6 +88,31 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
         ..Default::default()
     });
 
+    let provider = if let config::tracing::Config::OpenTelemetry(ref otel) = config.tracing {
+        let mut provider = TracerProvider::builder();
+        match otel.kind {
+            Kind::Grpc => {
+                provider = provider.with_simple_exporter(
+                    opentelemetry_otlp::new_exporter()
+                        .tonic()
+                        .build_span_exporter()?,
+                )
+            }
+
+            Kind::Http => {
+                provider = provider.with_simple_exporter(
+                    opentelemetry_otlp::new_exporter()
+                        .http()
+                        .build_span_exporter()?,
+                )
+            }
+        };
+
+        Some(provider.build())
+    } else {
+        None
+    };
+
     tracing_subscriber::registry()
         .with(
             match config.logging.json {
@@ -116,10 +143,13 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
                     !meta.target().starts_with("tokio::")
                 })),
         )
+        .with(
+            provider
+                .map(|provider| tracing_opentelemetry::layer().with_tracer(provider.tracer("ume"))),
+        )
         .init();
 
-    info!("loaded configuration from {loc}");
-    info!("starting Ume server...");
+    info!("loaded configuration from {loc}, starting Ume server...");
     let storage = match config.storage {
         crate::config::storage::Config::Filesystem(ref fs) => {
             noelware_remi::StorageService::Filesystem(remi_fs::StorageService::with_config(

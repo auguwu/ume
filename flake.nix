@@ -100,7 +100,7 @@
         buildInputs = with pkgs; [
           kubernetes-helm
           cargo-expand
-          cargo-cross
+          cargo-deny
           openssl
           glibc
           rust

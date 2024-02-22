@@ -84,7 +84,7 @@ pub async fn get_image(
     }
 
     let Some(file) = storage
-        .blob(&image)
+        .blob(format!("./{image}"))
         .await
         .inspect_err(|e| {
             error!(error = %e, %image, "unable to find the image specified");

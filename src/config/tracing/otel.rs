@@ -113,7 +113,7 @@ impl TryFromEnv for Config {
                 Ok(res) => {
                     let mut h = HashMap::new();
                     for line in res.split(',') {
-                        while let Some((key, val)) = line.split_once('=') {
+                        if let Some((key, val)) = line.split_once('=') {
                             // skip if there was more than one '='
                             if val.contains('=') {
                                 continue;

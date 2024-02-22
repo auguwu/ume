@@ -547,6 +547,7 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
+distribution/helm/*.tgz
 config.hcl
 !src/bin/
 .direnv/

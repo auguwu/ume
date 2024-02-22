@@ -18,9 +18,12 @@ use eyre::Context;
 use reqwest::multipart::{self, Part};
 use serde_json::Value;
 use std::{
+    borrow::Cow,
     fs::{self, create_dir_all, remove_file, OpenOptions},
+    io::Cursor,
     path::{Path, PathBuf},
     process::{exit, Command, Stdio},
+    time::{Duration, Instant},
 };
 use tokio_util::bytes::Bytes;
 use url::Url;
@@ -44,7 +47,8 @@ pub struct Cmd {
     #[arg(long, env = "FLAMESHOT")]
     flameshot: Option<PathBuf>,
 
-    /// disables copying the image URL or the image itself (if it failed to upload)
+    /// disables copying the image URL or the image itself (if it failed to upload) onto
+    /// the system clipboard.
     #[arg(long, env = "UME_NO_COPY")]
     no_copy: bool,
 }
@@ -106,7 +110,7 @@ async fn upload_file(cmd: &Cmd, loc: &Path) -> eyre::Result<()> {
     let res = client
         .post(format!("{}images/upload", cmd.server))
         .header("Authorization", &cmd.master_key)
-        .multipart(multipart::Form::new().part("fdata", Part::stream(contents)))
+        .multipart(multipart::Form::new().part("fdata", Part::stream(contents.clone())))
         .send()
         .await?;
 
@@ -122,9 +126,42 @@ async fn upload_file(cmd: &Cmd, loc: &Path) -> eyre::Result<()> {
         let msg = obj["message"].as_str().unwrap();
 
         error!("received message from Ume server [{status}]: {msg}");
-        exit(1);
+        if cmd.no_copy {
+            return Ok(());
+        }
+
+        let mut clipboard = arboard::Clipboard::new()?;
+        let img: image::DynamicImage = image::io::Reader::new(Cursor::new(&contents)).decode()?;
+
+        clipboard.set_image(arboard::ImageData {
+            height: img.height() as usize,
+            width: img.width() as usize,
+            bytes: Cow::Borrowed(contents.as_ref()),
+        })?;
+
+        return Ok(());
     }
 
-    eprintln!("{}", obj["filename"].as_str().unwrap());
-    Ok(())
+    let url = obj["filename"].as_str().unwrap();
+    if cmd.no_copy {
+        eprintln!("{}", url);
+        return Ok(());
+    }
+
+    info!("copying url to clipboard!");
+
+    let mut clipboard = arboard::Clipboard::new()?;
+    cfg_if::cfg_if! {
+        if #[cfg(target_os = "linux")] {
+            use arboard::SetExtLinux;
+
+            // wait ~1s to block
+            clipboard.set().wait_until(Instant::now() + Duration::from_secs(1)).text(url)?;
+        } else {
+            clipboard.set_text(url)?;
+        }
+    }
+
+    info!("copied to clipboard, deleting image");
+    fs::remove_file(loc).context("unable to delete file")
 }

@@ -5,8 +5,13 @@
     "rust-analyzer.check.command": "clippy",
     "rust-analyzer.check.allTargets": true,
     "rust-analyzer.showUnlinkedFileNotification": false,
+    "prettier.ignorePath": "distribution/helm/.prettierignore",
     "[rust]": {
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    },
+    "[yaml]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml",
+        "editor.tabSize": 2
     },
     "[hcl]": {
         "editor.defaultFormatter": "hashicorp.hcl",
