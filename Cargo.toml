@@ -32,6 +32,7 @@ vendored = ["openssl/vendored", "opentelemetry-otlp/openssl-vendored"]
 mimalloc = ["dep:mimalloc"]
 
 [dependencies]
+# uses the fork until https://github.com/1Password/arboard/pull/134 is passed
 arboard = { version = "3.3.1", git = "https://github.com/auguwu/arboard", branch = "noel/add-wait-until", features = [
     "wayland-data-control",
 ] }
