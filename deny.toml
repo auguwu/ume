@@ -58,6 +58,10 @@ exceptions = [
     # See https://github.com/dtolnay/unicode-ident/pull/4
     { name = "unicode-ident", allow = ["Unicode-DFS-2016"] },
     { name = "ring", allow = ["OpenSSL"] },
+
+    # Allow `error-code` to pass through since arboard uses `clipboard-win`,
+    # so we will slide it. BSL is Boost Software License, not the other BSL.
+    { name = "error-code", allow = ["BSL-1.0"] },
 ]
 
 # Sigh
