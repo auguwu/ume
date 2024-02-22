@@ -75,6 +75,7 @@
             lockFile = ./Cargo.lock;
             outputHashes = {
               "noelware-config-0.1.0" = "sha256-gfQiyqne0AH0SDy5Q5lX1NNVqQfSIdDGiIkg2aq9WF0=";
+              "arboard-3.3.1" = "sha256-cl2Jj9qIxeKVtqpeMmYeuJM8DOjmy6t1ZIRNCQ0tGfo=";
             };
           };
 
