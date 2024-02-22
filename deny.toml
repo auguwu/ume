@@ -62,6 +62,7 @@ exceptions = [
     # Allow `error-code` to pass through since arboard uses `clipboard-win`,
     # so we will slide it. BSL is Boost Software License, not the other BSL.
     { name = "error-code", allow = ["BSL-1.0"] },
+    { name = "clipboard-win", allow = ["BSL-1.0"] }, # view above comment
 ]
 
 # Sigh
