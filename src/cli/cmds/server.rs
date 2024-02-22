@@ -271,8 +271,6 @@ fn panic_handler(message: Box<dyn Any + Send + 'static>) -> Response<Body> {
 
 fn print_banner() {
     let mut stdout = io::stdout().lock();
-
-    let _ = writeln!(stdout);
     let _ = writeln!(
         stdout,
         "» Booting up {} v{}, compiled with Rust v{}",

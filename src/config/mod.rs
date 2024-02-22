@@ -131,9 +131,10 @@ impl Config {
         cfg.merge(file);
         if cfg.uploader_key.is_empty() {
             let key = __generated_uploader_key();
-            eprintln!("[ume WARN] Missing a uploader key for encoding JWT tokens, but I have generated one for you: {key}\n
-Set this in the `UME_UPLOADER_KEY` environment variable when loading the server or in the `uploader_key` in your `config.hcl` file.\n
-If any other key replaces this, then all JWT tokens will no longer be able to be verified, so it is recommended to keep this safe somewhere");
+            eprintln!("[ume WARN] Missing a uploader key for authentication! I have generated one for you:\n
+\t\t{key}\n
+Set this in the `UME_UPLOADER_KEY` environment variable when loading the server or in the `uploader_key` in your `config.hcl` file.
+If any other key replaces this, then it'll no longer be verified. It is recommended to keep this safe somewhere");
 
             cfg.uploader_key = key;
         }
