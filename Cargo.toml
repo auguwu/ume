@@ -53,7 +53,7 @@ dotenvy = "0.15.7"
 eyre = "0.6.12"
 futures-lite = "2.2.0"
 hcl-rs = "0.16.7"
-image = "0.24.8"
+image = "0.24.9"
 indicatif = "0.17.8"
 mimalloc = { version = "0.1.39", optional = true }
 mime = "0.3.17"
