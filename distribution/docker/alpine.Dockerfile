@@ -28,7 +28,6 @@ RUN rm rust-toolchain.toml
 
 # First, we create an empty Rust project so that dependencies can be cached.
 COPY Cargo.toml .
-COPY Cargo.lock .
 
 RUN mkdir -p src/ && echo "fn main() {}" > src/dummy.rs && sed -i 's#src/bin/main.rs#src/dummy.rs#' Cargo.toml
 RUN --mount=type=cache,target=/build/target/ \
