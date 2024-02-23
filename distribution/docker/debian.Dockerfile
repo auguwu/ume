@@ -22,13 +22,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y libssl-dev pkg-config git ca-certificates
 WORKDIR /build
 
-COPY . .
-
 ENV RUSTFLAGS="-Ctarget-cpu=native"
-
-# Remove the `rust-toolchain.toml` file since we expect to use `rustc` from the Docker image
-# rather from rustup.
-RUN rm rust-toolchain.toml
 
 # First, we create an empty Rust project so that dependencies can be cached.
 COPY Cargo.toml .
@@ -39,6 +33,11 @@ RUN --mount=type=cache,target=/build/target/ \
 
 # Now, we can remove `src/` and copy the whole project
 RUN rm src/dummy.rs && sed -i 's#src/dummy.rs#src/bin/main.rs#' Cargo.toml
+
+# Remove the `rust-toolchain.toml` file since we expect to use `rustc` from the Docker image
+# rather from rustup.
+RUN rm rust-toolchain.toml
+
 COPY . .
 
 # Now build the CLI
