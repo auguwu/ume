@@ -19,17 +19,29 @@ FROM --platform=${TARGETPLATFORM} rust:1.76-slim-bullseye AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && apt install -y libssl-dev pkg-config git ca-certificates protobuf-compiler
+RUN apt update && apt install -y libssl-dev pkg-config git ca-certificates
 WORKDIR /build
 
 COPY . .
 
-ENV CARGO_INCREMENTAL=1
 ENV RUSTFLAGS="-Ctarget-cpu=native"
 
 # Remove the `rust-toolchain.toml` file since we expect to use `rustc` from the Docker image
 # rather from rustup.
 RUN rm rust-toolchain.toml
+
+# First, we create an empty Rust project so that dependencies can be cached.
+COPY Cargo.toml .
+
+RUN mkdir -p src/ && echo "fn main() {}" > src/dummy.rs && sed -i 's#src/bin/main.rs#src/dummy.rs#' Cargo.toml
+RUN --mount=type=cache,target=/build/target/ \
+    cargo build --release
+
+# Now, we can remove `src/` and copy the whole project
+RUN rm src/dummy.rs && sed -i 's#src/dummy.rs#src/bin/main.rs#' Cargo.toml
+COPY . .
+
+# Now build the CLI
 RUN cargo build --release --bin ume
 
 ############ FINAL STAGE

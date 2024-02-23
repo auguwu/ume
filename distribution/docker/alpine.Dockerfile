@@ -20,13 +20,25 @@ FROM --platform=${TARGETPLATFORM} rust:1.76-alpine3.19 AS build
 RUN apk update && apk add --no-cache git ca-certificates curl musl-dev libc6-compat gcompat pkgconfig openssl-dev build-base
 WORKDIR /build
 
-COPY . .
+ENV RUSTFLAGS="-Ctarget-cpu=native -Ctarget-feature=-crt-static"
 
 # Remove the `rust-toolchain.toml` file since we expect to use `rustc` from the Docker image
 # rather from rustup.
 RUN rm rust-toolchain.toml
 
-ENV RUSTFLAGS="-Ctarget-cpu=native -Ctarget-feature=-crt-static"
+# First, we create an empty Rust project so that dependencies can be cached.
+COPY Cargo.toml .
+COPY Cargo.lock .
+
+RUN mkdir -p src/ && echo "fn main() {}" > src/dummy.rs && sed -i 's#src/bin/main.rs#src/dummy.rs#' Cargo.toml
+RUN --mount=type=cache,target=/build/target/ \
+    cargo build --release
+
+# Now, we can remove `src/` and copy the whole project
+RUN rm src/dummy.rs && sed -i 's#src/dummy.rs#src/bin/main.rs#' Cargo.toml
+COPY . .
+
+# Now build the CLI
 RUN cargo build --release --bin ume
 
 ############ FINAL STAGE

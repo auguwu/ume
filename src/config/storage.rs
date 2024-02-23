@@ -26,7 +26,7 @@ use noelware_config::{
 };
 use remi_azure::Credential;
 use serde::{Deserialize, Serialize};
-use std::{borrow::Cow, path::PathBuf, str::FromStr};
+use std::{borrow::Cow, env::VarError, path::PathBuf, str::FromStr};
 
 /// Represents the configuration for configuring
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,8 +65,8 @@ impl TryFromEnv for Config {
                 })),
 
                 "s3" => Ok(Config::S3(remi_s3::S3StorageConfig {
-                    enable_signer_v4_requests: env!("UME_STORAGE_S3_ENABLE_SIGNER_V4_REQUESTS", to: bool),
-                    enforce_path_access_style: env!("UME_STORAGE_S3_ENFORCE_PATH_ACCESS_STYLE", to: bool),
+                    enable_signer_v4_requests: env!("UME_STORAGE_S3_ENABLE_SIGNER_V4_REQUESTS", to: bool, or_else: false),
+                    enforce_path_access_style: env!("UME_STORAGE_S3_ENFORCE_PATH_ACCESS_STYLE", to: bool, or_else: false),
                     default_object_acl: env!("UME_STORAGE_S3_DEFAULT_OBJECT_ACL", {
                         or_else: Some(ObjectCannedAcl::BucketOwnerFullControl);
                         mapper: |val| ObjectCannedAcl::from_str(val.as_str()).ok();
@@ -77,17 +77,21 @@ impl TryFromEnv for Config {
                         mapper: |val| BucketCannedAcl::from_str(val.as_str()).ok();
                     }),
 
-                    secret_access_key: env!("UME_STORAGE_S3_SECRET_ACCESS_KEY")
-                        .expect("required env variable [UME_STORAGE_S3_SECRET_ACCESS_KEY]"),
+                    secret_access_key: env!("UME_STORAGE_S3_SECRET_ACCESS_KEY").map_err(|e| match e {
+                        VarError::NotPresent => eyre!("you're required to add the [UME_STORAGE_S3_SECRET_ACCESS_KEY] environment variable"),
+                        VarError::NotUnicode(_) => eyre!("wanted valid UTF-8 for env `UME_STORAGE_S3_SECRET_ACCESS_KEY`")
+                    })?,
 
-                    access_key_id: env!("UME_STORAGE_S3_ACCESS_KEY_ID")
-                        .expect("required env variable [UME_STORAGE_S3_ACCESS_KEY_ID]"),
+                    access_key_id: env!("UME_STORAGE_S3_ACCESS_KEY_ID").map_err(|e| match e {
+                        VarError::NotPresent => eyre!("you're required to add the [UME_STORAGE_S3_ACCESS_KEY_ID] environment variable"),
+                        VarError::NotUnicode(_) => eyre!("wanted valid UTF-8 for env `UME_STORAGE_S3_ACCESS_KEY_ID`")
+                    })?,
 
                     app_name: env!("UME_STORAGE_S3_APP_NAME", is_optional: true),
                     endpoint: env!("UME_STORAGE_S3_ENDPOINT", is_optional: true),
                     prefix: env!("UME_STORAGE_S3_PREFIX", is_optional: true),
                     region: env!("UME_STORAGE_S3_REGION", {
-                        or_else: Some(Region::new(Cow::Owned("us-east-1".to_owned())));
+                        or_else: Some(Region::new(Cow::Borrowed("us-east-1")));
                         mapper: |val| Some(Region::new(Cow::Owned(val)));
                     }),
 
@@ -330,7 +334,20 @@ fn to_env_location() -> eyre::Result<azure_storage::CloudLocation> {
                 address: env!("UME_STORAGE_AZURE_EMULATOR_ADDRESS")
                     .context("missing required env [UME_STORAGE_AZURE_EMULATOR_ADDRESS]")?,
 
-                port: env!("UME_STORAGE_AZURE_EMULATOR_PORT", to: u16),
+                port: match env!("UME_STORAGE_AZURE_EMULATOR_PORT") {
+                    Ok(res) => res.parse::<u16>()?,
+                    Err(VarError::NotPresent) => {
+                        return Err(eyre!(
+                            "missing `UME_STORAGE_AZURE_EMULATOR_PORT` environment variable"
+                        ))
+                    }
+
+                    Err(VarError::NotUnicode(_)) => {
+                        return Err(eyre!(
+                            "`UME_STORAGE_AZURE_EMULATOR_PORT` env was not in valid UTF-8"
+                        ))
+                    }
+                },
             }),
 
             "custom" => Ok(azure_storage::CloudLocation::Custom {
