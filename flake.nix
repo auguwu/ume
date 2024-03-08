@@ -14,16 +14,6 @@
 # limitations under the License.
 {
   description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust";
-  nixConfig = {
-    extra-substituters = [
-      "https://noel.cachix.org"
-    ];
-
-    extra-trusted-public-keys = [
-      "noel.cachix.org-1:pQHbMJOB5h5VqYi3RV0Vv0EaeHfxARxgOhE9j013XwQ="
-    ];
-  };
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
