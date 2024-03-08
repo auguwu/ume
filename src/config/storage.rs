@@ -28,6 +28,8 @@ use remi_azure::Credential;
 use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, env::VarError, path::PathBuf, str::FromStr};
 
+use crate::TRUTHY_REGEX;
+
 /// Represents the configuration for configuring
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -54,28 +56,21 @@ impl TryFromEnv for Config {
         match env!("UME_STORAGE_SERVICE") {
             Ok(res) => match res.to_lowercase().as_str() {
                 "filesystem" | "fs" => Ok(Config::Filesystem(remi_fs::Config {
-                    directory: env!("UME_STORAGE_FILESYSTEM_DIRECTORY", to: PathBuf, or_else: PathBuf::from("./data")),
+                    directory: env!("UME_STORAGE_FILESYSTEM_DIRECTORY", |val| val.parse::<PathBuf>().unwrap()).unwrap_or_else(|_| PathBuf::from("./data")),
                 })),
 
                 "azure" => Ok(Config::Azure(remi_azure::StorageConfig {
                     credentials: to_env_credentials()?,
                     location: to_env_location()?,
-                    container: env!("UME_STORAGE_AZURE_CONTAINER", is_optional: true)
+                    container: env!("UME_STORAGE_AZURE_CONTAINER", optional)
                         .unwrap_or("ume".into()),
                 })),
 
                 "s3" => Ok(Config::S3(remi_s3::S3StorageConfig {
-                    enable_signer_v4_requests: env!("UME_STORAGE_S3_ENABLE_SIGNER_V4_REQUESTS", to: bool, or_else: false),
-                    enforce_path_access_style: env!("UME_STORAGE_S3_ENFORCE_PATH_ACCESS_STYLE", to: bool, or_else: false),
-                    default_object_acl: env!("UME_STORAGE_S3_DEFAULT_OBJECT_ACL", {
-                        or_else: Some(ObjectCannedAcl::BucketOwnerFullControl);
-                        mapper: |val| ObjectCannedAcl::from_str(val.as_str()).ok();
-                    }),
-
-                    default_bucket_acl: env!("UME_STORAGE_S3_DEFAULT_OBJECT_ACL", {
-                        or_else: Some(BucketCannedAcl::AuthenticatedRead);
-                        mapper: |val| BucketCannedAcl::from_str(val.as_str()).ok();
-                    }),
+                    enable_signer_v4_requests: env!("UME_STORAGE_S3_ENABLE_SIGNER_V4_REQUESTS", |val| TRUTHY_REGEX.is_match(&val); or false),
+                    enforce_path_access_style: env!("UME_STORAGE_S3_ENFORCE_PATH_ACCESS_STYLE", |val| TRUTHY_REGEX.is_match(&val); or false),
+                    default_object_acl: env!("UME_STORAGE_S3_DEFAULT_OBJECT_ACL", |val| ObjectCannedAcl::from_str(val.as_str()).ok(); or Some(ObjectCannedAcl::BucketOwnerFullControl)),
+                    default_bucket_acl: env!("UME_STORAGE_S3_DEFAULT_OBJECT_ACL", |val| BucketCannedAcl::from_str(val.as_str()).ok(); or Some(BucketCannedAcl::AuthenticatedRead)),
 
                     secret_access_key: env!("UME_STORAGE_S3_SECRET_ACCESS_KEY").map_err(|e| match e {
                         VarError::NotPresent => eyre!("you're required to add the [UME_STORAGE_S3_SECRET_ACCESS_KEY] environment variable"),
@@ -87,15 +82,11 @@ impl TryFromEnv for Config {
                         VarError::NotUnicode(_) => eyre!("wanted valid UTF-8 for env `UME_STORAGE_S3_ACCESS_KEY_ID`")
                     })?,
 
-                    app_name: env!("UME_STORAGE_S3_APP_NAME", is_optional: true),
-                    endpoint: env!("UME_STORAGE_S3_ENDPOINT", is_optional: true),
-                    prefix: env!("UME_STORAGE_S3_PREFIX", is_optional: true),
-                    region: env!("UME_STORAGE_S3_REGION", {
-                        or_else: Some(Region::new(Cow::Borrowed("us-east-1")));
-                        mapper: |val| Some(Region::new(Cow::Owned(val)));
-                    }),
-
-                    bucket: env!("UME_STORAGE_S3_BUCKET", is_optional: true)
+                    app_name: env!("UME_STORAGE_S3_APP_NAME", optional),
+                    endpoint: env!("UME_STORAGE_S3_ENDPOINT", optional),
+                    prefix: env!("UME_STORAGE_S3_PREFIX", optional),
+                    region: env!("UME_STORAGE_S3_REGION", |val| Some(Region::new(Cow::Owned(val))); or Some(Region::new(Cow::Borrowed("us-east-1")))),
+                    bucket: env!("UME_STORAGE_S3_BUCKET", optional)
                         .unwrap_or("ume".into()),
                 })),
 
@@ -104,10 +95,7 @@ impl TryFromEnv for Config {
                 )),
             },
 
-            Err(std::env::VarError::NotPresent) => Ok(Config::Filesystem(remi_fs::Config {
-                directory: env!("UME_STORAGE_FILESYSTEM_DIRECTORY", to: PathBuf, or_else: PathBuf::from("./data")),
-            })),
-
+            Err(std::env::VarError::NotPresent) => Ok(Default::default()),
             Err(e) => Err(Report::from(e)),
         }
     }

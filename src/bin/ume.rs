@@ -28,6 +28,8 @@ use ume::cli::{Cmd, Program};
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 fn main() -> eyre::Result<()> {
+    let _ = dotenvy::dotenv();
+
     let program = Program::parse();
     let runtime = match program.command {
         Cmd::Server(ref server) => {

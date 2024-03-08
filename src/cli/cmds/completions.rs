@@ -27,7 +27,7 @@ pub struct Cmd {
 }
 
 pub fn execute(cmd: Cmd) -> eyre::Result<()> {
-    let default_shell = match env!("SHELL", mapper: |val| val.parse::<PathBuf>().unwrap()) {
+    let default_shell = match env!("SHELL", |val| val.parse::<PathBuf>().unwrap()) {
         Ok(path) => match Shell::from_shell_path(path) {
             Some(shell) => shell,
             None => Shell::Bash,

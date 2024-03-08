@@ -20,7 +20,7 @@ FROM --platform=${TARGETPLATFORM} rust:1.76-alpine3.19 AS build
 RUN apk update && apk add --no-cache git ca-certificates curl musl-dev libc6-compat gcompat pkgconfig openssl-dev build-base
 WORKDIR /build
 
-ENV RUSTFLAGS="-Ctarget-cpu=native -Ctarget-feature=-crt-static"
+ENV RUSTFLAGS="-Ctarget-cpu=native"
 
 # First, we create an empty Rust project so that dependencies can be cached.
 COPY Cargo.toml .

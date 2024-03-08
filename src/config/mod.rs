@@ -22,6 +22,8 @@ use noelware_config::{env, merge::Merge, TryFromEnv};
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 use std::{
+    env::VarError,
+    fmt::Display,
     fs::File,
     ops::Deref,
     path::{Path, PathBuf},
@@ -34,8 +36,7 @@ pub struct Config {
     pub uploader_key: String,
 
     #[serde(default = "__default_base_url")]
-    #[merge(strategy = __merge_urls)]
-    pub base_url: url::Url,
+    pub base_url: Url,
 
     #[serde(default, skip_serializing_if = "Option::is_some")]
     pub sentry_dsn: Option<String>,
@@ -53,8 +54,8 @@ pub struct Config {
     pub server: crate::server::Config,
 }
 
-fn __default_base_url() -> url::Url {
-    url::Url::parse("http://localhost:3621").expect("failed to parse as url")
+fn __default_base_url() -> Url {
+    Url(url::Url::parse("http://localhost:3621").expect("failed to parse as url"))
 }
 
 fn __merge_urls(url: &mut url::Url, right: url::Url) {
@@ -69,9 +70,18 @@ impl TryFromEnv for Config {
 
     fn try_from_env() -> Result<Self::Output, Self::Error> {
         Ok(Config {
-            uploader_key: env!("UME_UPLOADER_KEY", or_else: String::new()),
-            sentry_dsn: env!("UME_SENTRY_DSN", is_optional: true),
-            base_url: env!("UME_BASE_URL", to: url::Url, or_else: __default_base_url()),
+            uploader_key: env!("UME_UPLOADER_KEY").unwrap_or_default(),
+            sentry_dsn: env!("UME_SENTRY_DSN", optional),
+            base_url: match env!("UME_BASE_URL") {
+                Ok(val) => val.parse::<Url>()?,
+                Err(VarError::NotPresent) => __default_base_url(),
+                Err(_) => {
+                    return Err(eyre!(
+                        "environment variable `UME_BASE_URL` was not a valid utf-8 string"
+                    ))
+                }
+            },
+
             logging: logging::Config::try_from_env().context("this should never happen")?,
             storage: storage::Config::try_from_env()?,
             tracing: tracing::Config::try_from_env()?,
@@ -150,6 +160,12 @@ fn __generated_uploader_key() -> String {
 /// Represents a [`url::Url`] wrapper which implements [`Merge`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Url(url::Url);
+impl Display for Url {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
 impl PartialEq for Url {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
@@ -176,5 +192,17 @@ impl FromStr for Url {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         url::Url::from_str(s).map(Url)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Config;
+    use noelware_config::TryFromEnv;
+
+    #[test]
+    fn try_from_env() {
+        let config = Config::try_from_env();
+        assert!(config.is_ok());
     }
 }

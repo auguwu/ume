@@ -26,12 +26,6 @@ pub struct Config {
     #[merge(strategy = __merge_level)]
     pub level: Level,
 
-    /// Connection URI string to connect to a TCP server that the API server will emit log information to. This
-    /// is usually with Logstash with its [`tcp` input plugin](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-tcp.html) or
-    /// with Noelware's [`Petal` service](https://github.com/Noelware/petal) to safely send log messages to Logstash.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub logstash_tcp_uri: Option<String>,
-
     /// whether or not emit the log information as JSON blobs or not.
     #[serde(default)]
     #[merge(strategy = noelware_config::merge::strategy::bool::only_if_falsy)]
@@ -41,7 +35,6 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Config {
         Config {
-            logstash_tcp_uri: None,
             level: __default_level(),
             json: false,
         }
@@ -53,23 +46,15 @@ impl FromEnv for Config {
 
     fn from_env() -> Self::Output {
         Config {
-            logstash_tcp_uri: env!("UME_LOGSTASH_TCP_URI", is_optional: true),
-            json: env!("UME_LOG_JSON", {
-                or_else: false;
-                mapper: |val| TRUTHY_REGEX.is_match(&val);
-            }),
-
-            level: env!("UME_LOG_LEVEL", {
-                or_else: __default_level();
-                mapper: |val| match val.to_lowercase().as_str() {
-                    "trace" => Level::TRACE,
-                    "debug" => Level::DEBUG,
-                    "error" => Level::ERROR,
-                    "warn" => Level::WARN,
-                    "info" => Level::INFO,
-                    _ => __default_level(),
-                };
-            }),
+            json: env!("UME_LOG_JSON", |val| TRUTHY_REGEX.is_match(&val); or false),
+            level: env!("UME_LOG_LEVEL", |val| match val.to_lowercase().as_str() {
+                "trace" => Level::TRACE,
+                "debug" => Level::DEBUG,
+                "error" => Level::ERROR,
+                "warn" => Level::WARN,
+                "info" => Level::INFO,
+                _ => __default_level(),
+            }; or __default_level()),
         }
     }
 }

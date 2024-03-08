@@ -14,28 +14,17 @@
 // limitations under the License.
 
 use crate::config::{self, tracing::otel::Kind, Config};
-use axum::{
-    body::Body,
-    extract::DefaultBodyLimit,
-    http::{header, Response, StatusCode},
-    Extension,
-};
-use axum_server::{tls_rustls::RustlsConfig, Handle};
-use eyre::Context;
 use noelware_log::{writers, WriteLayer};
-use opentelemetry::trace::TracerProvider as _;
+use opentelemetry::{trace::TracerProvider as _, KeyValue};
 use opentelemetry_sdk::trace::TracerProvider;
 use owo_colors::{OwoColorize, Stream::Stdout};
 use remi::StorageService;
 use sentry::types::Dsn;
-use serde_json::json;
 use std::{
-    any::Any,
     borrow::Cow,
     io::{self, Write as _},
     path::PathBuf,
     str::FromStr,
-    time::Duration,
 };
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
@@ -88,7 +77,7 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
         ..Default::default()
     });
 
-    let provider = if let config::tracing::Config::OpenTelemetry(ref otel) = config.tracing {
+    let _tracer = if let config::tracing::Config::OpenTelemetry(ref otel) = config.tracing {
         let mut provider = TracerProvider::builder();
         match otel.kind {
             Kind::Grpc => {
@@ -108,7 +97,22 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
             }
         };
 
-        Some(provider.build())
+        let provider = provider.build();
+        let mut attributes = otel
+            .labels
+            .iter()
+            .map(|(key, value)| KeyValue::new(key.clone(), value.clone()))
+            .collect::<Vec<_>>();
+
+        attributes.push(KeyValue::new("service.name", "ume"));
+        attributes.push(KeyValue::new("ume.version", crate::version()));
+
+        Some(provider.versioned_tracer(
+            "ume",
+            Some(crate::version()),
+            Some("https://opentelemetry.io/schema/1.0.0"),
+            Some(attributes),
+        ))
     } else {
         None
     };
@@ -127,26 +131,11 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
             })),
         )
         .with(sentry_tracing::layer())
-        .with(
-            config
-                .logging
-                .logstash_tcp_uri
-                .as_ref()
-                .map(|url| {
-                    let stream = std::net::TcpStream::connect(url).unwrap();
-                    WriteLayer::new_with(stream, writers::json)
-                })
-                .with_filter(LevelFilter::from_level(config.logging.level))
-                .with_filter(tracing_subscriber::filter::filter_fn(|meta| {
-                    // disallow from getting logs from `tokio` since it doesn't contain anything
-                    // useful to us
-                    !meta.target().starts_with("tokio::")
-                })),
-        )
-        .with(
-            provider
-                .map(|provider| tracing_opentelemetry::layer().with_tracer(provider.tracer("ume"))),
-        )
+        // .with(tracer.map(|tracer| {
+        //     tracing_opentelemetry::layer()
+        //         .with_tracer(tracer)
+        //         .with_filter(LevelFilter::from_level(config.logging.level))
+        // }))
         .init();
 
     info!("loaded configuration from {loc}, starting Ume server...");
@@ -177,96 +166,7 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
 
     storage.init().await?;
 
-    let router = crate::server::create_router()
-        .layer(sentry_tower::NewSentryLayer::new_from_top())
-        .layer(sentry_tower::SentryHttpLayer::with_transaction())
-        .layer(tower_http::catch_panic::CatchPanicLayer::custom(
-            panic_handler,
-        ))
-        .layer(DefaultBodyLimit::max(15 * 1024 * 1024))
-        .layer(axum::middleware::from_fn(crate::server::middleware::log))
-        .layer(axum::middleware::from_fn(
-            crate::server::middleware::request_id,
-        ))
-        .layer(Extension(storage))
-        .layer(Extension(config.clone()));
-
-    if let Some(ref cfg) = config.server.ssl {
-        info!("server is now using HTTPS support");
-
-        // keep a handle for the TLS server so the shutdown signal can all shutdown
-        let handle = axum_server::Handle::new();
-        tokio::spawn(shutdown_signal(Some(handle.clone())));
-
-        let addr = config.server.addr();
-        let config = RustlsConfig::from_pem_file(&cfg.cert, &cfg.cert_key).await?;
-
-        info!(address = ?addr, "listening on HTTPS");
-        axum_server::bind_rustls(addr, config)
-            .handle(handle)
-            .serve(router.into_make_service())
-            .await
-    } else {
-        let addr = config.server.addr();
-        let listener = tokio::net::TcpListener::bind(addr).await?;
-        info!(address = ?addr, "listening on HTTP");
-
-        axum::serve(listener, router.into_make_service())
-            .with_graceful_shutdown(shutdown_signal(None))
-            .await
-    }
-    .context("unable to run HTTP service")
-}
-
-async fn shutdown_signal(handle: Option<Handle>) {
-    let ctrl_c = async {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("unable to install CTRL+C handler");
-    };
-
-    #[cfg(unix)]
-    let terminate = async {
-        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
-            .expect("unable to install signal handler")
-            .recv()
-            .await;
-    };
-
-    #[cfg(not(unix))]
-    let terminate = std::future::pending::<()>();
-
-    tokio::select! {
-        _ = ctrl_c => {}
-        _ = terminate => {}
-    }
-
-    warn!("received terminal signal! shutting down");
-    if let Some(handle) = handle {
-        handle.graceful_shutdown(Some(Duration::from_secs(10)));
-    }
-}
-
-fn panic_handler(message: Box<dyn Any + Send + 'static>) -> Response<Body> {
-    let details = if let Some(msg) = message.downcast_ref::<String>() {
-        msg.clone()
-    } else if let Some(msg) = message.downcast_ref::<&str>() {
-        msg.to_string()
-    } else {
-        "unable to downcast message".to_string()
-    };
-
-    error!(%details, "route had panic'd");
-    Response::builder()
-        .status(StatusCode::INTERNAL_SERVER_ERROR)
-        .header(header::CONTENT_TYPE, "application/json; charset=utf-8")
-        .body(Body::from(
-            serde_json::to_string(&json!({
-                "message": "ume server had failed to do your request, please try again later"
-            }))
-            .unwrap(),
-        ))
-        .unwrap()
+    crate::server::start_server(storage, config).await
 }
 
 fn print_banner() {

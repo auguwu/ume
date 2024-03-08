@@ -16,7 +16,7 @@
 use crate::config::Url;
 use noelware_config::{env, merge::Merge, TryFromEnv};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, env::VarError};
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -106,7 +106,15 @@ impl TryFromEnv for Config {
     fn try_from_env() -> Result<Self::Output, Self::Error> {
         Ok(Config {
             kind: Kind::try_from_env()?,
-            url: env!("UME_TRACING_OTEL_COLLECTOR_URL", to: Url, or_else: __default_url()),
+            url: match env!("UME_TRACING_OTEL_COLLECTOR_URL") {
+                Ok(val) => match val.parse::<Url>() {
+                    Ok(val) => val,
+                    Err(e) => return Err(eyre!("failed to parse value [{val}]: {e}"))
+                }
+
+                Err(VarError::NotPresent) => __default_url(),
+                Err(_) => return Err(eyre!("received invalid utf-8 from `UME_TRACING_OTEL_COLLECTOR_URL` environment variable"))
+            },
 
             // syntax: UME_TRACING_OTEL_LABELS=key1=key2,key3=key4,key5=key6
             labels: match env!("UME_TRACING_OTEL_LABELS") {
@@ -144,4 +152,56 @@ impl Default for Config {
 
 fn __default_url() -> Url {
     Url(url::Url::parse("grpc://localhost:4318").expect("a valid url to be parsed"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Config, Kind};
+    use azalia::hashmap;
+    use noelware_config::{expand_with, TryFromEnv};
+
+    #[test]
+    fn test_config_without_special_env() {
+        let config = Config::try_from_env();
+        assert!(config.is_ok());
+    }
+
+    #[test]
+    fn test_config_key_kind() {
+        expand_with("UME_TRACING_OTEL_COLLECTOR", "", || {
+            let config = Config::try_from_env();
+            assert!(config.is_ok());
+
+            let config = config.unwrap();
+            assert_eq!(config.kind, Kind::Grpc);
+        });
+
+        {
+            expand_with("UME_TRACING_OTEL_COLLECTOR", "http", || {
+                let config = Config::try_from_env();
+                assert!(config.is_ok());
+
+                let config = config.unwrap();
+                assert_eq!(config.kind, Kind::Http);
+            });
+        }
+    }
+
+    #[test]
+    fn test_config_key_labels() {
+        expand_with(
+            "UME_TRACING_OTEL_LABELS",
+            "hello=world,key1=key2;key3=key4,weow=fluff",
+            || {
+                let config = Config::try_from_env().unwrap();
+                assert_eq!(
+                    config.labels,
+                    hashmap! {
+                        "hello" => "world",
+                        "weow" => "fluff"
+                    }
+                );
+            },
+        );
+    }
 }

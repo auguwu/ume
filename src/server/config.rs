@@ -18,7 +18,7 @@ pub mod ssl;
 use crate::TRUTHY_REGEX;
 use noelware_config::{env, merge::Merge, TryFromEnv};
 use serde::{Deserialize, Serialize};
-use std::net::SocketAddr;
+use std::{env::VarError, net::SocketAddr};
 
 #[derive(Debug, Clone, Merge, Serialize, Deserialize)]
 pub struct Config {
@@ -57,8 +57,51 @@ impl TryFromEnv for Config {
 
     fn try_from_env() -> Result<Self::Output, Self::Error> {
         Ok(Config {
-            host: env!("UME_SERVER_HOST", or_else: env!("HOST", or_else: __default_host())),
-            port: env!("UME_SERVER_PORT", to: u16, or_else: env!("PORT", to: u16, or_else: __default_port())),
+            host: match env!("UME_SERVER_HOST") {
+                Ok(val) => val,
+                Err(VarError::NotPresent) => match env!("HOST") {
+                    Ok(val) => val,
+                    Err(VarError::NotPresent) => __default_host(),
+                    Err(VarError::NotUnicode(_)) => {
+                        return Err(eyre!(
+                            "failed to represent `HOST` environment variable as valid unicode"
+                        ))
+                    }
+                },
+
+                Err(VarError::NotUnicode(_)) => {
+                    return Err(eyre!(
+                    "failed to represent `UME_SERVER_HOST` environment variable as valid unicode"
+                ))
+                }
+            },
+
+            port: match env!("UME_SERVER_PORT") {
+                Ok(val) => match val.parse::<u16>() {
+                    Ok(val) => val,
+                    Err(e) => return Err(eyre!(e.to_string())),
+                },
+
+                Err(VarError::NotPresent) => match env!("PORT") {
+                    Ok(val) => match val.parse::<u16>() {
+                        Ok(val) => val,
+                        Err(e) => return Err(eyre!(e.to_string())),
+                    },
+                    Err(VarError::NotPresent) => __default_port(),
+                    Err(VarError::NotUnicode(_)) => {
+                        return Err(eyre!(
+                            "failed to represent `PORT` environment variable as valid unicode"
+                        ))
+                    }
+                },
+
+                Err(VarError::NotUnicode(_)) => {
+                    return Err(eyre!(
+                    "failed to represent `UME_SERVER_PORT` environment variable as valid unicode"
+                ))
+                }
+            },
+
             ssl: match env!("UME_SERVER_SSL_ENABLE") {
                 Ok(res) if TRUTHY_REGEX.is_match(&res) => Some(ssl::Config::try_from_env()?),
                 Ok(_) => None,

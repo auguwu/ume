@@ -100,6 +100,7 @@
 
         buildInputs = with pkgs; [
           kubernetes-helm
+          cargo-machete
           cargo-expand
           cargo-deny
           openssl

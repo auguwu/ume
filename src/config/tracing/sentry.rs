@@ -27,7 +27,9 @@ impl FromEnv for Config {
 
     fn from_env() -> Self::Output {
         Config {
-            sample_set: env!("UME_TRACING_SENTRY_SAMPLE_SET", to: f32, or_else: __default_sample_set()),
+            sample_set: env!("UME_TRACING_SENTRY_SAMPLE_SET", |val| val.parse::<f32>())
+                .map(|x| x.unwrap_or_else(|_| __default_sample_set()))
+                .unwrap_or_else(|_| __default_sample_set()),
         }
     }
 }
