@@ -77,13 +77,13 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Install `cargo-machete`
+            - name: Install `cargo-deny`
               uses: taiki-e/install-action@v2.28.4
               with:
                   tool: cargo-deny
 
             - name: Run "cargo deny"
-              run: cargo deny check --all-features
+              run: cargo deny check -- --all-features
     report-missing-deps:
         name: Report Missing Dependencies
         runs-on: ubuntu-latest
