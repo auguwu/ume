@@ -83,7 +83,7 @@ jobs:
                   tool: cargo-deny
 
             - name: Run "cargo deny"
-              run: cargo deny check -- --all-features
+              run: cargo deny check all
     report-missing-deps:
         name: Report Missing Dependencies
         runs-on: ubuntu-latest
