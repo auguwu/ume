@@ -15,7 +15,7 @@
 
 ############ BINARY
 
-FROM --platform=${TARGETPLATFORM} rust:1.76-slim-bullseye AS build
+FROM --platform=${TARGETPLATFORM} rust:1.77-slim-bullseye AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
