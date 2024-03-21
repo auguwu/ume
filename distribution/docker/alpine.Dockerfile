@@ -15,7 +15,7 @@
 
 ############ BINARY
 
-FROM --platform=${TARGETPLATFORM} rust:1.76-alpine3.19 AS build
+FROM --platform=${TARGETPLATFORM} rust:1.77-alpine3.19 AS build
 
 RUN apk update && apk add --no-cache git ca-certificates curl musl-dev libc6-compat gcompat pkgconfig openssl-dev build-base
 WORKDIR /build
