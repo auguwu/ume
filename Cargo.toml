@@ -96,12 +96,12 @@ tracing-log = "0.2.0"
 tracing-opentelemetry = "0.23.0"
 tracing-subscriber = "0.3.18"
 url = "2.5.0"
-which = "6.0.0"
+which = "6.0.1"
 
 [build-dependencies]
 chrono = "0.4.35"
 rustc_version = "0.4.0"
-which = "6.0.0"
+which = "6.0.1"
 
 [dev-dependencies]
 syn = "2.0.53"
