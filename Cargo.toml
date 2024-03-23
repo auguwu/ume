@@ -76,7 +76,7 @@ opentelemetry-otlp = { version = "0.15.0", features = ["http-proto"] }
 opentelemetry_sdk = "0.22.1"
 owo-colors = "4.0.0"
 rand = "0.8.5"
-regex = "1.10.3"
+regex = "1.10.4"
 remi = "0.6.3"
 remi-azure = { version = "0.6.3", features = ["serde", "tracing"] }
 remi-fs = { version = "0.6.3", features = ["serde", "tracing", "file-format"] }
