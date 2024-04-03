@@ -104,7 +104,7 @@ rustc_version = "0.4.0"
 which = "6.0.1"
 
 [dev-dependencies]
-syn = "2.0.57"
+syn = "2.0.58"
 
 [package.metadata.cargo-machete]
 ignored = ["hcl-rs", "openssl", "tracing-log", "tracing-opentelemetry"]
