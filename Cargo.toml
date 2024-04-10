@@ -50,7 +50,7 @@ color-eyre = { version = "0.6.3", features = ["issue-url", "tracing-error"] }
 dotenvy = "0.15.7"
 eyre = "0.6.12"
 hcl-rs = "0.16.7"
-image = "0.24.9"
+image = "0.25.1"
 mimalloc = { version = "0.1.39", optional = true }
 mime = "0.3.17"
 mongodb = { version = "2.8.2", features = ["tracing", "log"] }
