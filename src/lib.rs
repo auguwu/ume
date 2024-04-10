@@ -46,7 +46,11 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Returns a formatted version of `v4.0.0+d1cebae` or `v4.0.0` if no commit hash
 /// was found.
+///
+/// This will return a immutable string slice as the version, and since it could possibly
+/// be mutated, we advise to only use it in immutable contexts; never try to mutate it.
 #[inline(always)]
+#[allow(unknown_lints, static_mut_refs)]
 pub fn version() -> &'static str {
     static ONCE: std::sync::Once = std::sync::Once::new();
     static mut VERSION: String = String::new();

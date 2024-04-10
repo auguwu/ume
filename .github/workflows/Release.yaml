@@ -83,8 +83,6 @@ jobs:
               uses: auguwu/git-tag-action@master
               id: tag
 
-            # should fix
-            # info: note that the toolchain '1.76-x86_64-unknown-linux-gnu' is currently in use (overridden by '/build/ume/rust-toolchain.toml')
             - name: Remove `rust-toolchain.toml`
               run: rm rust-toolchain.toml
 
@@ -122,16 +120,17 @@ jobs:
               if: matrix.runner == 'windows-latest'
               run: vcpkg install openssl:x64-windows-static-md
 
-            - name: Build binary
-              run: cross build --release --locked --target=${{matrix.target}} ${{matrix.flags}}
-
-            - name: Create SHA256 checksum (Unix-like)
+            - name: Build binary (Unix)
               if: ${{matrix.runner != 'windows-latest'}}
-              run: ${{matrix.runner == 'macos-latest' && 'shasum -a 256' || 'sha256sum'}} ./target/${{matrix.target}}/release/ume > ./target/${{matrix.target}}/release/ume.sha256
+              run: ./scripts/release.sh
+              env:
+                BUILDTARGET: ${{matrix.target}}
+                BUILDFLAGS: ${{matrix.flags}}
+                CARGO: "cross"
 
-            - name: Create SHA256 checksum (Windows)
+            - name: Build binary (Windows)
               if: ${{matrix.runner == 'windows-latest'}}
-              run: ((Get-FileHash -Path ./target/${{matrix.target}}/release/ume.exe).Hash).ToLower() | Out-File ./target/${{matrix.target}}/release/ume.exe.sha256
+              run: ./scripts/release.ps1 -BuildFlags "${{matrix.flags}}" -Cargo "cross"
 
             - name: Upload binary (artifacts.floofy.dev/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}})
               uses: Noelware/s3-action@2.2.3
@@ -142,7 +141,7 @@ jobs:
                 path-format: $(prefix)/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}
+                files: ./.result/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
                 region: us-east-1
                 bucket: august
 
@@ -155,7 +154,7 @@ jobs:
                 path-format: $(prefix)/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}.sha256
+                files: ./.result/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
                 region: us-east-1
                 bucket: august
 
@@ -168,7 +167,7 @@ jobs:
                 path-format: $(prefix)/ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}
+                files: ./.result/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
                 region: us-east-1
                 bucket: august
 
@@ -181,7 +180,7 @@ jobs:
                 path-format: $(prefix)/ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./target/${{matrix.target}}/release/ume${{matrix.ext}}.sha256
+                files: ./.result/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
                 region: us-east-1
                 bucket: august
 

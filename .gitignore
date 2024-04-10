@@ -551,5 +551,6 @@ distribution/helm/*.tgz
 config.hcl
 !src/bin/
 .direnv/
+.result/
 data/
 .env
