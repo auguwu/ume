@@ -14,6 +14,7 @@
 # limitations under the License.
 
 # we only support the following targets below
+[graph]
 all-features = true
 targets = [
     { triple = "x86_64-unknown-linux-gnu" },
@@ -25,10 +26,12 @@ targets = [
 ]
 
 [advisories]
-vulnerability = "deny"
-unmaintained = "deny"
-unsound = "deny"
-notice = "warn"
+# We use version 2 of the advisory config, which
+# roughly defaults to denying any vulnerable,
+# unmaintained, or unsound crates.
+#
+# See also: https://github.com/EmbarkStudios/cargo-deny/pull/611
+version = 2
 
 [bans]
 multiple-versions = "warn" # only warn since `tonic` doesn't support Axum 0.7 / Hyper 1
@@ -39,9 +42,8 @@ unknown-registry = "deny"
 unknown-git = "allow"     # only for Noelware/core-rs
 
 [licenses]
-unlicensed = "deny"
-allow-osi-fsf-free = "neither"
-copyleft = "deny"
+# Similar to advisories, opt in to version 2.
+version = 2
 # We want really high confidence when inferring licenses from text
 confidence-threshold = 0.93
 allow = [
@@ -49,6 +51,7 @@ allow = [
     "Apache-2.0 WITH LLVM-exception",
     "MIT",
     "MPL-2.0",
+    "BSD-2-Clause",                   # since image@0.25.*, they included `rav1e`, which includes `v_frame`.
     "BSD-3-Clause",
     "ISC",
 ]
@@ -56,13 +59,21 @@ exceptions = [
     # unicode-ident includes data generated from Unicode Character Database
     # which is licensed under Unicode-DFS-2016.
     # See https://github.com/dtolnay/unicode-ident/pull/4
-    { name = "unicode-ident", allow = ["Unicode-DFS-2016"] },
-    { name = "ring", allow = ["OpenSSL"] },
+    { name = "unicode-ident", allow = [
+        "Unicode-DFS-2016",
+    ] },
+    { name = "ring", allow = [
+        "OpenSSL",
+    ] },
 
     # Allow `error-code` to pass through since arboard uses `clipboard-win`,
-    # so we will slide it. BSL is Boost Software License, not the other BSL.
-    { name = "error-code", allow = ["BSL-1.0"] },
-    { name = "clipboard-win", allow = ["BSL-1.0"] }, # view above comment
+    # so we will slide it. BSL is Boost Software License, not the other BSL (Business License Source).
+    { name = "error-code", allow = [
+        "BSL-1.0",
+    ] },
+    { name = "clipboard-win", allow = [
+        "BSL-1.0",
+    ] }, # view above comment
 ]
 
 # Sigh

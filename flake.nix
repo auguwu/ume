@@ -47,6 +47,7 @@
       };
 
       rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+      cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       stdenv =
         if pkgs.stdenv.isLinux
         then pkgs.stdenv
@@ -67,7 +68,7 @@
           nativeBuildInputs = with pkgs; [pkg-config];
           buildInputs = with pkgs; [openssl];
           cargoSha256 = pkgs.lib.fakeSha256;
-          version = "4.0.0";
+          version = "${cargoTOML.package.version}";
           name = "ume";
           src = ./.;
 
@@ -75,7 +76,7 @@
             lockFile = ./Cargo.lock;
             outputHashes = {
               "noelware-config-0.1.0" = "sha256-wSBYHva/VbU0F++2XBUrg1Onhatq46gjksDyv1aMaeM=";
-              "arboard-3.3.1" = "sha256-pLUFUjVxKE+dRQkYovUGHxE7fgAwfjkeAz4lDAqXD80=";
+              "arboard-3.3.2" = "sha256-5LYkEu9kO418utwdtp8qHbUMSrYRcBSGkJguqvYKCF4=";
             };
           };
 
@@ -100,9 +101,11 @@
 
         buildInputs = with pkgs; [
           kubernetes-helm
+
           cargo-machete
           cargo-expand
           cargo-deny
+
           openssl
           glibc
           rust
