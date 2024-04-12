@@ -78,7 +78,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Install `cargo-deny`
-              uses: taiki-e/install-action@v2.32.13
+              uses: taiki-e/install-action@cargo-deny
               with:
                   tool: cargo-deny
 
@@ -92,7 +92,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Install `cargo-machete`
-              uses: taiki-e/install-action@v2.32.13
+              uses: taiki-e/install-action@cargo-machete
               with:
                   tool: cargo-machete
 
