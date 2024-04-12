@@ -98,6 +98,10 @@ jobs:
               with:
                 tool: cross
 
+            - name: Install `mold` on Linux
+              if: ${{matrix.runner == 'ubuntu-latest'}}
+              uses: rui314/setup-mold@v1
+
             - name: Setup Rust cache
               uses: Swatinem/rust-cache@v2
 

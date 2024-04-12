@@ -18,9 +18,11 @@
 FROM --platform=${TARGETPLATFORM} rust:1.77-alpine3.19 AS build
 
 RUN apk update && apk add --no-cache git ca-certificates curl musl-dev libc6-compat gcompat pkgconfig openssl-dev build-base
+RUN apk update && apk add mold --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+
 WORKDIR /build
 
-ENV RUSTFLAGS="-Ctarget-cpu=native"
+ENV RUSTFLAGS="-Ctarget-cpu=native -Clink-arg=-fuse-ld=mold"
 
 # First, we create an empty Rust project so that dependencies can be cached.
 COPY Cargo.toml .
@@ -29,7 +31,7 @@ RUN mkdir -p src/ && echo "fn main() {}" > src/dummy.rs && sed -i 's#src/bin/ume
 RUN --mount=type=cache,target=/build/target/ \
     cargo build --release
 
-# Now, we can remove `src/` and copy the whole project
+# Now, we can remove `src/dummy.rs` and copy the whole project
 RUN rm src/dummy.rs && sed -i 's#src/dummy.rs#src/bin/ume.rs#' Cargo.toml
 
 COPY . .

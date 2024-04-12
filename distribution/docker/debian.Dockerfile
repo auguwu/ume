@@ -19,10 +19,10 @@ FROM --platform=${TARGETPLATFORM} rust:1.77-slim-bullseye AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && apt install -y libssl-dev pkg-config git ca-certificates
+RUN apt update && apt install -y libssl-dev pkg-config git ca-certificates mold
 WORKDIR /build
 
-ENV RUSTFLAGS="-Ctarget-cpu=native"
+ENV RUSTFLAGS="-Ctarget-cpu=native -Clink-arg=-fuse-ld=mold"
 
 # First, we create an empty Rust project so that dependencies can be cached.
 COPY Cargo.toml .

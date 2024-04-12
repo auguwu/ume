@@ -64,6 +64,13 @@ function ume::build {
     ! [ -d "./.result" ] && mkdir -p ./.result
     pushd ./.result >/dev/null
 
+    # Export $RUSTFLAGS so we can use the target's CPU instructions
+    export RUSTFLAGS="-Ctarget-cpu=native"
+    if [ "$(uname -m)" == "Linux" ]; then
+        # ...and use `mold` as the linker since it is faster
+        export RUSTFLAGS="-Clink-arg=-fuse-ld=mold $RUSTFLAGS"
+    fi
+
     echo "===> Compiling release \`ume\` binary                 [target=$target] [flags=$flags] [\$CARGO=$cargo]"
     echo "$ $cargo build --release --locked --target $target $flags"
     "$cargo" build --release --locked --target="$target" $flags || exit 1

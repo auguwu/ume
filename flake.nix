@@ -110,7 +110,6 @@
           glibc
           rust
           git
-          bun # only used for the `update-values` script
         ];
       };
     });
