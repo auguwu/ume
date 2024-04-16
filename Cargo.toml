@@ -83,9 +83,9 @@ remi-fs = { version = "0.6.3", features = ["serde", "tracing", "file-format"] }
 remi-gridfs = { version = "0.6.3", features = ["serde", "tracing"] }
 remi-s3 = { version = "0.6.3", features = ["serde", "tracing"] }
 reqwest = { version = "0.12.3", features = ["multipart", "json"] }
-sentry = "0.32.2"
-sentry-tower = { version = "0.32.2", features = ["axum", "http"] }
-sentry-tracing = "0.32.2"
+sentry = "0.32.3"
+sentry-tower = { version = "0.32.3", features = ["axum", "http"] }
+sentry-tracing = "0.32.3"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.116"
 tokio = { version = "1.37.0", features = ["full"] }
