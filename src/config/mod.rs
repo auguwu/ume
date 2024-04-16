@@ -32,6 +32,7 @@ use std::{
 
 #[derive(Debug, Clone, Serialize, Deserialize, Merge)]
 pub struct Config {
+    #[merge(strategy = noelware_config::merge::strategy::strings::overwrite_empty)]
     #[serde(default)]
     pub uploader_key: String,
 
