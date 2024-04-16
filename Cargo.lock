@@ -260,9 +260,9 @@ dependencies = [
 
 [[package]]
 name = "aws-config"
-version = "1.1.7"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b96342ea8948ab9bef3e6234ea97fc32e2d8a88d8fb6a084e52267317f94b6b"
+checksum = "e2a89e0000cde82447155d64eeb71720b933b4396a6fbbebad3f8b4f88ca7b54"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -285,6 +285,7 @@ dependencies = [
  "time",
  "tokio",
  "tracing",
+ "url",
  "zeroize",
 ]
 
@@ -361,9 +362,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-sso"
-version = "1.15.0"
+version = "1.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d84bd3925a17c9adbf6ec65d52104a44a09629d8f70290542beeee69a95aee7f"
+checksum = "32fcc572fd5c58489ec205ec3e4e5f7d63018898a485cbf922a462af496bc300"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -383,9 +384,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-ssooidc"
-version = "1.15.0"
+version = "1.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c2dae39e997f58bc4d6292e6244b26ba630c01ab671b6f9f44309de3eb80ab8"
+checksum = "5b6275fa8684a1192754221173b1f7a7c1260d6b0571cc2b8af09468eb0cffe5"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -405,9 +406,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-sts"
-version = "1.15.0"
+version = "1.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17fd9a53869fee17cea77e352084e1aa71e2c5e323d974c13a9c2bcfd9544c7f"
+checksum = "30acd58272fd567e4853c5075d838be1626b59057e0249c9be5a1a7eb13bf70f"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -530,9 +531,9 @@ dependencies = [
 
 [[package]]
 name = "aws-smithy-query"
-version = "0.60.6"
+version = "0.60.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb27084f72ea5fc20033efe180618677ff4a2f474b53d84695cfe310a6526cbc"
+checksum = "f2fbd61ceb3fe8a1cb7352e42689cec5335833cd9f94103a61e98f9bb61c64bb"
 dependencies = [
  "aws-smithy-types",
  "urlencoding",
@@ -1034,9 +1035,9 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
 name = "bytes"
-version = "1.5.0"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2bd12c1caf447e69cd4528f47f94d203fd2582878ecb9e9465484c4148a8223"
+checksum = "514de17de45fdb8dc022b1a7975556c53c86f9f0aa5f534b98977b171857c2c9"
 
 [[package]]
 name = "bytes-utils"
@@ -2946,7 +2947,7 @@ dependencies = [
 [[package]]
 name = "noelware-config"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=f190efd883e61f0b630a14a5e1cc20da648fb38a#f190efd883e61f0b630a14a5e1cc20da648fb38a"
+source = "git+https://github.com/Noelware/core-rs?rev=8eeb681c1efe1da8dc38504bf0c76e52ef543e32#8eeb681c1efe1da8dc38504bf0c76e52ef543e32"
 dependencies = [
  "noelware-config-derive",
 ]
@@ -2954,7 +2955,7 @@ dependencies = [
 [[package]]
 name = "noelware-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=f190efd883e61f0b630a14a5e1cc20da648fb38a#f190efd883e61f0b630a14a5e1cc20da648fb38a"
+source = "git+https://github.com/Noelware/core-rs?rev=8eeb681c1efe1da8dc38504bf0c76e52ef543e32#8eeb681c1efe1da8dc38504bf0c76e52ef543e32"
 dependencies = [
  "proc-macro-error",
  "proc-macro2",
@@ -2965,7 +2966,7 @@ dependencies = [
 [[package]]
 name = "noelware-log"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=f190efd883e61f0b630a14a5e1cc20da648fb38a#f190efd883e61f0b630a14a5e1cc20da648fb38a"
+source = "git+https://github.com/Noelware/core-rs?rev=8eeb681c1efe1da8dc38504bf0c76e52ef543e32#8eeb681c1efe1da8dc38504bf0c76e52ef543e32"
 dependencies = [
  "chrono",
  "owo-colors 4.0.0",
@@ -2977,7 +2978,7 @@ dependencies = [
 [[package]]
 name = "noelware-remi"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=f190efd883e61f0b630a14a5e1cc20da648fb38a#f190efd883e61f0b630a14a5e1cc20da648fb38a"
+source = "git+https://github.com/Noelware/core-rs?rev=8eeb681c1efe1da8dc38504bf0c76e52ef543e32#8eeb681c1efe1da8dc38504bf0c76e52ef543e32"
 dependencies = [
  "azure_core",
  "mongodb",
@@ -2991,7 +2992,7 @@ dependencies = [
 [[package]]
 name = "noelware-serde"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=f190efd883e61f0b630a14a5e1cc20da648fb38a#f190efd883e61f0b630a14a5e1cc20da648fb38a"
+source = "git+https://github.com/Noelware/core-rs?rev=8eeb681c1efe1da8dc38504bf0c76e52ef543e32#8eeb681c1efe1da8dc38504bf0c76e52ef543e32"
 dependencies = [
  "serde",
  "tracing",
@@ -3589,9 +3590,9 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.35"
+version = "1.0.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "291ec9ab5efd934aaf503a6466c5d5251535d108ee747472c3977cc5acc868ef"
+checksum = "0fa76aaf39101c457836aec0ce2316dbdc3ab723cdda1c6bd4e6ad4208acaca7"
 dependencies = [
  "proc-macro2",
 ]
@@ -3800,20 +3801,19 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 
 [[package]]
 name = "remi"
-version = "0.6.3"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95e4f0987a37ec809f24eb092befd09da76b2023d863d1dcbb1919951e25221a"
+checksum = "be72aeef744a607b670d72c7a3b3a455e5b828dd371156f13266e9c5065aad4a"
 dependencies = [
  "async-trait",
  "bytes",
- "futures",
 ]
 
 [[package]]
 name = "remi-azure"
-version = "0.6.3"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aa082b184ba44cac31ba7ac64884b3053c96155ba741ef8d180ff8da84d022c"
+checksum = "2f3ab3830bdfea94e2b9a42122c27a2969d619c88b5f937db98cacbe6ff7136d"
 dependencies = [
  "async-trait",
  "azure_core",
@@ -3828,15 +3828,14 @@ dependencies = [
 
 [[package]]
 name = "remi-fs"
-version = "0.6.3"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d44a7d0b4d54577287967993068cee0350b04459324fc6fcb6df530cd56b7e54"
+checksum = "5a5a50d8b815298682157f28c5ab81ac351e1af97c333e3143d179f5abe75b85"
 dependencies = [
  "async-trait",
  "bytes",
  "dirs",
  "file-format",
- "futures",
  "infer 0.15.0",
  "remi",
  "serde",
@@ -3846,9 +3845,9 @@ dependencies = [
 
 [[package]]
 name = "remi-gridfs"
-version = "0.6.3"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6963f5125859d8e0985b3b947b65b1c29b886b208cf7f534ff9cbfe3c5a5e08d"
+checksum = "e441f42ba4a1ff212506680140b278d38fd34440d7794f0e6b996773c078ff6f"
 dependencies = [
  "async-trait",
  "bytes",
@@ -3862,14 +3861,15 @@ dependencies = [
 
 [[package]]
 name = "remi-s3"
-version = "0.6.3"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "123926062e7308f7841e93eb2f211d157d1d87104eb7383a887566a159f1c095"
+checksum = "9aebf150c3922e14080930b340621a832849abd198b36ecf4cab6e3a11fa24c2"
 dependencies = [
  "async-trait",
  "aws-config",
  "aws-credential-types",
  "aws-sdk-s3",
+ "aws-smithy-runtime-api",
  "bytes",
  "remi",
  "serde",
@@ -5204,6 +5204,7 @@ dependencies = [
  "opentelemetry-otlp",
  "opentelemetry_sdk",
  "owo-colors 4.0.0",
+ "quote",
  "rand 0.8.5",
  "regex",
  "remi",

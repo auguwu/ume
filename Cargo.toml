@@ -56,16 +56,16 @@ mimalloc = { version = "0.1.39", optional = true }
 mime = "0.3.17"
 mongodb = { version = "2.8.2", features = ["tracing", "log"] }
 multer = "3.0.0"
-noelware-config = { git = "https://github.com/Noelware/core-rs", rev = "f190efd883e61f0b630a14a5e1cc20da648fb38a", version = "0.1.0", features = [
+noelware-config = { git = "https://github.com/Noelware/core-rs", rev = "8eeb681c1efe1da8dc38504bf0c76e52ef543e32", version = "0.1.0", features = [
     "derive",
 ] }
-noelware-log = { git = "https://github.com/Noelware/core-rs", rev = "f190efd883e61f0b630a14a5e1cc20da648fb38a", version = "0.1.0", features = [
+noelware-log = { git = "https://github.com/Noelware/core-rs", rev = "8eeb681c1efe1da8dc38504bf0c76e52ef543e32", version = "0.1.0", features = [
     "writers",
 ] }
-noelware-remi = { git = "https://github.com/Noelware/core-rs", rev = "f190efd883e61f0b630a14a5e1cc20da648fb38a", version = "0.1.0", features = [
+noelware-remi = { git = "https://github.com/Noelware/core-rs", rev = "8eeb681c1efe1da8dc38504bf0c76e52ef543e32", version = "0.1.0", features = [
     "all",
 ] }
-noelware-serde = { git = "https://github.com/Noelware/core-rs", rev = "f190efd883e61f0b630a14a5e1cc20da648fb38a", version = "0.1.0", features = [
+noelware-serde = { git = "https://github.com/Noelware/core-rs", rev = "8eeb681c1efe1da8dc38504bf0c76e52ef543e32", version = "0.1.0", features = [
     "tracing",
 ] }
 num_cpus = "1.16.0"
@@ -77,11 +77,11 @@ opentelemetry_sdk = "0.22.1"
 owo-colors = "4.0.0"
 rand = "0.8.5"
 regex = "1.10.4"
-remi = "0.6.3"
-remi-azure = { version = "0.6.3", features = ["serde", "tracing"] }
-remi-fs = { version = "0.6.3", features = ["serde", "tracing", "file-format"] }
-remi-gridfs = { version = "0.6.3", features = ["serde", "tracing"] }
-remi-s3 = { version = "0.6.3", features = ["serde", "tracing"] }
+remi = "0.7.0"
+remi-azure = { version = "0.7.0", features = ["serde", "tracing"] }
+remi-fs = { version = "0.7.0", features = ["serde", "tracing", "file-format"] }
+remi-gridfs = { version = "0.7.0", features = ["serde", "tracing"] }
+remi-s3 = { version = "0.7.0", features = ["serde", "tracing"] }
 reqwest = { version = "0.12.3", features = ["multipart", "json"] }
 sentry = "0.32.3"
 sentry-tower = { version = "0.32.3", features = ["axum", "http"] }
@@ -104,6 +104,7 @@ rustc_version = "0.4.0"
 which = "6.0.1"
 
 [dev-dependencies]
+quote = "1.0.36"
 syn = "2.0.59"
 
 [package.metadata.cargo-machete]

@@ -124,9 +124,8 @@ jobs:
               if: matrix.runner == 'windows-latest'
               run: vcpkg install openssl:x64-windows-static-md
 
-            - name: Build binary (Unix)
-              if: ${{matrix.runner != 'windows-latest'}}
-              run: ./scripts/release.sh
+            - name: Build binary
+              run: ./scripts/release.${{matrix.runner == 'windows-latest' && '.ps1 -BuildFlags "${{matrix.flags}}" -Cargo "cross"' || '.sh'}}
               env:
                 BUILDTARGET: ${{matrix.target}}
                 BUILDFLAGS: ${{matrix.flags}}

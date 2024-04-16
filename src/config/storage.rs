@@ -37,7 +37,7 @@ pub enum Config {
     GridFS(remi_gridfs::StorageConfig),
     Azure(remi_azure::StorageConfig),
     Filesystem(remi_fs::Config),
-    S3(remi_s3::S3StorageConfig),
+    S3(remi_s3::StorageConfig),
 }
 
 impl Default for Config {
@@ -66,7 +66,7 @@ impl TryFromEnv for Config {
                         .unwrap_or("ume".into()),
                 })),
 
-                "s3" => Ok(Config::S3(remi_s3::S3StorageConfig {
+                "s3" => Ok(Config::S3(remi_s3::StorageConfig {
                     enable_signer_v4_requests: env!("UME_STORAGE_S3_ENABLE_SIGNER_V4_REQUESTS", |val| TRUTHY_REGEX.is_match(&val); or false),
                     enforce_path_access_style: env!("UME_STORAGE_S3_ENFORCE_PATH_ACCESS_STYLE", |val| TRUTHY_REGEX.is_match(&val); or false),
                     default_object_acl: env!("UME_STORAGE_S3_DEFAULT_OBJECT_ACL", |val| ObjectCannedAcl::from_str(val.as_str()).ok(); or Some(ObjectCannedAcl::BucketOwnerFullControl)),
@@ -250,7 +250,7 @@ fn merge_fs(config: &mut remi_fs::Config, right: remi_fs::Config) {
     }
 }
 
-fn merge_s3(config: &mut remi_s3::S3StorageConfig, right: remi_s3::S3StorageConfig) {
+fn merge_s3(config: &mut remi_s3::StorageConfig, right: remi_s3::StorageConfig) {
     strategy::bool::only_if_falsy(
         &mut config.enable_signer_v4_requests,
         right.enable_signer_v4_requests,
