@@ -75,8 +75,9 @@
           cargoLock = {
             lockFile = ./Cargo.lock;
             outputHashes = {
-              "noelware-config-0.1.0" = "sha256-wSBYHva/VbU0F++2XBUrg1Onhatq46gjksDyv1aMaeM=";
-              "arboard-3.3.2" = "sha256-5LYkEu9kO418utwdtp8qHbUMSrYRcBSGkJguqvYKCF4=";
+              "noelware-config-0.1.0" = "sha256-4yred15se1RB2LJJ2htB8DPMfcCo9+9ZWNRFlsmbDmQ=";
+              "arboard-3.3.2" = "sha256-H2xeFJkoeg0kN3pKsb2P4rxEeIbkoSwLVqFzBz5eb7g=";
+              "azalia-0.1.0" = "sha256-wSBYHva/VbU0F++2XBUrg1Onhatq46gjksDyv1aMaeM=";
             };
           };
 
