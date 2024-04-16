@@ -77,7 +77,7 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
         ..Default::default()
     });
 
-    let _tracer = if let config::tracing::Config::OpenTelemetry(ref otel) = config.tracing {
+    let tracer = if let config::tracing::Config::OpenTelemetry(ref otel) = config.tracing {
         let mut provider = TracerProvider::builder();
         match otel.kind {
             Kind::Grpc => {
@@ -131,11 +131,11 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
             })),
         )
         .with(sentry_tracing::layer())
-        // .with(tracer.map(|tracer| {
-        //     tracing_opentelemetry::layer()
-        //         .with_tracer(tracer)
-        //         .with_filter(LevelFilter::from_level(config.logging.level))
-        // }))
+        .with(tracer.map(|tracer| {
+            tracing_opentelemetry::layer()
+                .with_tracer(tracer)
+                .with_filter(LevelFilter::from_level(config.logging.level))
+        }))
         .init();
 
     info!("loaded configuration from {loc}, starting Ume server...");
