@@ -33,7 +33,10 @@ mimalloc = ["dep:mimalloc"]
 
 [dependencies]
 # uses the fork until https://github.com/1Password/arboard/pull/134 is passed
-arboard = { version = "3.3.2", git = "https://github.com/auguwu/arboard", branch = "noel/add-wait-until", features = [
+# as of 12/04/24, it was merged but there is no version as of today (16/04/24)
+#
+# TODO(@auguwu): remove the git dependency once a new version is avaliable
+arboard = { version = "3.3.2", git = "https://github.com/1Password/arboard", features = [
     "wayland-data-control",
 ] }
 async-trait = "0.1.80"

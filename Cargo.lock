@@ -135,7 +135,7 @@ checksum = "7d5a26814d8dcb93b0e5a0ff3c6d80a8843bafb21b39e8e18a6f05471870e110"
 [[package]]
 name = "arboard"
 version = "3.3.2"
-source = "git+https://github.com/auguwu/arboard?branch=noel/add-wait-until#ecae440c5e41d2426fa8536fd100b233a171c472"
+source = "git+https://github.com/1Password/arboard#e2846f928808ecc6e403215ed642ac9656053e97"
 dependencies = [
  "clipboard-win",
  "core-graphics",
