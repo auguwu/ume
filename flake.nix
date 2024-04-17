@@ -81,14 +81,6 @@
             };
           };
 
-          nativeBuildPackages = with pkgs; [installShellFiles];
-          postInstall = ''
-            installShellCompletion --cmd ume \
-              --bash <($out/bin/ume completions bash) \
-              --fish <($out/bin/ume completions fish) \
-              --zsh <($out/bin/ume completions zsh)
-          '';
-
           meta = with pkgs.lib; {
             description = "Easy, self-hostable, and flexible image host made in Rust";
             homepage = "https://github.com/auguwu/ume";
