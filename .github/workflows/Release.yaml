@@ -125,7 +125,7 @@ jobs:
               run: vcpkg install openssl:x64-windows-static-md
 
             - name: Build binary
-              run: ./scripts/release.${{matrix.runner == 'windows-latest' && '.ps1 -BuildFlags "${{matrix.flags}}" -Cargo "cross"' || '.sh'}}
+              run: ./scripts/release${{matrix.runner == 'windows-latest' && '.ps1 -BuildFlags "${{matrix.flags}}" -Cargo "cross"' || '.sh'}}
               env:
                 BUILDTARGET: ${{matrix.target}}
                 BUILDFLAGS: ${{matrix.flags}}
