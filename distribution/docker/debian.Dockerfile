@@ -15,7 +15,7 @@
 
 ############ BINARY
 
-FROM --platform=${TARGETPLATFORM} rust:1.77-slim-bullseye AS build
+FROM --platform=${TARGETPLATFORM} rust:1.77-slim-bookworm AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -45,7 +45,7 @@ RUN cargo build --release --bin ume
 
 ############ FINAL STAGE
 
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y bash tini curl libssl-dev pkg-config
 WORKDIR /app/noel/ume
