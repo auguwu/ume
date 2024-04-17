@@ -25,7 +25,8 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
     about = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust",
     author = "Noel Towa <cutie@floofy.dev>",
     override_usage = "ume <COMMAND> [...ARGS]",
-    arg_required_else_help = true
+    arg_required_else_help = true,
+    version = crate::version()
 )]
 pub struct Program {
     /// Configures the log level for all CLI-based commands. This will not configure the Ume server's
@@ -37,24 +38,9 @@ pub struct Program {
     #[arg(long, global = true, short = 'q')]
     pub quiet: bool,
 
-    /// disables the use of progress bars in `ume screenshot` to indicate that a file
-    /// is uploading to the server.
-    #[arg(long, global = true, env = "UME_NO_PROGRESSBAR")]
-    pub no_progress: bool,
-
     #[command(subcommand)]
     pub command: cmds::Cmd,
 }
-
-// pub(crate) fn elapsed_subsec(state: &ProgressState, writer: &mut dyn std::fmt::Write) {
-//     let seconds = state.elapsed().as_secs();
-//     let sub_seconds = (state.elapsed().as_millis() % 1000) / 100;
-//     let formatted = format!("{seconds}.{sub_seconds}")
-//         .if_supports_color(Stream::Stderr, |x| x.fg_rgb::<134, 134, 134>())
-//         .to_string();
-
-//     let _ = writer.write_str(&formatted);
-// }
 
 impl Program {
     pub fn init_logging(&self) {
@@ -65,21 +51,6 @@ impl Program {
                 .with_filter(filter);
 
             tracing_subscriber::registry().with(layer).init();
-
-            // match self.no_progress {
-            //     true => tracing_subscriber::registry().with(layer).init(),
-            //     false => {
-            //         let indicatif_layer: IndicatifLayer<Registry> = IndicatifLayer::new();
-
-            //         tracing_subscriber::registry()
-            //             .with(
-            //                 layer
-            //                     .with_writer(indicatif_layer.get_stderr_writer())
-            //                     .with_filter(filter),
-            //             )
-            //             .init()
-            //     }
-            // }
         }
     }
 }

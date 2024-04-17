@@ -13,12 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::TRUTHY_REGEX;
 use aws_sdk_s3::{
     config::Region,
     types::{BucketCannedAcl, ObjectCannedAcl},
 };
 use azure_storage::CloudLocation;
+use bson::Document;
 use eyre::{Context, Report};
+use mongodb::options::{
+    Acknowledgment, AuthMechanism, ClientOptions, ReadConcern, ReadPreference,
+    ReadPreferenceOptions, SelectionCriteria, ServerAddress, TagSet, WriteConcern,
+};
 use noelware_config::{
     env,
     merge::{strategy, Merge},
@@ -27,8 +33,6 @@ use noelware_config::{
 use remi_azure::Credential;
 use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, env::VarError, path::PathBuf, str::FromStr};
-
-use crate::TRUTHY_REGEX;
 
 /// Represents the configuration for configuring
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -90,8 +94,70 @@ impl TryFromEnv for Config {
                         .unwrap_or("ume".into()),
                 })),
 
+                "gridfs" => Ok(Config::GridFS(remi_gridfs::StorageConfig {
+                    selection_criteria: match env!("UME_STORAGE_GRIDFS_SELECTION_CRITERIA") {
+                        Ok(value) => match value.as_str() {
+                            "primary" => Some(SelectionCriteria::ReadPreference(ReadPreference::Primary)),
+                            "secondary" => Some(SelectionCriteria::ReadPreference(ReadPreference::Secondary { options: parse_read_preference_options()? })),
+                            "primary-preferred" => Some(SelectionCriteria::ReadPreference(ReadPreference::PrimaryPreferred { options: parse_read_preference_options()? })),
+                            "secondary-preferred" => Some(SelectionCriteria::ReadPreference(ReadPreference::SecondaryPreferred { options: parse_read_preference_options()? })),
+                            "nearest" => Some(SelectionCriteria::ReadPreference(ReadPreference::Nearest { options: parse_read_preference_options()? })),
+                            val => return Err(eyre!("unknown value [{val}] for env `$UME_STORAGE_GRIDFS_SELECTION_CRITERIA`, expected one of: [primary, secondary, primary-preferred, secondary-preferred, nearest]"))
+                        },
+
+                        Err(std::env::VarError::NotPresent) => None,
+                        Err(_) => return Err(eyre!("received invalid UTF-8 for environment variable `$UME_STORAGE_GRIDFS_SELECTION_CRITERIA`")),
+                    },
+
+                    chunk_size: match env!("UME_STORAGE_GRIDFS_CHUNK_SIZE") {
+                        Ok(value) => value.parse().map(Some).with_context(|| format!("unable to parse `{value}` as a u32"))?,
+                        Err(std::env::VarError::NotPresent) => None,
+                        Err(_) => return Err(eyre!("received invalid UTF-8 for environment variable `$UME_STORAGE_GRIDFS_CHUNK_SIZE`")),
+                    },
+
+                    write_concern: match env!("UME_STORAGE_GRIDFS_WRITE_CONCERN") {
+                        Ok(val) => Some(WriteConcern::builder()
+                            .journal(env!("UME_STORAGE_GRIDFS_WRITE_CONCERN_JOURNAL", |val| TRUTHY_REGEX.is_match(&val); or false))
+                            .w(match val.parse::<u32>() {
+                                Ok(val) => Acknowledgment::Nodes(val),
+                                Err(_) => match val.as_str() {
+                                    "majority" => Acknowledgment::Majority,
+                                    s => Acknowledgment::Custom(s.to_owned())
+                                }
+                            })
+                            .w_timeout(match env!("UME_STORAGE_GRIDFS_WRITE_CONCERN_TIMEOUT") {
+                                Ok(val) => Some(humantime::parse_duration(&val)?),
+                                Err(std::env::VarError::NotPresent) => None,
+                                Err(_) => return Err(eyre!("received invalid UTF-8 for environment variable `$UME_STORAGE_GRIDFS_WRITE_CONCERN_TIMEOUT`")),
+                            })
+                            .build()),
+
+                        Err(std::env::VarError::NotPresent) => None,
+                        Err(_) => return Err(eyre!("received invalid UTF-8 for environment variable `$UME_STORAGE_GRIDFS_WRITE_CONCERN`")),
+                    },
+
+                    read_concern: match env!("UME_STORAGE_GRIDFS_READ_CONCERN") {
+                        Ok(val) => Some(match val.as_str() {
+                            "majority" => ReadConcern::majority(),
+                            "linear" | "linearizable" => ReadConcern::linearizable(),
+                            "local" => ReadConcern::local(),
+                            "avaliable" => ReadConcern::available(),
+                            "snapshot" => ReadConcern::snapshot(),
+                            s => ReadConcern::custom(s.to_owned())
+                        }),
+
+                        Err(std::env::VarError::NotPresent) => None,
+                        Err(_) => return Err(eyre!("received invalid UTF-8 for environment variable `$UME_STORAGE_GRIDFS_READ_CONCERN`")),
+                    },
+
+                    database: env!("UME_STORAGE_GRIDFS_DATABASE", optional),
+                    client_options: parse_mongo_client_options()?,
+                    bucket: env!("UME_STORAGE_GRIDFS_BUCKET", optional)
+                        .unwrap_or("ume".into())
+                })),
+
                 loc => Err(eyre!(
-                    "expected [filesystem/fs, azure, s3]; received '{loc}'"
+                    "expected [filesystem/fs, azure, s3, gridfs]; received '{loc}'"
                 )),
             },
 
@@ -355,4 +421,128 @@ fn to_env_location() -> eyre::Result<azure_storage::CloudLocation> {
             "missing required `UME_STORAGE_AZURE_LOCATION` env or was invalid utf-8"
         )),
     }
+}
+
+fn parse_read_preference_options() -> eyre::Result<ReadPreferenceOptions> {
+    Ok(ReadPreferenceOptions::builder()
+        .tag_sets(match env!("UME_STORAGE_GRIDFS_READ_PREFERENCE_TAG_SETS") {
+            Ok(value) => {
+                let mut values = Vec::new();
+                for line in value.split(',') {
+                    if let Some((key, value)) = line.split_once('=') {
+                        if value.contains('=') {
+                            continue;
+                        }
+
+                        values.push(TagSet::from_iter([(key.into(), value.into())]));
+                    }
+                }
+
+                Some(values)
+            }
+
+            Err(std::env::VarError::NotPresent) => None,
+            Err(_) => return Err(eyre!("")),
+        })
+        .max_staleness(
+            match env!("UME_STORAGE_GRIDFS_READ_PREFERENCE_MAX_STALENESS") {
+                Ok(value) => Some(humantime::parse_duration(&value)?),
+                Err(std::env::VarError::NotPresent) => None,
+                Err(_) => return Err(eyre!("unable to provide `$UME_STORAGE_GRIDFS_READ_PREFERENCE_MAX_STALENESS` as a valid UTF-8 string")),
+            },
+        )
+        .build())
+}
+
+fn parse_mongo_client_options() -> eyre::Result<ClientOptions> {
+    Ok(ClientOptions::builder()
+        .app_name(env!("UME_STORAGE_GRIDFS_APP_NAME", optional))
+        .connect_timeout(match env!("UME_STORAGE_GRIDFS_CONNECT_TIMEOUT") {
+            Ok(value) => Some(humantime::parse_duration(&value)?),
+            Err(std::env::VarError::NotPresent) => None,
+            Err(_) => {
+                return Err(eyre!(
+                    "unable to provide `$UME_STORAGE_GRIDFS_CONNECT_TIMEOUT` as a valid UTF-8 string"
+                ))
+            }
+        })
+        .credential(match env!("UME_STORAGE_GRIDFS_CREDENTIALS") {
+            Ok(value) => {
+                let (user, pass) = value
+                    .split_once(':')
+                    .ok_or_else(|| eyre!("must provide the template 'username:password'"))
+                    .context("if there is no username, but a password, do: \":<password>\"")
+                    .context("if there is no password, but a username, do: \"<username>:\"")?;
+
+                Some(
+                    mongodb::options::Credential::builder()
+                        .source(env!("UME_STORAGE_GRIDFS_CREDENTIAL_SOURCE", optional))
+                        .username(if user.is_empty() {
+                            None
+                        } else {
+                            Some(user.to_owned())
+                        })
+                        .password(if pass.is_empty() {
+                            None
+                        } else {
+                            Some(pass.to_owned())
+                        })
+                        .mechanism(match env!("UME_STORAGE_GRIDFS_CREDENTIAL_MECHANISM") {
+                            Ok(value) => match value.as_str() {
+                                "SCRAM-SHA1" => Some(AuthMechanism::ScramSha1),
+                                "SCRAM-SHA256" => Some(AuthMechanism::ScramSha256),
+                                "X509" => Some(AuthMechanism::MongoDbX509),
+                                "GSSAPI" | "Gssapi" => Some(AuthMechanism::Gssapi),
+                                "PLAIN" => Some(AuthMechanism::Plain),
+                                _ => None
+                            },
+                            Err(std::env::VarError::NotPresent) => None,
+                            Err(_) => return Err(eyre!("unable to provide `$UME_STORAGE_GRIDFS_CREDENTIAL_MECHANISM` as a valid UTF-8 string"))
+                        })
+                        .mechanism_properties(match env!("UME_STORAGE_GRIDFS_CREDENTIAL_MECHANISM_PROPERTIES") {
+                            Ok(value) => {
+                                let mut map = Document::new();
+                                for item in value.split(',') {
+                                    if let Some((key, value)) = item.split_once('=') {
+                                        if value.contains('=') { continue; }
+
+                                        map.insert(key, value.to_owned());
+                                    }
+                                }
+
+                                match value.is_empty() {
+                                    true => None,
+                                    false => Some(map)
+                                }
+                            },
+                            Err(std::env::VarError::NotPresent) => None,
+                            Err(_) => return Err(eyre!("unable to provide `$UME_STORAGE_GRIDFS_CREDENTIAL_MECHANISM_PROPERTIES` as a valid UTF-8 string"))
+                        })
+                        .build(),
+                )
+            }
+            Err(std::env::VarError::NotPresent) => None,
+            Err(_) => {
+                return Err(eyre!(
+                    "unable to provide `$UME_STORAGE_GRIDFS_CREDENTIALS` as a valid UTF-8 string"
+                ))
+            }
+        })
+        .hosts(match env!("UME_STORAGE_GRIDFS_SERVERS") {
+            Ok(value) => value
+                .split(',')
+                .map(|x| ServerAddress::from_str(x).map_err(Report::from))
+                .collect::<eyre::Result<Vec<_>>>()?,
+
+            Err(std::env::VarError::NotPresent) => {
+                vec![ServerAddress::from_str("mongo://localhost:27017")?]
+            }
+
+            Err(_) => {
+                return Err(eyre!(
+                    "unable to provide `$UME_STORAGE_GRIDFS_SERVERS` as a valid UTF-8 string"
+                ))
+            }
+        })
+        .build())
 }

@@ -41,7 +41,7 @@ pub fn execute(cmd: Cmd) -> eyre::Result<()> {
     };
 
     let shell = cmd.shell.unwrap_or(default_shell);
-    info!(%shell, "generating shell completions for");
+    trace!(%shell, "generating shell completions for");
 
     {
         let mut cmd = Program::command();
