@@ -22,6 +22,7 @@ function Main {
         Exit 1
     }
 
+    $Cargo = [System.Environment]::GetEnvironmentVariable('CARGO')
     if (!(Get-Command "$Cargo" -errorAction SilentlyContinue)) {
         Write-Error "FATAL: -Cargo flag was not set to a valid 'cargo' binary"
     }
@@ -30,7 +31,6 @@ function Main {
     New-Item -Path . -Name ".result" -ItemType Directory
 
     $BuildFlags = [System.Environment]::GetEnvironmentVariable('BUILDFLAGS')
-    $Cargo = [System.Environment]::GetEnvironmentVariable('CARGO')
 
     Write-Host "$ $Cargo build --release --locked $BuildFlags"
     iex "$Cargo build --release --locked $BuildFlags"
