@@ -66,15 +66,22 @@ function ume::build {
 
     # Export $RUSTFLAGS so we can use the target's CPU instructions
     export RUSTFLAGS=""
+    extra=""
     if [ "$(uname -m)" == "Linux" ]; then
         # ...and use `mold` as the linker since it is faster
         export RUSTFLAGS="-Ctarget-cpu=native -Clink-arg=-fuse-ld=mold $RUSTFLAGS"
+
+        if [ "$target" == "x86_64-unknown-linux-musl" ]; then
+            extra="-musl"
+        elif
+            extra="-gnu"
+        fi
     fi
 
     echo "===> Compiling release \`ume\` binary                 [target=$target] [flags=$flags] [\$CARGO=$cargo]"
     echo "$ $cargo build --release --locked --target $target $flags"
     "$cargo" build --release --locked --target="$target" $flags || exit 1
-    mv ../target/"$target"/release/ume ./"ume-$os-$arch" || exit 1
+    mv ../target/"$target"/release/ume ./"ume-$os-$arch$extra" || exit 1
 
     shacmd="sha256sum"
     if [ "$(uname -s)" == "Darwin" ]; then
@@ -83,9 +90,9 @@ function ume::build {
     fi
 
     echo "$ $shacmd ume-$os-$arch"
-    "$shacmd" "ume-$os-$arch" > ./"ume-$os-$arch.sha256"
+    "$shacmd" "ume-$os-$arch$extra" > ./"ume-$os-$arch$extra.sha256"
 
-    echo "===> Created SHA256 file for binary                     [binary=$ume-$os-$arch]"
+    echo "===> Created SHA256 file for binary                     [binary=$ume-$os-$arch$extra]"
     echo "===> Completed."
 
     popd >/dev/null

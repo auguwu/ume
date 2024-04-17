@@ -138,55 +138,29 @@ jobs:
               with:
                 files: ./.result/ume-*
 
-            - name: Upload binary (artifacts.floofy.dev/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}})
+            - name: Upload binary to S3 (${{steps.tag.outputs.version}})
               uses: Noelware/s3-action@2.2.3
               with:
                 enforce-path-access-style: true
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
                 secret-key: ${{secrets.S3_SECRET_KEY}}
-                path-format: $(prefix)/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
+                path-format: $(prefix)/ume/${{steps.tag.outputs.version}}/$(file)
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./.result/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
+                files: ./.result
                 region: us-east-1
                 bucket: august
 
-            - name: Upload binary (artifacts.floofy.dev/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256)
+            - name: Upload binary to S3 (latest)
               uses: Noelware/s3-action@2.2.3
               with:
                 enforce-path-access-style: true
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
                 secret-key: ${{secrets.S3_SECRET_KEY}}
-                path-format: $(prefix)/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
+                path-format: $(prefix)/ume/latest/$(file)
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./.result/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
-                region: us-east-1
-                bucket: august
-
-            - name: Upload binary (artifacts.floofy.dev/ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}})
-              uses: Noelware/s3-action@2.2.3
-              with:
-                enforce-path-access-style: true
-                access-key-id: ${{secrets.S3_ACCESS_KEY}}
-                secret-key: ${{secrets.S3_SECRET_KEY}}
-                path-format: $(prefix)/ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
-                endpoint: ${{secrets.S3_ENDPOINT}}
-                prefix: /noel/artifacts
-                files: ./.result/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}
-                region: us-east-1
-                bucket: august
-
-            - name: Upload binary (artifacts.floofy.dev/ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256)
-              uses: Noelware/s3-action@2.2.3
-              with:
-                enforce-path-access-style: true
-                access-key-id: ${{secrets.S3_ACCESS_KEY}}
-                secret-key: ${{secrets.S3_SECRET_KEY}}
-                path-format: $(prefix)/ume/latest/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
-                endpoint: ${{secrets.S3_ENDPOINT}}
-                prefix: /noel/artifacts
-                files: ./.result/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}}.sha256
+                files: ./.result
                 region: us-east-1
                 bucket: august
 
