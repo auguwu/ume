@@ -95,6 +95,7 @@ jobs:
 
             - name: Install `cross`
               uses: taiki-e/cache-cargo-install-action@v1
+              if: matrix.runner == 'ubuntu-latest'
               with:
                 tool: cross
 
@@ -125,15 +126,16 @@ jobs:
               run: vcpkg install openssl:x64-windows-static-md
 
             - name: Build binary
-              run: ./scripts/release${{matrix.runner == 'windows-latest' && '.ps1 -BuildFlags "${{matrix.flags}}" -Cargo "cross"' || '.sh'}}
+              run: ./scripts/release${{matrix.runner == 'windows-latest' && '.ps1 -BuildFlags "${{matrix.flags}}"' || '.sh'}}
               env:
                 BUILDTARGET: ${{matrix.target}}
                 BUILDFLAGS: ${{matrix.flags}}
                 CARGO: "cross"
 
-            - name: Build binary (Windows)
-              if: ${{matrix.runner == 'windows-latest'}}
-              run: ./scripts/release.ps1 -BuildFlags "${{matrix.flags}}" -Cargo "cross"
+            - name: Upload ume artifacts
+              uses: softprops/action-gh-release@v2
+              with:
+                files: ./.result/ume-*
 
             - name: Upload binary (artifacts.floofy.dev/ume/${{steps.tag.outputs.version}}/ume-${{matrix.os}}-${{matrix.arch}}${{matrix.ext}})
               uses: Noelware/s3-action@2.2.3
