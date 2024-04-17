@@ -73,7 +73,7 @@ function ume::build {
 
         if [ "$target" == "x86_64-unknown-linux-musl" ]; then
             extra="-musl"
-        elif
+        else
             extra="-gnu"
         fi
     fi
