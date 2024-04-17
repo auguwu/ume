@@ -130,7 +130,7 @@ jobs:
               env:
                 BUILDTARGET: ${{matrix.target}}
                 BUILDFLAGS: ${{matrix.flags}}
-                CARGO: "cross"
+                CARGO: "${{matrix.runner == 'ubuntu-latest' && 'cross' || 'cargo'}}"
 
             - name: Upload ume artifacts
               uses: softprops/action-gh-release@v2
