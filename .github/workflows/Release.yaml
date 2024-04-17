@@ -145,9 +145,9 @@ jobs:
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
                 secret-key: ${{secrets.S3_SECRET_KEY}}
                 path-format: $(prefix)/ume/${{steps.tag.outputs.version}}/$(file)
+                directories: .result
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
-                files: ./.result
                 region: us-east-1
                 bucket: august
 
