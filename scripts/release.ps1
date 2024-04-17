@@ -13,15 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script is the same as `build.sh` but for Windows.
-
-param(
-    [Parameter(HelpMessage = "Flags to set when building the ume CLI")]
-    $BuildFlags = '',
-
-    [Parameter(HelpMessage = "Path to a 'cargo' command, by default it'll use the one in `$PATH")]
-    $Cargo = 'cargo'
-)
+# This script is the same as `release.sh` but for Windows.
 
 # We don't need a `-Target ...` parameter as we only build for x86_64 Windows only.
 function Main {
@@ -36,6 +28,9 @@ function Main {
 
     # create .result directory as the release workflow requires it
     New-Item -Path . -Name ".result" -ItemType Directory
+
+    $BuildFlags = [System.Environment]::GetEnvironmentVariable('BUILDFLAGS')
+    $Cargo = [System.Environment]::GetEnvironmentVariable('CARGO')
 
     Write-Host "$ $Cargo build --release --locked $BuildFlags"
     iex "$Cargo build --release --locked $BuildFlags"
