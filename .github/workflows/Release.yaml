@@ -20,6 +20,7 @@ on:
             - published
 permissions:
     packages: write
+    contents: write
 jobs:
     binary:
         name: "Build `ume` binary (${{matrix.runner}}: ${{matrix.target}})"
