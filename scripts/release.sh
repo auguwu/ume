@@ -61,6 +61,13 @@ function ume::build {
         exit 1
     }
 
+    # Update the `$arch` variable to `aarch64` on macOS since it'll detect as we are using
+    # the Intel chip of macOS since the M1 runners require a GitHub Teams or Enterprise license,
+    # so we'll hack our way there.
+    if [ "$os" == "darwin" && "$target" == "aarch64-apple-darwin" && "$arch" == "x86_64" ]; then
+        arch="aarch64"
+    fi
+
     ! [ -d "./.result" ] && mkdir -p ./.result
     pushd ./.result >/dev/null
 
@@ -73,7 +80,7 @@ function ume::build {
         fi
     fi
 
-    echo "===> Compiling release \`ume\` binary                 [target=$target] [flags=$flags] [\$CARGO=$cargo]"
+    echo "===> Compiling release \`ume\` binary                 [target=$target] [flags=$flags] [\$CARGO=$cargo] [os=$os] [arch=$arch]"
     echo "$ $cargo build --release --locked --target $target $flags"
     "$cargo" build --release --locked --target="$target" $flags || exit 1
 
