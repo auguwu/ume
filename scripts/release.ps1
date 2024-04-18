@@ -22,9 +22,10 @@ function Main {
         Exit 1
     }
 
-    $Cargo = [System.Environment]::GetEnvironmentVariable('CARGO')
+    $Cargo = [System.Environment]::GetEnvironmentVariable('CARGO') || "cargo"
     if (!(Get-Command "$Cargo" -errorAction SilentlyContinue)) {
         Write-Error "FATAL: -Cargo flag was not set to a valid 'cargo' binary"
+        exit 1
     }
 
     # create .result directory as the release workflow requires it
@@ -42,8 +43,10 @@ function Main {
     # Move ./target/release/ume.exe ~> ./.result/ume.exe
     Move-Item -Path "./target/release/ume.exe" -Destination "./.result/ume-windows-x86_64.exe"
 
-    $dir = Set-Location ./.result
-    (Get-FileHash -Path "$dir/ume-windows-x86_64.exe").Hash.ToLower() | Out-File "ume-windows-x86_64.exe.sha256"
+    Push-Location ./.result
+    (Get-FileHash -Path "ume-windows-x86_64.exe").Hash.ToLower() | Out-File "ume-windows-x86_64.exe.sha256"
+
+    Pop-Location
 
     Write-Host "Completed."
 }

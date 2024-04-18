@@ -108,12 +108,12 @@ jobs:
 
             - name: Install `cross`
               uses: taiki-e/cache-cargo-install-action@v1
-              if: matrix.runner == 'ubuntu-latest'
+              if: matrix.cross
               with:
                 tool: cross
 
             - name: Install `mold` on Linux
-              if: ${{matrix.runner == 'ubuntu-latest'}}
+              if: matrix.runner == 'ubuntu-latest'
               uses: rui314/setup-mold@v1
 
             - name: Setup Rust cache
