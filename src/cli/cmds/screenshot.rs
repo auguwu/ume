@@ -23,7 +23,6 @@ use std::{
     io::Cursor,
     path::{Path, PathBuf},
     process::{exit, Command, Stdio},
-    time::{Duration, Instant},
 };
 use tokio_util::bytes::Bytes;
 use url::Url;
@@ -154,6 +153,7 @@ async fn upload_file(cmd: &Cmd, loc: &Path) -> eyre::Result<()> {
     cfg_if::cfg_if! {
         if #[cfg(target_os = "linux")] {
             use arboard::SetExtLinux;
+            use std::time::{Duration, Instant};
 
             // wait ~1s to block
             clipboard.set().wait_until(Instant::now() + Duration::from_secs(1)).text(url)?;
