@@ -39,10 +39,10 @@ esac
 
 case "$(uname -m)" in
     x86_64|amd64)
-        arch="x86_64"
+        arch="x86_64";
         ;;
     aarch64|arm64)
-        arch="arm64";
+        arch="aarch64";
         ;;
     *)
         echo "===> ERROR: unsupported architecture: \`$(uname -m)\`"
@@ -68,8 +68,10 @@ function ume::build {
     export RUSTFLAGS=""
     extra=""
     if [ "$(uname -s)" == "Linux" ]; then
-        # ...and use `mold` as the linker since it is faster
-        export RUSTFLAGS="-Clink-arg=-fuse-ld=mold $RUSTFLAGS"
+        if [ "$arch" != "aarch64" ]; then
+            # ...and use `mold` as the linker since it is faster
+            export RUSTFLAGS="-Clink-arg=-fuse-ld=mold $RUSTFLAGS"
+        fi
 
         if [ "$target" == "x86_64-unknown-linux-musl" ]; then
             extra="-musl"
