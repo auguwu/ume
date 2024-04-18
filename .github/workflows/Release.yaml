@@ -176,16 +176,6 @@ jobs:
                 prefix: /noel/artifacts
                 region: us-east-1
                 bucket: august
-
-            - name: Update Docker Hub description
-              uses: peter-evans/dockerhub-description@v4
-              # only run on the first runner and never again
-              if: ${{matrix.runner == 'ubuntu-latest' && endsWith(matrix.arch, 'gnu')}}
-              with:
-                username: auguwu
-                password: ${{secrets.DOCKER_PASSWORD}}
-                repository: auguwu/ume
-                readme-filepath: ./distribution/docker/README.md
     nix-build:
         name: Nix Build
         runs-on: ubuntu-latest
@@ -218,8 +208,10 @@ jobs:
                 include:
                     - dockerfile: debian
                       suffix: ""
+                      updateDescription: true
                     - dockerfile: alpine
                       suffix: "-alpine"
+                      updateDescription: false
         steps:
             - name: Checkout source code
               uses: actions/checkout@v4
@@ -279,3 +271,12 @@ jobs:
                       org.opencontainers.image.licenses=Apache-2.0
                       org.opencontainers.image.documentation=https://floofy.dev/oss/ume
                       org.opencontainers.image.source=https://github.com/auguwu/ume/tree/${{steps.commit-hash.outputs.commit}}
+
+            - name: Update Docker Hub description
+              uses: peter-evans/dockerhub-description@v4
+              if: matrix.updateDescription
+              with:
+                username: auguwu
+                password: ${{secrets.DOCKER_PASSWORD}}
+                repository: auguwu/ume
+                readme-filepath: ./distribution/docker/README.md
