@@ -83,7 +83,7 @@ function ume::build {
     shacmd="sha256sum"
     if [ "$(uname -s)" == "Darwin" ]; then
         # macOS is weird ok
-        shacmd="shasum -256"
+        shacmd="shasum -a 256"
     fi
 
     echo "$ $shacmd ume-$os-$arch$extra"
