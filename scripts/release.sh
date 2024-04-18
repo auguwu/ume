@@ -80,14 +80,12 @@ function ume::build {
     echo "Moving ./target/$target/release/ume ~> .result/ume-$os-$arch$extra"
     mv ../target/"$target"/release/ume ./"ume-$os-$arch$extra" || exit 1
 
-    shacmd="sha256sum"
+    echo "===> Generating sha256sum file                          [binary=ume-$os-$arch$extra]"
     if [ "$(uname -s)" == "Darwin" ]; then
-        # macOS is weird ok
-        shacmd="openssl dgst -sha256 -r"
+        shasum -a 256 "ume-$os-$arch$extra" > ./"ume-$os-$arch$extra.sha256"
+    else
+        sha256sum "ume-$os-$arch$extra" > ./"ume-$os-$arch$extra.sha256"
     fi
-
-    echo "$ $shacmd ume-$os-$arch$extra"
-    "$shacmd" "ume-$os-$arch$extra" > ./"ume-$os-$arch$extra.sha256"
 
     echo "===> Created SHA256 file for binary                     [binary=ume-$os-$arch$extra]"
     echo "===> Completed."
