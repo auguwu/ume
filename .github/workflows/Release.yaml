@@ -31,7 +31,7 @@ jobs:
                 include:
                     # ume (Linux x86_64 :: GNU)
                     - runner: ubuntu-latest
-                      rustflags: "-Ctarget-cpu=native"
+                      rustflags: "-Ctarget-cpu=native -Clink-arg=-fuse-ld=mold"
                       target: x86_64-unknown-linux-gnu
                       cross: false
                       flags: ""

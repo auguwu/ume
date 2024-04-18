@@ -64,15 +64,8 @@ function ume::build {
     ! [ -d "./.result" ] && mkdir -p ./.result
     pushd ./.result >/dev/null
 
-    # Export $RUSTFLAGS so we can use the target's CPU instructions
-    export RUSTFLAGS=""
     extra=""
     if [ "$(uname -s)" == "Linux" ]; then
-        if [ "$arch" != "aarch64" ]; then
-            # ...and use `mold` as the linker since it is faster
-            export RUSTFLAGS="-Clink-arg=-fuse-ld=mold $RUSTFLAGS"
-        fi
-
         if [ "$target" == "x86_64-unknown-linux-musl" ]; then
             extra="-musl"
         else
