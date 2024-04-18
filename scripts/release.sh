@@ -83,13 +83,13 @@ function ume::build {
     shacmd="sha256sum"
     if [ "$(uname -s)" == "Darwin" ]; then
         # macOS is weird ok
-        shacmd="shasum -a 256"
+        shacmd="openssl dgst -sha256 -r"
     fi
 
     echo "$ $shacmd ume-$os-$arch$extra"
     "$shacmd" "ume-$os-$arch$extra" > ./"ume-$os-$arch$extra.sha256"
 
-    echo "===> Created SHA256 file for binary                     [binary=$ume-$os-$arch$extra]"
+    echo "===> Created SHA256 file for binary                     [binary=ume-$os-$arch$extra]"
     echo "===> Completed."
 
     popd >/dev/null
