@@ -69,7 +69,7 @@ function ume::build {
     extra=""
     if [ "$(uname -s)" == "Linux" ]; then
         # ...and use `mold` as the linker since it is faster
-        export RUSTFLAGS="-Ctarget-cpu=native -Clink-arg=-fuse-ld=mold $RUSTFLAGS"
+        export RUSTFLAGS="-Clink-arg=-fuse-ld=mold $RUSTFLAGS"
 
         if [ "$target" == "x86_64-unknown-linux-musl" ]; then
             extra="-musl"
