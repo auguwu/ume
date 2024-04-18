@@ -67,7 +67,7 @@ function ume::build {
     # Export $RUSTFLAGS so we can use the target's CPU instructions
     export RUSTFLAGS=""
     extra=""
-    if [ "$(uname -m)" == "Linux" ]; then
+    if [ "$(uname -s)" == "Linux" ]; then
         # ...and use `mold` as the linker since it is faster
         export RUSTFLAGS="-Ctarget-cpu=native -Clink-arg=-fuse-ld=mold $RUSTFLAGS"
 
@@ -81,6 +81,8 @@ function ume::build {
     echo "===> Compiling release \`ume\` binary                 [target=$target] [flags=$flags] [\$CARGO=$cargo]"
     echo "$ $cargo build --release --locked --target $target $flags"
     "$cargo" build --release --locked --target="$target" $flags || exit 1
+
+    echo "Moving ./target/$target/release/ume ~> .result/ume-$os-$arch$extra"
     mv ../target/"$target"/release/ume ./"ume-$os-$arch$extra" || exit 1
 
     shacmd="sha256sum"
@@ -89,7 +91,7 @@ function ume::build {
         shacmd="shasum -256"
     fi
 
-    echo "$ $shacmd ume-$os-$arch"
+    echo "$ $shacmd ume-$os-$arch$extra"
     "$shacmd" "ume-$os-$arch$extra" > ./"ume-$os-$arch$extra.sha256"
 
     echo "===> Created SHA256 file for binary                     [binary=$ume-$os-$arch$extra]"
