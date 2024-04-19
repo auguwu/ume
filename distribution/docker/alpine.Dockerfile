@@ -17,8 +17,9 @@
 
 FROM --platform=${TARGETPLATFORM} rust:1.77-alpine3.19 AS build
 
-RUN apk update && apk add --no-cache git ca-certificates curl musl-dev libc6-compat gcompat pkgconfig openssl-dev build-base
-RUN apk update && apk add mold --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+RUN apk update && apk add --no-cache git ca-certificates curl musl-dev \
+    libc6-compat gcompat pkgconfig libressl-dev build-base mold \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
 WORKDIR /build
 
