@@ -35,29 +35,23 @@ jobs:
                       target: x86_64-unknown-linux-gnu
                       cross: false
                       flags: ""
-                      arch: x86_64-gnu
                       ext: ''
-                      os: linux
 
                     # ume (Linux x86_64 :: Musl)
                     - runner: ubuntu-latest
                       target: x86_64-unknown-linux-musl
                       rustflags: ''
                       cross: true
-                      arch: x86_64-musl
-                      flags: "--features=vendored"
+                      flags: ""
                       ext: ''
-                      os: linux
 
                     # ume (Linux ARM64)
                     - runner: ubuntu-latest
                       target: aarch64-unknown-linux-gnu
                       rustflags: ''
                       cross: true
-                      arch: arm64
                       flags: ""
                       ext: ''
-                      os: linux
 
                     # ume (macOS x86_64 ~ Intel)
                     - runner: macos-latest
@@ -65,19 +59,15 @@ jobs:
                       rustflags: "-Ctarget-cpu=native"
                       cross: false
                       flags: ""
-                      arch: x86_64
                       ext: ''
-                      os: darwin
 
                     # ume (macOS ARM64 ~ Apple Silicon)
                     - runner: macos-latest
                       target: aarch64-apple-darwin
                       rustflags: ''
                       cross: false
-                      flags: "--features=vendored"
-                      arch: arm64
+                      flags: ""
                       ext: ''
-                      os: darwin
 
                     # ume (Windows x86_64)
                     - runner: windows-latest
@@ -85,9 +75,7 @@ jobs:
                       rustflags: "-Ctarget-cpu=native"
                       flags: "--features=mimalloc"
                       cross: false
-                      arch: x86_64
                       ext: .exe
-                      os: windows
         steps:
             - name: Checkout source code
               uses: actions/checkout@v4
