@@ -71,30 +71,21 @@ function ume::build {
     ! [ -d "./.result" ] && mkdir -p ./.result
     pushd ./.result >/dev/null
 
-    extra=""
-    if [ "$(uname -s)" == "Linux" ]; then
-        if [ "$target" == "x86_64-unknown-linux-musl" ]; then
-            extra="-musl"
-        else
-            extra="-gnu"
-        fi
-    fi
-
     echo "===> Compiling release \`ume\` binary                 [target=$target] [flags=$flags] [\$CARGO=$cargo] [os=$os] [arch=$arch]"
     echo "$ $cargo build --release --locked --target $target $flags"
     "$cargo" build --release --locked --target="$target" $flags || exit 1
 
-    echo "Moving ./target/$target/release/ume ~> .result/ume-$os-$arch$extra"
-    mv ../target/"$target"/release/ume ./"ume-$os-$arch$extra" || exit 1
+    echo "Moving ./target/$target/release/ume ~> .result/ume-$os-$arch"
+    mv ../target/"$target"/release/ume ./"ume-$os-$arch" || exit 1
 
-    echo "===> Generating sha256sum file                          [binary=ume-$os-$arch$extra]"
+    echo "===> Generating sha256sum file                          [binary=ume-$os-$arch]"
     if [ "$(uname -s)" == "Darwin" ]; then
-        shasum -a 256 "ume-$os-$arch$extra" > ./"ume-$os-$arch$extra.sha256"
+        shasum -a 256 "ume-$os-$arch" > ./"ume-$os-$arch.sha256"
     else
-        sha256sum "ume-$os-$arch$extra" > ./"ume-$os-$arch$extra.sha256"
+        sha256sum "ume-$os-$arch" > ./"ume-$os-$arch.sha256"
     fi
 
-    echo "===> Created SHA256 file for binary                     [binary=ume-$os-$arch$extra]"
+    echo "===> Created SHA256 file for binary                     [binary=ume-$os-$arch]"
     echo "===> Completed."
 
     popd >/dev/null
