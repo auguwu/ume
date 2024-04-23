@@ -39,7 +39,7 @@ arboard = { version = "3.3.2", git = "https://github.com/1Password/arboard", fea
     "wayland-data-control",
 ] }
 async-trait = "0.1.80"
-aws-sdk-s3 = { version = "1.23.0", features = ["behavior-version-latest"] }
+aws-sdk-s3 = { version = "1.24.0", features = ["behavior-version-latest"] }
 axum = { version = "0.7.5", features = ["macros"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 axum-server = { version = "0.6.0", features = ["tls-rustls"] }
