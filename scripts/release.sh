@@ -68,6 +68,12 @@ function ume::build {
         arch="aarch64"
     fi
 
+    # ...also update `$arch` for the arm64 build of Ume on Linux since cross-rs uses the host system
+    # with the right compilers, so we need to update it.
+    if [[ "$os" == "linux" && "$cargo" == "cross" ]]; then
+        arch="aarch64"
+    fi
+
     ! [ -d "./.result" ] && mkdir -p ./.result
     pushd ./.result >/dev/null
 
