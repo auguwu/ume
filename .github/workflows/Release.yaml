@@ -87,7 +87,7 @@ jobs:
                   target: ${{matrix.target}}
 
             - name: Install `cross`
-              uses: taiki-e/cache-cargo-install-action@v1
+              uses: taiki-e/cache-cargo-install-action@v2
               if: matrix.cross
               with:
                 tool: cross
