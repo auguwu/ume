@@ -3841,9 +3841,9 @@ dependencies = [
 
 [[package]]
 name = "remi-gridfs"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e441f42ba4a1ff212506680140b278d38fd34440d7794f0e6b996773c078ff6f"
+checksum = "12ed9a9014dce9cf2b5eb8a2969e4fc9f3c189f12e69b34b2139c95bbe40eab9"
 dependencies = [
  "async-trait",
  "bytes",
