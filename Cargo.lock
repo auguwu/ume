@@ -3824,9 +3824,9 @@ dependencies = [
 
 [[package]]
 name = "remi-fs"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a5a50d8b815298682157f28c5ab81ac351e1af97c333e3143d179f5abe75b85"
+checksum = "2cb0fe2482996a95f9752915701340c7e9f67d515aef52d310038d5abf1813d6"
 dependencies = [
  "async-trait",
  "bytes",
