@@ -80,7 +80,7 @@ opentelemetry_sdk = "0.22.1"
 owo-colors = "4.0.0"
 rand = "0.8.5"
 regex = "1.10.4"
-remi = "0.7.0"
+remi = "0.7.1"
 remi-azure = { version = "0.7.0", features = ["serde", "tracing"] }
 remi-fs = { version = "0.7.0", features = ["serde", "tracing", "file-format"] }
 remi-gridfs = { version = "0.7.0", features = ["serde", "tracing"] }
