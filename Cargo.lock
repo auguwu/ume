@@ -2070,9 +2070,9 @@ dependencies = [
 
 [[package]]
 name = "hcl-rs"
-version = "0.17.1"
+version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4aec2d9e73d5f878069936d391c76c1981faaadc6d8a39bcfcdea4a470b56959"
+checksum = "70095917a37ae02ffa8bb7f50b411f9692137052321bc693a654733b2367708e"
 dependencies = [
  "hcl-edit",
  "hcl-primitives",
