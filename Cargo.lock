@@ -827,6 +827,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "azure_core"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34ce3de4b65b1ee2667c81d1fc692949049502a4cf9c38118d811d6d79a7eaef"
+dependencies = [
+ "async-trait",
+ "base64 0.22.0",
+ "bytes",
+ "dyn-clone",
+ "futures",
+ "getrandom 0.2.12",
+ "hmac",
+ "http-types",
+ "once_cell",
+ "paste",
+ "pin-project",
+ "quick-xml",
+ "rand 0.8.5",
+ "reqwest 0.12.4",
+ "rustc_version 0.4.0",
+ "serde",
+ "serde_json",
+ "sha2",
+ "time",
+ "tracing",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "azure_storage"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -835,44 +865,63 @@ dependencies = [
  "RustyXML",
  "async-lock",
  "async-trait",
- "azure_core",
+ "azure_core 0.19.0",
  "bytes",
  "log",
  "serde",
  "serde_derive",
  "time",
+ "url",
+ "uuid",
+]
+
+[[package]]
+name = "azure_storage"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9713002fc30956a9f4061cdbc2e912ff739c6160e138ad3b6d992b3bcedccc6d"
+dependencies = [
+ "RustyXML",
+ "async-lock",
+ "async-trait",
+ "azure_core 0.20.0",
+ "bytes",
+ "serde",
+ "serde_derive",
+ "time",
+ "tracing",
  "url",
  "uuid",
 ]
 
 [[package]]
 name = "azure_storage_blobs"
-version = "0.19.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "149c21834a4105d761e3dd33d91c2a3064acc05a3c978848ea8089102ae45c94"
+checksum = "c5b3a31dd8f920739437b827d0c9f9a4011eb3f06f79a121764aa11af6c51ee2"
 dependencies = [
  "RustyXML",
- "azure_core",
- "azure_storage",
+ "azure_core 0.20.0",
+ "azure_storage 0.20.0",
  "azure_svc_blobstorage",
  "bytes",
  "futures",
- "log",
  "serde",
  "serde_derive",
  "serde_json",
  "time",
+ "tracing",
  "url",
  "uuid",
 ]
 
 [[package]]
 name = "azure_svc_blobstorage"
-version = "0.19.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88c888b7bf522d5405218b8613bf0fae7ddaae6ef3bf4ad42ae005993c96ab8b"
+checksum = "0ef37ba6180df451042f1c277d4d0898e2447f0a5d5072e0ff11ee6ea5e7ef38"
 dependencies = [
- "azure_core",
+ "azure_core 0.20.0",
  "bytes",
  "futures",
  "log",
@@ -2281,7 +2330,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.6",
  "tokio",
  "tower-service",
  "tracing",
@@ -2985,7 +3034,7 @@ name = "noelware-remi"
 version = "0.1.0"
 source = "git+https://github.com/Noelware/core-rs?rev=8eeb681c1efe1da8dc38504bf0c76e52ef543e32#8eeb681c1efe1da8dc38504bf0c76e52ef543e32"
 dependencies = [
- "azure_core",
+ "azure_core 0.19.0",
  "mongodb",
  "remi",
  "remi-azure",
@@ -3806,13 +3855,13 @@ dependencies = [
 
 [[package]]
 name = "remi-azure"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f3ab3830bdfea94e2b9a42122c27a2969d619c88b5f937db98cacbe6ff7136d"
+checksum = "e9f836e675d255384fa5e76603cf1bb35c7a7311e09874280593de39511f7627"
 dependencies = [
  "async-trait",
- "azure_core",
- "azure_storage",
+ "azure_core 0.20.0",
+ "azure_storage 0.20.0",
  "azure_storage_blobs",
  "bytes",
  "futures-util",
@@ -3949,10 +3998,12 @@ dependencies = [
  "system-configuration",
  "tokio",
  "tokio-native-tls",
+ "tokio-util",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "wasm-streams",
  "web-sys",
  "winreg 0.52.0",
 ]
@@ -5173,7 +5224,7 @@ dependencies = [
  "axum-extra",
  "axum-server",
  "azalia",
- "azure_storage",
+ "azure_storage 0.19.0",
  "bson",
  "cfg-if",
  "chrono",
