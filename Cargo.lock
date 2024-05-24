@@ -2045,9 +2045,9 @@ dependencies = [
 
 [[package]]
 name = "hcl-edit"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a38801a75ed3ca792938540646cc2e848fc67096ac607d8c7e16ae5fa5590352"
+checksum = "46510177a76e68ccd7d75c5af6dfc7d9bf14d5b274211cc35d5abe7f6e72d5b0"
 dependencies = [
  "fnv",
  "hcl-primitives",
@@ -2070,9 +2070,9 @@ dependencies = [
 
 [[package]]
 name = "hcl-rs"
-version = "0.17.2"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70095917a37ae02ffa8bb7f50b411f9692137052321bc693a654733b2367708e"
+checksum = "ba31dbfca0e197057f6d9a070cf87a68d93da5f551d4ad0d44e0f274f7179669"
 dependencies = [
  "hcl-edit",
  "hcl-primitives",
