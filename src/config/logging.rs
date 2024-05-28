@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::TRUTHY_REGEX;
+use azalia::TRUTHY_REGEX;
 use noelware_config::{env, merge::Merge, FromEnv};
 use serde::{Deserialize, Serialize};
 use tracing::Level;

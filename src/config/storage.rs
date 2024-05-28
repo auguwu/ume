@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::TRUTHY_REGEX;
 use aws_sdk_s3::{
     config::Region,
     types::{BucketCannedAcl, ObjectCannedAcl},
 };
+use azalia::TRUTHY_REGEX;
 use azure_storage::CloudLocation;
 use bson::Document;
 use eyre::{Context, Report};

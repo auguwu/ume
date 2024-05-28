@@ -120,7 +120,7 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
     tracing_subscriber::registry()
         .with(
             match config.logging.json {
-                false => WriteLayer::new_with(io::stdout(), writers::default),
+                false => WriteLayer::new_with(io::stdout(), writers::default::writer(None)),
                 true => WriteLayer::new_with(io::stdout(), writers::json),
             }
             .with_filter(LevelFilter::from_level(config.logging.level))

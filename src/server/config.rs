@@ -15,7 +15,7 @@
 
 pub mod ssl;
 
-use crate::TRUTHY_REGEX;
+use azalia::TRUTHY_REGEX;
 use noelware_config::{env, merge::Merge, TryFromEnv};
 use serde::{Deserialize, Serialize};
 use std::{env::VarError, net::SocketAddr};

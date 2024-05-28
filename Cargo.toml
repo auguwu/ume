@@ -16,7 +16,7 @@
 [package]
 name = "ume"
 description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-version = "4.0.3"
+version = "4.0.4"
 authors = ["Noel Towa <cutie@floofy.dev>"]
 edition = "2021"
 rust-version = "1.76"
@@ -31,20 +31,13 @@ default = []
 mimalloc = ["dep:mimalloc"]
 
 [dependencies]
-# uses the fork until https://github.com/1Password/arboard/pull/134 is passed
-# as of 12/04/24, it was merged but there is no version as of today (16/04/24)
-#
-# TODO(@auguwu): remove the git dependency once a new version is avaliable
-arboard = { version = "3.3.2", git = "https://github.com/1Password/arboard", features = [
-    "wayland-data-control",
-] }
+arboard = { version = "3.4.0", features = ["wayland-data-control"] }
 async-trait = "0.1.80"
 aws-sdk-s3 = { version = "1.25.0", features = ["behavior-version-latest"] }
 axum = { version = "0.7.5", features = ["macros"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 axum-server = { version = "0.6.0", features = ["tls-rustls"] }
-azalia = { git = "https://github.com/Noelware/core-rs", version = "0.1.0", rev = "f190efd883e61f0b630a14a5e1cc20da648fb38a" }
-azure_storage = "0.19.0"
+azure_storage = "0.20.0"
 bson = "2.10.0"
 cfg-if = "1.0.0"
 chrono = "0.4.38"
@@ -60,18 +53,6 @@ mimalloc = { version = "0.1.41", optional = true }
 mime = "0.3.17"
 mongodb = { version = "2.8.2", features = ["tracing", "log"] }
 multer = "3.1.0"
-noelware-config = { git = "https://github.com/Noelware/core-rs", rev = "8eeb681c1efe1da8dc38504bf0c76e52ef543e32", version = "0.1.0", features = [
-    "derive",
-] }
-noelware-log = { git = "https://github.com/Noelware/core-rs", rev = "8eeb681c1efe1da8dc38504bf0c76e52ef543e32", version = "0.1.0", features = [
-    "writers",
-] }
-noelware-remi = { git = "https://github.com/Noelware/core-rs", rev = "8eeb681c1efe1da8dc38504bf0c76e52ef543e32", version = "0.1.0", features = [
-    "all",
-] }
-noelware-serde = { git = "https://github.com/Noelware/core-rs", rev = "8eeb681c1efe1da8dc38504bf0c76e52ef543e32", version = "0.1.0", features = [
-    "tracing",
-] }
 num_cpus = "1.16.0"
 once_cell = "1.19.0"
 opentelemetry = "0.22.0"
@@ -80,11 +61,11 @@ opentelemetry_sdk = "0.22.1"
 owo-colors = "4.0.0"
 rand = "0.8.5"
 regex = "1.10.4"
-remi = "0.7.1"
-remi-azure = { version = "0.7.0", features = ["serde", "tracing"] }
-remi-fs = { version = "0.7.1", features = ["serde", "tracing", "file-format"] }
-remi-gridfs = { version = "0.7.1", features = ["serde", "tracing"] }
-remi-s3 = { version = "0.7.1", features = ["serde", "tracing"] }
+remi = "0.8.0"
+remi-azure = { version = "0.8.0", features = ["serde", "tracing"] }
+remi-fs = { version = "0.8.0", features = ["serde", "tracing", "file-format"] }
+remi-gridfs = { version = "0.8.0", features = ["serde", "tracing"] }
+remi-s3 = { version = "0.8.0", features = ["serde", "tracing"] }
 reqwest = { version = "0.12.4", features = ["multipart", "json"] }
 sentry = "0.33.0"
 sentry-tower = { version = "0.33.0", features = ["axum", "http"] }
@@ -95,11 +76,40 @@ tokio = { version = "1.37.0", features = ["full"] }
 tokio-util = { version = "0.7.11", features = ["io-util"] }
 tower-http = { version = "0.5.2", features = ["catch-panic"] }
 tracing = "0.1.40"
-tracing-log = "0.2.0"
 tracing-opentelemetry = "0.23.0"
 tracing-subscriber = "0.3.18"
 url = "2.5.0"
 which = "6.0.1"
+
+[dependencies.azalia]
+version = "0.1.0"
+git = "https://github.com/Noelware/core-rs"
+rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
+features = ["lazy", "regex"]
+
+[dependencies.noelware-config]
+version = "0.1.0"
+git = "https://github.com/Noelware/core-rs"
+rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
+features = ["derive"]
+
+[dependencies.noelware-log]
+version = "0.1.0"
+git = "https://github.com/Noelware/core-rs"
+rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
+features = ["writers"]
+
+[dependencies.noelware-remi]
+version = "0.1.0"
+git = "https://github.com/Noelware/core-rs"
+rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
+features = ["all"]
+
+[dependencies.noelware-serde]
+version = "0.1.0"
+git = "https://github.com/Noelware/core-rs"
+rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
+features = ["tracing"]
 
 [build-dependencies]
 chrono = "0.4.38"
@@ -111,4 +121,6 @@ quote = "1.0.36"
 syn = "2.0.60"
 
 [package.metadata.cargo-machete]
-ignored = ["hcl-rs", "tracing-log"]
+ignored = [
+    "hcl-rs", # crate name is `hcl` but crates.io name is `hcl-rs`
+]

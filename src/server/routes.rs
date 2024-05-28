@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use super::extract::Multipart;
 use axum::{
     extract::Path,
     http::{
@@ -27,8 +28,6 @@ use noelware_remi::StorageService;
 use rand::distributions::{Alphanumeric, DistString};
 use remi::{Blob, StorageService as _, UploadRequest};
 use serde_json::{json, Value};
-
-use super::extract::Multipart;
 
 pub async fn main() -> Json<Value> {
     Json(json!({
@@ -108,12 +107,11 @@ pub async fn get_image(
     };
 
     // we should never reach here, if we do then it is a problem we need to face
-    if let Blob::File(mut file) = file {
-        if file.content_type.is_none() {
-            file.content_type = Some(remi_fs::default_resolver(&file.data));
-        }
+    if let Blob::File(file) = file {
+        let ct = file
+            .content_type
+            .unwrap_or_else(|| remi_fs::default_resolver(&file.data).to_string());
 
-        let ct = file.content_type.unwrap();
         let mime = ct.parse::<mime::Mime>().map_err(|_| {
             (
                 StatusCode::BAD_REQUEST,

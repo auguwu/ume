@@ -38,6 +38,10 @@ pub struct Program {
     #[arg(long, global = true, short = 'q')]
     pub quiet: bool,
 
+    /// prints the current version of `ume`
+    #[arg(long, global = true, short = 'v')]
+    pub print_version: bool,
+
     #[command(subcommand)]
     pub command: cmds::Cmd,
 }

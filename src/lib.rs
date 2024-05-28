@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::OnceLock;
+
 #[macro_use]
 extern crate tracing;
 
@@ -22,10 +24,6 @@ extern crate eyre;
 pub mod cli;
 pub mod config;
 pub mod server;
-
-/// Generic [`Regex`] implementation for possible truthy boolean values.
-pub static TRUTHY_REGEX: once_cell::sync::Lazy<regex::Regex> =
-    once_cell::sync::Lazy::new(|| regex::Regex::new(r#"^(yes|true|si*|e|enable|1)$"#).unwrap());
 
 /// Constant that refers to the version of the Rust compiler that was used. This is mainly
 /// for diagnostics and is never accessed by third parties.
@@ -49,28 +47,19 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 ///
 /// This will return a immutable string slice as the version, and since it could possibly
 /// be mutated, we advise to only use it in immutable contexts; never try to mutate it.
-#[inline(always)]
-#[allow(unknown_lints, static_mut_refs)]
+#[inline]
 pub fn version() -> &'static str {
-    static ONCE: std::sync::Once = std::sync::Once::new();
-    static mut VERSION: String = String::new();
+    static ONCE: OnceLock<String> = OnceLock::new();
+    ONCE.get_or_init(|| {
+        use std::fmt::Write;
 
-    // Safety: `VERSION` is only mutated on the first call of `version` and is never
-    //         mutated again afterwards.
-    unsafe {
-        ONCE.call_once(move || {
-            use std::fmt::Write;
+        let mut buf = String::new();
+        write!(buf, "{}", crate::VERSION).unwrap();
 
-            let mut buf = String::new();
-            write!(buf, "{}", crate::VERSION).unwrap();
+        if crate::COMMIT_HASH != "d1cebae" {
+            write!(buf, "+{}", crate::COMMIT_HASH).unwrap();
+        }
 
-            if crate::COMMIT_HASH != "d1cebae" {
-                write!(buf, "+{}", crate::COMMIT_HASH).unwrap();
-            }
-
-            VERSION = buf;
-        });
-
-        &VERSION
-    }
+        buf
+    })
 }

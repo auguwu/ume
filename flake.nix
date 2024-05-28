@@ -26,13 +26,12 @@
     };
 
     flake-compat = {
-      url = github:edolstra/flake-compat;
+      url = "github:edolstra/flake-compat";
       flake = false;
     };
   };
 
   outputs = {
-    self,
     nixpkgs,
     flake-utils,
     rust-overlay,
@@ -48,11 +47,6 @@
 
       rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
-      stdenv =
-        if pkgs.stdenv.isLinux
-        then pkgs.stdenv
-        else pkgs.clangStdenv;
-
       rustPlatform = pkgs.makeRustPlatform {
         rustc = rust;
         cargo = rust;
@@ -62,35 +56,35 @@
         if pkgs.stdenv.isLinux
         then ''-C link-arg=-fuse-ld=mold -C target-cpu=native $RUSTFLAGS''
         else ''$RUSTFLAGS'';
-    in rec {
-      packages = {
-        ume = rustPlatform.buildRustPackage {
-          nativeBuildInputs = with pkgs; [pkg-config];
-          buildInputs = with pkgs; [openssl];
-          cargoSha256 = pkgs.lib.fakeSha256;
-          version = "${cargoTOML.package.version}";
-          name = "ume";
-          src = ./.;
 
-          cargoLock = {
-            lockFile = ./Cargo.lock;
-            outputHashes = {
-              "noelware-config-0.1.0" = "sha256-4yred15se1RB2LJJ2htB8DPMfcCo9+9ZWNRFlsmbDmQ=";
-              "arboard-3.3.2" = "sha256-H2xeFJkoeg0kN3pKsb2P4rxEeIbkoSwLVqFzBz5eb7g=";
-              "azalia-0.1.0" = "sha256-wSBYHva/VbU0F++2XBUrg1Onhatq46gjksDyv1aMaeM=";
-            };
-          };
+      ume = rustPlatform.buildRustPackage {
+        nativeBuildInputs = with pkgs; [pkg-config];
+        buildInputs = with pkgs; [openssl];
+        cargoSha256 = pkgs.lib.fakeSha256;
+        version = "${cargoTOML.package.version}";
+        name = "ume";
+        src = ./.;
 
-          meta = with pkgs.lib; {
-            description = "Easy, self-hostable, and flexible image host made in Rust";
-            homepage = "https://github.com/auguwu/ume";
-            license = with licenses; [asl20];
-            maintainers = with maintainers; [auguwu];
-            mainProgram = "ume";
+        cargoLock = {
+          lockFile = ./Cargo.lock;
+          outputHashes = {
+            "noelware-config-0.1.0" = "sha256-4yred15se1RB2LJJ2htB8DPMfcCo9+9ZWNRFlsmbDmQ=";
+            "azalia-0.1.0" = "sha256-wSBYHva/VbU0F++2XBUrg1Onhatq46gjksDyv1aMaeM=";
           };
         };
 
-        default = packages.ume;
+        meta = with pkgs.lib; {
+          description = "Easy, self-hostable, and flexible image host made in Rust";
+          homepage = "https://github.com/auguwu/ume";
+          license = with licenses; [asl20];
+          maintainers = with maintainers; [auguwu];
+          mainProgram = "ume";
+        };
+      };
+    in {
+      packages = {
+        inherit ume;
+        default = ume;
       };
 
       devShells.default = pkgs.mkShell {
@@ -100,18 +94,21 @@
           ++ (lib.optional stdenv.isLinux [mold lldb gdb])
           ++ (lib.optional stdenv.isDarwin [darwin.apple_sdk.frameworks.CoreFoundation]);
 
-        buildInputs = with pkgs; [
-          kubernetes-helm
+        buildInputs = [
+          pkgs.cargo-machete
+          pkgs.cargo-expand
+          pkgs.cargo-deny
 
-          cargo-machete
-          cargo-expand
-          cargo-deny
+          pkgs.openssl
+          pkgs.glibc
+          pkgs.git
 
-          openssl
-          glibc
           rust
-          git
         ];
+
+        shellHook = ''
+          export RUSTFLAGS="${rustflags}"
+        '';
       };
     });
 }
