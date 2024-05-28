@@ -69,7 +69,7 @@
           lockFile = ./Cargo.lock;
           outputHashes = {
             "noelware-config-0.1.0" = "sha256-4yred15se1RB2LJJ2htB8DPMfcCo9+9ZWNRFlsmbDmQ=";
-            "azalia-0.1.0" = "sha256-wSBYHva/VbU0F++2XBUrg1Onhatq46gjksDyv1aMaeM=";
+            "azalia-0.1.0" = "sha256-VKGSv1sEpKiD1IEKIViCXTT42+io28KrSeSiJrIvYAo=";
           };
         };
 
