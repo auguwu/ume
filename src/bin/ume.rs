@@ -31,10 +31,6 @@ fn main() -> eyre::Result<()> {
     let _ = dotenvy::dotenv();
 
     let program = Program::parse();
-    if program.print_version {
-        println!("ume {}. built on Rust {}", ume::version(), ume::RUSTC);
-    }
-
     let runtime = match program.command {
         Cmd::Server(ref server) => {
             color_eyre::install()?;
