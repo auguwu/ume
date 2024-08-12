@@ -109,11 +109,15 @@ impl TryFromEnv for Config {
             url: match env!("UME_TRACING_OTEL_COLLECTOR_URL") {
                 Ok(val) => match val.parse::<Url>() {
                     Ok(val) => val,
-                    Err(e) => return Err(eyre!("failed to parse value [{val}]: {e}"))
-                }
+                    Err(e) => return Err(eyre!("failed to parse value [{val}]: {e}")),
+                },
 
                 Err(VarError::NotPresent) => __default_url(),
-                Err(_) => return Err(eyre!("received invalid utf-8 from `UME_TRACING_OTEL_COLLECTOR_URL` environment variable"))
+                Err(_) => {
+                    return Err(eyre!(
+                        "received invalid utf-8 from `UME_TRACING_OTEL_COLLECTOR_URL` environment variable"
+                    ))
+                }
             },
 
             // syntax: UME_TRACING_OTEL_LABELS=key1=key2,key3=key4,key5=key6

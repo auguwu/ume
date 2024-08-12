@@ -41,23 +41,16 @@ pub fn create_router() -> Router {
 }
 
 /// Starts a Ume server with the configured [`StorageService`] and loaded configuration file.
-pub async fn start_server(
-    storage: StorageService,
-    config: crate::config::Config,
-) -> eyre::Result<()> {
+pub async fn start_server(storage: StorageService, config: crate::config::Config) -> eyre::Result<()> {
     info!("starting Ume server!");
 
     let router = create_router()
         .layer(sentry_tower::NewSentryLayer::new_from_top())
         .layer(sentry_tower::SentryHttpLayer::with_transaction())
-        .layer(tower_http::catch_panic::CatchPanicLayer::custom(
-            panic_handler,
-        ))
+        .layer(tower_http::catch_panic::CatchPanicLayer::custom(panic_handler))
         .layer(DefaultBodyLimit::max(15 * 1024 * 1024))
         .layer(axum::middleware::from_fn(crate::server::middleware::log))
-        .layer(axum::middleware::from_fn(
-            crate::server::middleware::request_id,
-        ))
+        .layer(axum::middleware::from_fn(crate::server::middleware::request_id))
         .layer(Extension(storage))
         .layer(Extension(config.clone()));
 
@@ -67,11 +60,7 @@ pub async fn start_server(
     }
 }
 
-async fn start_https_server(
-    config: &Config,
-    ssl: &config::ssl::Config,
-    router: Router,
-) -> eyre::Result<()> {
+async fn start_https_server(config: &Config, ssl: &config::ssl::Config, router: Router) -> eyre::Result<()> {
     let handle = Handle::new();
     tokio::spawn(shutdown_signal(Some(handle.clone())));
 
@@ -99,9 +88,7 @@ async fn start_http_server(config: &Config, router: Router) -> eyre::Result<()> 
 
 async fn shutdown_signal(handle: Option<Handle>) {
     let ctrl_c = async {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("unable to install CTRL+C handler");
+        tokio::signal::ctrl_c().await.expect("unable to install CTRL+C handler");
     };
 
     #[cfg(unix)]

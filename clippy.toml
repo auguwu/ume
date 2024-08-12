@@ -13,22 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[toolchain]
-channel = "1.80"
-profile = "minimal"
-targets = [
-    "aarch64-unknown-linux-gnu",
-    "x86_64-apple-darwin",
-    "x86_64-unknown-linux-gnu",
-    "x86_64-unknown-linux-musl",
-    "x86_64-pc-windows-msvc",
-]
-components = [
-    "rustc",
-    "cargo",
-    "rust-analyzer",
-    "rust-src",
-    "rust-std",
-    "clippy",
-    "rustfmt",
-]
+msrv = "1.78"

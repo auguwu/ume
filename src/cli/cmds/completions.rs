@@ -33,11 +33,7 @@ pub fn execute(cmd: Cmd) -> eyre::Result<()> {
             None => Shell::Bash,
         },
         Err(std::env::VarError::NotPresent) => Shell::Bash,
-        Err(_) => {
-            return Err(eyre!(
-                "received invalid unicode for `$SHELL` environment variable"
-            ))
-        }
+        Err(_) => return Err(eyre!("received invalid unicode for `$SHELL` environment variable")),
     };
 
     let shell = cmd.shell.unwrap_or(default_shell);

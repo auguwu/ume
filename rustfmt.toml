@@ -13,22 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[toolchain]
-channel = "1.80"
-profile = "minimal"
-targets = [
-    "aarch64-unknown-linux-gnu",
-    "x86_64-apple-darwin",
-    "x86_64-unknown-linux-gnu",
-    "x86_64-unknown-linux-musl",
-    "x86_64-pc-windows-msvc",
-]
-components = [
-    "rustc",
-    "cargo",
-    "rust-analyzer",
-    "rust-src",
-    "rust-std",
-    "clippy",
-    "rustfmt",
-]
+use_field_init_shorthand = true
+match_arm_leading_pipes = "Preserve"
+use_try_shorthand = true
+newline_style = "Unix"               # keep it consistent
+max_width = 120
+edition = "2021"

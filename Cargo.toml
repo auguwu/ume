@@ -19,7 +19,7 @@ description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host ma
 version = "4.1.0"
 authors = ["Noel Towa <cutie@floofy.dev>"]
 edition = "2021"
-rust-version = "1.76"
+rust-version = "1.78"
 repository = "https://github.com/auguwu/ume"
 
 [[bin]]

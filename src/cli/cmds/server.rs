@@ -61,9 +61,7 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
     print_banner();
     let _sentry_guard = sentry::init(sentry::ClientOptions {
         traces_sample_rate: match config.tracing {
-            config::tracing::Config::Sentry(config::tracing::sentry::Config { sample_set }) => {
-                sample_set
-            }
+            config::tracing::Config::Sentry(config::tracing::sentry::Config { sample_set }) => sample_set,
             _ => 0.5,
         },
         attach_stacktrace: true,
@@ -81,19 +79,13 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
         let mut provider = TracerProvider::builder();
         match otel.kind {
             Kind::Grpc => {
-                provider = provider.with_simple_exporter(
-                    opentelemetry_otlp::new_exporter()
-                        .tonic()
-                        .build_span_exporter()?,
-                )
+                provider =
+                    provider.with_simple_exporter(opentelemetry_otlp::new_exporter().tonic().build_span_exporter()?)
             }
 
             Kind::Http => {
-                provider = provider.with_simple_exporter(
-                    opentelemetry_otlp::new_exporter()
-                        .http()
-                        .build_span_exporter()?,
-                )
+                provider =
+                    provider.with_simple_exporter(opentelemetry_otlp::new_exporter().http().build_span_exporter()?)
             }
         };
 
@@ -150,14 +142,10 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
 
         crate::config::storage::Config::GridFS(gridfs) => {
             let client = mongodb::Client::with_options(gridfs.client_options.clone())?;
-            azalia::remi::StorageService::GridFS(remi_gridfs::StorageService::from_client(
-                &client, gridfs,
-            ))
+            azalia::remi::StorageService::GridFS(remi_gridfs::StorageService::from_client(&client, gridfs))
         }
 
-        crate::config::storage::Config::S3(s3) => {
-            azalia::remi::StorageService::S3(remi_s3::StorageService::new(s3))
-        }
+        crate::config::storage::Config::S3(s3) => azalia::remi::StorageService::S3(remi_s3::StorageService::new(s3)),
     };
 
     storage.init().await?;

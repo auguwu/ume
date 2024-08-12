@@ -53,10 +53,7 @@ fn main() -> eyre::Result<()> {
                 .install()?;
 
             program.init_logging();
-            Builder::new_current_thread()
-                .worker_threads(1)
-                .enable_all()
-                .build()
+            Builder::new_current_thread().worker_threads(1).enable_all().build()
         }
     }?;
 

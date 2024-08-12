@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use eyre::Context;
 use azalia::config::{env, merge::Merge, TryFromEnv};
+use eyre::Context;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 

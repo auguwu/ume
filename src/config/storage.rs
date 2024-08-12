@@ -27,8 +27,8 @@ use azure_storage::CloudLocation;
 use bson::Document;
 use eyre::{Context, Report};
 use mongodb::options::{
-    Acknowledgment, AuthMechanism, ClientOptions, ReadConcern, ReadPreference,
-    ReadPreferenceOptions, SelectionCriteria, ServerAddress, TagSet, WriteConcern,
+    Acknowledgment, AuthMechanism, ClientOptions, ReadConcern, ReadPreference, ReadPreferenceOptions,
+    SelectionCriteria, ServerAddress, TagSet, WriteConcern,
 };
 use remi_azure::Credential;
 use serde::{Deserialize, Serialize};
@@ -237,20 +237,12 @@ fn merge_gridfs(config: &mut remi_gridfs::StorageConfig, right: remi_gridfs::Sto
 
 fn merge_azure(config: &mut remi_azure::StorageConfig, right: remi_azure::StorageConfig) {
     match (&config.location, &right.location) {
-        (CloudLocation::Public { account: acc1 }, CloudLocation::Public { account: acc2 })
-            if acc1 != acc2 =>
-        {
-            config.location = CloudLocation::Public {
-                account: acc2.clone(),
-            };
+        (CloudLocation::Public { account: acc1 }, CloudLocation::Public { account: acc2 }) if acc1 != acc2 => {
+            config.location = CloudLocation::Public { account: acc2.clone() };
         }
 
-        (CloudLocation::China { account: acc1 }, CloudLocation::China { account: acc2 })
-            if acc1 != acc2 =>
-        {
-            config.location = CloudLocation::China {
-                account: acc2.clone(),
-            };
+        (CloudLocation::China { account: acc1 }, CloudLocation::China { account: acc2 }) if acc1 != acc2 => {
+            config.location = CloudLocation::China { account: acc2.clone() };
         }
 
         (
@@ -280,10 +272,7 @@ fn merge_azure(config: &mut remi_azure::StorageConfig, right: remi_azure::Storag
                 account: acc1,
                 access_key: ak1,
             },
-            Credential::AccessKey {
-                account,
-                access_key,
-            },
+            Credential::AccessKey { account, access_key },
         ) if acc1 != account || access_key != ak1 => {
             config.credentials = Credential::AccessKey {
                 account: account.clone(),
@@ -317,15 +306,9 @@ fn merge_fs(config: &mut remi_fs::Config, right: remi_fs::Config) {
 }
 
 fn merge_s3(config: &mut remi_s3::StorageConfig, right: remi_s3::StorageConfig) {
-    strategy::bool::only_if_falsy(
-        &mut config.enable_signer_v4_requests,
-        right.enable_signer_v4_requests,
-    );
+    strategy::bool::only_if_falsy(&mut config.enable_signer_v4_requests, right.enable_signer_v4_requests);
 
-    strategy::bool::only_if_falsy(
-        &mut config.enforce_path_access_style,
-        right.enforce_path_access_style,
-    );
+    strategy::bool::only_if_falsy(&mut config.enforce_path_access_style, right.enforce_path_access_style);
 
     merge_tuple!(config.default_bucket_acl, right.default_bucket_acl);
     merge_tuple!(config.default_object_acl, right.default_object_acl);
@@ -391,15 +374,11 @@ fn to_env_location() -> eyre::Result<azure_storage::CloudLocation> {
                 port: match env!("UME_STORAGE_AZURE_EMULATOR_PORT") {
                     Ok(res) => res.parse::<u16>()?,
                     Err(VarError::NotPresent) => {
-                        return Err(eyre!(
-                            "missing `UME_STORAGE_AZURE_EMULATOR_PORT` environment variable"
-                        ))
+                        return Err(eyre!("missing `UME_STORAGE_AZURE_EMULATOR_PORT` environment variable"))
                     }
 
                     Err(VarError::NotUnicode(_)) => {
-                        return Err(eyre!(
-                            "`UME_STORAGE_AZURE_EMULATOR_PORT` env was not in valid UTF-8"
-                        ))
+                        return Err(eyre!("`UME_STORAGE_AZURE_EMULATOR_PORT` env was not in valid UTF-8"))
                     }
                 },
             }),
@@ -408,13 +387,10 @@ fn to_env_location() -> eyre::Result<azure_storage::CloudLocation> {
                 account: env!("UME_STORAGE_AZURE_ACCOUNT")
                     .context("missing required env [UME_STORAGE_AZURE_ACCOUNT]")?,
 
-                uri: env!("UME_STORAGE_AZURE_URI")
-                    .context("missing required env [UME_STORAGE_AZURE_URI]")?,
+                uri: env!("UME_STORAGE_AZURE_URI").context("missing required env [UME_STORAGE_AZURE_URI]")?,
             }),
 
-            loc => Err(eyre!(
-                "expected [public, china, emulator, custom]; received '{loc}'"
-            )),
+            loc => Err(eyre!("expected [public, china, emulator, custom]; received '{loc}'")),
         },
 
         Err(_) => Err(eyre!(
@@ -444,13 +420,15 @@ fn parse_read_preference_options() -> eyre::Result<ReadPreferenceOptions> {
             Err(std::env::VarError::NotPresent) => None,
             Err(_) => return Err(eyre!("")),
         })
-        .max_staleness(
-            match env!("UME_STORAGE_GRIDFS_READ_PREFERENCE_MAX_STALENESS") {
-                Ok(value) => Some(humantime::parse_duration(&value)?),
-                Err(std::env::VarError::NotPresent) => None,
-                Err(_) => return Err(eyre!("unable to provide `$UME_STORAGE_GRIDFS_READ_PREFERENCE_MAX_STALENESS` as a valid UTF-8 string")),
-            },
-        )
+        .max_staleness(match env!("UME_STORAGE_GRIDFS_READ_PREFERENCE_MAX_STALENESS") {
+            Ok(value) => Some(humantime::parse_duration(&value)?),
+            Err(std::env::VarError::NotPresent) => None,
+            Err(_) => {
+                return Err(eyre!(
+                    "unable to provide `$UME_STORAGE_GRIDFS_READ_PREFERENCE_MAX_STALENESS` as a valid UTF-8 string"
+                ))
+            }
+        })
         .build())
 }
 

@@ -72,14 +72,7 @@ pub async fn request_id(mut req: Request<Body>, next: Next) -> impl IntoResponse
     headers.insert("x-request-id", id.into());
     headers.insert(
         "server",
-        HeaderValue::from_str(
-            format!(
-                "ume (+https://github.com/auguwu/ume; v{})",
-                crate::version()
-            )
-            .as_str(),
-        )
-        .unwrap(),
+        HeaderValue::from_str(format!("ume (+https://github.com/auguwu/ume; v{})", crate::version()).as_str()).unwrap(),
     );
 
     (headers, next.run(req).await)

@@ -70,9 +70,7 @@ impl TryFromEnv for Config {
     fn try_from_env() -> Result<Self::Output, Self::Error> {
         match env!("UME_TRACING_BACKEND") {
             Ok(res) => match res.as_str() {
-                "opentelemetry" | "otel" => {
-                    Ok(Config::OpenTelemetry(otel::Config::try_from_env()?))
-                }
+                "opentelemetry" | "otel" => Ok(Config::OpenTelemetry(otel::Config::try_from_env()?)),
 
                 "sentry" => Ok(Config::Sentry(sentry::Config::from_env())),
                 "" => Ok(Config::Disabled),
@@ -120,13 +118,9 @@ mod tests {
             match (&self.tracing, &other.tracing) {
                 (Config::Disabled, Config::Disabled) => true,
                 (Config::OpenTelemetry(ref otel1), Config::OpenTelemetry(ref otel2)) => {
-                    otel1.kind == otel2.kind
-                        && otel1.url == otel2.url
-                        && otel1.labels == otel2.labels
+                    otel1.kind == otel2.kind && otel1.url == otel2.url && otel1.labels == otel2.labels
                 }
-                (Config::Sentry(ref sentry1), Config::Sentry(ref sentry2)) => {
-                    sentry1.sample_set == sentry2.sample_set
-                }
+                (Config::Sentry(ref sentry1), Config::Sentry(ref sentry2)) => sentry1.sample_set == sentry2.sample_set,
 
                 _ => false,
             }
@@ -160,7 +154,8 @@ mod tests {
             S {
                 tracing: Config::OpenTelemetry(otel::Config::default())
             },
-            hcl::from_str("tracing \"opentelemetry\" {\n  kind = \"grpc\"\n  url = \"grpc://localhost:4318\"\n}\n").unwrap()
+            hcl::from_str("tracing \"opentelemetry\" {\n  kind = \"grpc\"\n  url = \"grpc://localhost:4318\"\n}\n")
+                .unwrap()
         );
 
         assert_eq!(

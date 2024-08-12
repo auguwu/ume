@@ -54,9 +54,7 @@ impl Header for UploaderKey {
     }
 
     fn encode<E: Extend<axum::http::HeaderValue>>(&self, values: &mut E) {
-        values.extend(std::iter::once(
-            HeaderValue::from_bytes(self.0.as_ref()).unwrap(),
-        ));
+        values.extend(std::iter::once(HeaderValue::from_bytes(self.0.as_ref()).unwrap()));
     }
 
     fn decode<'i, I>(values: &mut I) -> Result<Self, axum_extra::headers::Error>
@@ -236,10 +234,7 @@ pub async fn upload_image(
             ))
         }
     };
-    let name = format!(
-        "{}.{ext}",
-        Alphanumeric.sample_string(&mut rand::thread_rng(), 6)
-    );
+    let name = format!("{}.{ext}", Alphanumeric.sample_string(&mut rand::thread_rng(), 6));
 
     info!(file = %name, "uploading image...");
     storage

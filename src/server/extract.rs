@@ -54,10 +54,7 @@ where
         let boundary = boundary(req.headers())?;
         let stream = req.with_limited_body().into_body();
 
-        Ok(Self(multer::Multipart::new(
-            stream.into_data_stream(),
-            boundary,
-        )))
+        Ok(Self(multer::Multipart::new(stream.into_data_stream(), boundary)))
     }
 }
 
@@ -127,9 +124,7 @@ pub fn err_to_msg(err: &multer::Error) -> &'static str {
         multer::Error::NoBoundary => "was missing a multipart boundary",
         multer::Error::NoMultipart => "missing `multipart/form-data` contents",
         multer::Error::IncompleteStream => "received incomplete stream, did it corrupt?",
-        multer::Error::DecodeContentType(_) => {
-            "was unable to decode `Content-Type` header for field"
-        }
+        multer::Error::DecodeContentType(_) => "was unable to decode `Content-Type` header for field",
         multer::Error::DecodeHeaderName { .. } => "decoding header name failed",
         multer::Error::DecodeHeaderValue { .. } => "decoding header value failed",
         multer::Error::FieldSizeExceeded { .. } => "exceeded field size capacity",
@@ -147,12 +142,8 @@ pub fn err_to_msg(err: &multer::Error) -> &'static str {
 
 pub fn expand_details_from_err(err: &multer::Error) -> Option<Value> {
     match err {
-        multer::Error::UnknownField { field_name } => {
-            field_name.as_ref().map(|field| json!({ "field": field }))
-        }
-        multer::Error::IncompleteFieldData { field_name } => {
-            field_name.as_ref().map(|field| json!({ "field": field }))
-        }
+        multer::Error::UnknownField { field_name } => field_name.as_ref().map(|field| json!({ "field": field })),
+        multer::Error::IncompleteFieldData { field_name } => field_name.as_ref().map(|field| json!({ "field": field })),
         multer::Error::ReadHeaderFailed(_) => None,
         multer::Error::DecodeContentType(_) => None,
         multer::Error::NoBoundary => None,
@@ -160,14 +151,12 @@ pub fn expand_details_from_err(err: &multer::Error) -> Option<Value> {
         multer::Error::IncompleteStream => None,
         multer::Error::DecodeHeaderName { name, .. } => Some(json!({ "header": name })),
         multer::Error::StreamSizeExceeded { limit } => Some(json!({ "limit": limit })),
-        multer::Error::FieldSizeExceeded { limit, field_name } => {
-            field_name.as_ref().map(|field| {
-                json!({
-                    "field": field,
-                    "limit": limit,
-                })
+        multer::Error::FieldSizeExceeded { limit, field_name } => field_name.as_ref().map(|field| {
+            json!({
+                "field": field,
+                "limit": limit,
             })
-        }
+        }),
 
         multer::Error::StreamReadFailed(err) => {
             if let Some(err) = err.downcast_ref::<multer::Error>() {

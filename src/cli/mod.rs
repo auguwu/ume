@@ -46,9 +46,7 @@ impl Program {
     pub fn init_logging(&self) {
         if !self.quiet {
             let filter = LevelFilter::from_level(self.level);
-            let layer = tracing_subscriber::fmt::layer()
-                .with_target(true)
-                .with_filter(filter);
+            let layer = tracing_subscriber::fmt::layer().with_target(true).with_filter(filter);
 
             tracing_subscriber::registry().with(layer).init();
         }

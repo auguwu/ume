@@ -15,8 +15,8 @@
 
 pub mod ssl;
 
-use azalia::TRUTHY_REGEX;
 use azalia::config::{env, merge::Merge, TryFromEnv};
+use azalia::TRUTHY_REGEX;
 use serde::{Deserialize, Serialize};
 use std::{env::VarError, net::SocketAddr};
 
@@ -71,8 +71,8 @@ impl TryFromEnv for Config {
 
                 Err(VarError::NotUnicode(_)) => {
                     return Err(eyre!(
-                    "failed to represent `UME_SERVER_HOST` environment variable as valid unicode"
-                ))
+                        "failed to represent `UME_SERVER_HOST` environment variable as valid unicode"
+                    ))
                 }
             },
 
@@ -97,8 +97,8 @@ impl TryFromEnv for Config {
 
                 Err(VarError::NotUnicode(_)) => {
                     return Err(eyre!(
-                    "failed to represent `UME_SERVER_PORT` environment variable as valid unicode"
-                ))
+                        "failed to represent `UME_SERVER_PORT` environment variable as valid unicode"
+                    ))
                 }
             },
 
