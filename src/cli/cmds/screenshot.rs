@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use arboard::Clipboard;
 use chrono::Local;
 use eyre::Context;
 use reqwest::multipart::{self, Part};
@@ -53,6 +54,14 @@ pub struct Cmd {
 }
 
 pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
+    let clipboard = match arboard::Clipboard::new() {
+        Ok(board) => Some(board),
+        Err(e) => {
+            error!(error = %e, "unable to get system clipboard; setting NOCOPY = true");
+            None
+        }
+    };
+
     let tempdir = cmd.tempdir.clone().unwrap_or(std::env::temp_dir());
     let screenshots = tempdir.join("screenshots");
     if !screenshots.try_exists()? {
@@ -92,15 +101,15 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
     info!(file = %name.display(), "uploading file to Ume server...");
 
     // upload the image
-    upload_file(&cmd, &name).await
+    upload_file(&cmd, &name, clipboard).await
 }
 
-async fn upload_file(cmd: &Cmd, loc: &Path) -> eyre::Result<()> {
+async fn upload_file(cmd: &Cmd, loc: &Path, clipboard: Option<Clipboard>) -> eyre::Result<()> {
     info!(file = %loc.display(), "Now uploading file...");
 
     let client = reqwest::Client::builder()
         .user_agent(format!(
-            "auguwu/ume-cli (+https://github.com/auguwu/ume; {}",
+            "auguwu/ume+cli (+https://github.com/auguwu/ume; {}",
             crate::version()
         ))
         .build()?;
@@ -125,11 +134,11 @@ async fn upload_file(cmd: &Cmd, loc: &Path) -> eyre::Result<()> {
         let msg = obj["message"].as_str().unwrap();
 
         error!("received message from Ume server [{status}]: {msg}");
-        if cmd.no_copy {
+        if cmd.no_copy || clipboard.is_none() {
             return Ok(());
         }
 
-        let mut clipboard = arboard::Clipboard::new()?;
+        let mut clipboard = clipboard.unwrap();
         let img: image::DynamicImage = image::io::Reader::new(Cursor::new(&contents)).decode()?;
 
         clipboard.set_image(arboard::ImageData {
@@ -142,14 +151,14 @@ async fn upload_file(cmd: &Cmd, loc: &Path) -> eyre::Result<()> {
     }
 
     let url = obj["filename"].as_str().unwrap();
-    if cmd.no_copy {
+    if cmd.no_copy || clipboard.is_none() {
         eprintln!("{}", url);
         return Ok(());
     }
 
-    info!("copying url to clipboard!");
+    info!("copying url [{url}] to clipboard!");
 
-    let mut clipboard = arboard::Clipboard::new()?;
+    let mut clipboard = clipboard.unwrap();
     cfg_if::cfg_if! {
         if #[cfg(target_os = "linux")] {
             use arboard::SetExtLinux;

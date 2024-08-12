@@ -16,7 +16,7 @@
 [package]
 name = "ume"
 description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-version = "4.1.0"
+version = "4.0.6"
 authors = ["Noel Towa <cutie@floofy.dev>"]
 edition = "2021"
 rust-version = "1.78"
@@ -27,7 +27,7 @@ name = "ume"
 path = "./src/bin/ume.rs"
 
 [dependencies]
-arboard = { version = "3.4.0", features = ["wayland-data-control"] }
+arboard = "3.4.0"
 async-trait = "0.1.80"
 aws-sdk-s3 = { version = "1.25.0", features = ["behavior-version-latest"] }
 axum = { version = "0.7.5", features = ["macros"] }

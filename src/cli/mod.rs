@@ -16,6 +16,8 @@
 mod cmds;
 pub use cmds::*;
 
+use azalia::log::writers;
+use std::io;
 use tracing::{level_filters::LevelFilter, Level};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
@@ -45,10 +47,20 @@ pub struct Program {
 impl Program {
     pub fn init_logging(&self) {
         if !self.quiet {
-            let filter = LevelFilter::from_level(self.level);
-            let layer = tracing_subscriber::fmt::layer().with_target(true).with_filter(filter);
+            tracing_subscriber::registry()
+                .with(
+                    azalia::log::WriteLayer::new_with(
+                        io::stdout(),
+                        writers::default::Writer {
+                            print_thread: false,
+                            print_module: false,
 
-            tracing_subscriber::registry().with(layer).init();
+                            ..Default::default()
+                        },
+                    )
+                    .with_filter(LevelFilter::from_level(self.level)),
+                )
+                .init();
         }
     }
 }

@@ -111,28 +111,12 @@ pub async fn log(metadata: Metadata, req: Request<Body>, next: Next) -> impl Int
     );
 
     let _guard = http_span.enter();
-    info!(
-        http.uri = uri,
-        http.method = method,
-        http.version = version,
-        req.id = %id,
-        req.ua = user_agent,
-        "processing request"
-    );
+    info!("processing request");
 
     let res = next.run(req).await;
     let now = start.elapsed();
 
-    info!(
-        http.uri = uri,
-        http.method = method,
-        http.version = version,
-        req.ua = user_agent,
-        response.status = res.status().as_u16(),
-        latency = ?now,
-        req.id = %id,
-        "processed request successfully"
-    );
+    info!(duration = ?now, "processed request successfully");
 
     res
 }
