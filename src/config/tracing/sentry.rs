@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use noelware_config::{env, merge::Merge, FromEnv};
+use azalia::config::{env, merge::Merge, FromEnv};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Merge)]

@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use crate::config::Url;
-use noelware_config::{env, merge::Merge, TryFromEnv};
+use azalia::config::{env, merge::Merge, TryFromEnv};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, env::VarError};
 
@@ -157,8 +157,8 @@ fn __default_url() -> Url {
 #[cfg(test)]
 mod tests {
     use super::{Config, Kind};
+    use azalia::config::{expand_with, TryFromEnv};
     use azalia::hashmap;
-    use noelware_config::{expand_with, TryFromEnv};
 
     #[test]
     fn test_config_without_special_env() {

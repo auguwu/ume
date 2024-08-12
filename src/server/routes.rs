@@ -24,9 +24,12 @@ use axum::{
     Extension, Json,
 };
 use axum_extra::{headers::Header, TypedHeader};
-use noelware_remi::StorageService;
+use azalia::remi::{
+    remi::{StorageService as _, UploadRequest},
+    StorageService,
+};
 use rand::distributions::{Alphanumeric, DistString};
-use remi::{Blob, StorageService as _, UploadRequest};
+use remi::Blob;
 use serde_json::{json, Value};
 
 pub async fn main() -> Json<Value> {

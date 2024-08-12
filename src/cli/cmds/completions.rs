@@ -14,9 +14,9 @@
 // limitations under the License.
 
 use crate::cli::Program;
+use azalia::config::env;
 use clap::CommandFactory;
 use clap_complete::Shell;
-use noelware_config::env;
 use std::{io, path::PathBuf};
 
 /// Generates shell completions for any shell. This doesn't support nushell or fig.

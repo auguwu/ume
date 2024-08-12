@@ -21,14 +21,11 @@ use std::{
 use tokio::runtime::Builder;
 use ume::cli::{Cmd, Program};
 
-// If either `--feature=mimalloc` or if the target OS is Windows, use mimalloc as
-// the allocator instead of the system one.
-#[cfg(any(feature = "mimalloc", target_os = "windows"))]
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 fn main() -> eyre::Result<()> {
-    let _ = dotenvy::dotenv();
+    dotenvy::dotenv().unwrap_or_default();
 
     let program = Program::parse();
     let runtime = match program.command {

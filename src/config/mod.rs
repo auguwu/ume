@@ -17,8 +17,7 @@ pub mod logging;
 pub mod storage;
 pub mod tracing;
 
-use eyre::Context;
-use noelware_config::{env, merge::Merge, TryFromEnv};
+use azalia::config::{env, merge::Merge, FromEnv, TryFromEnv};
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -32,7 +31,7 @@ use std::{
 
 #[derive(Debug, Clone, Serialize, Deserialize, Merge)]
 pub struct Config {
-    #[merge(strategy = noelware_config::merge::strategy::strings::overwrite_empty)]
+    #[merge(strategy = azalia::config::merge::strategy::strings::overwrite_empty)]
     #[serde(default)]
     pub uploader_key: String,
 
@@ -83,7 +82,7 @@ impl TryFromEnv for Config {
                 }
             },
 
-            logging: logging::Config::try_from_env().context("this should never happen")?,
+            logging: logging::Config::from_env(),
             storage: storage::Config::try_from_env()?,
             tracing: tracing::Config::try_from_env()?,
             server: crate::server::Config::try_from_env()?,
@@ -199,7 +198,7 @@ impl FromStr for Url {
 #[cfg(test)]
 mod tests {
     use super::Config;
-    use noelware_config::TryFromEnv;
+    use azalia::config::TryFromEnv;
 
     #[test]
     fn try_from_env() {

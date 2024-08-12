@@ -16,7 +16,7 @@
 pub mod ssl;
 
 use azalia::TRUTHY_REGEX;
-use noelware_config::{env, merge::Merge, TryFromEnv};
+use azalia::config::{env, merge::Merge, TryFromEnv};
 use serde::{Deserialize, Serialize};
 use std::{env::VarError, net::SocketAddr};
 

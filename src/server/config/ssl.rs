@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use eyre::Context;
-use noelware_config::{env, merge::Merge, TryFromEnv};
+use azalia::config::{env, merge::Merge, TryFromEnv};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 

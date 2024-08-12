@@ -65,7 +65,7 @@ jobs:
                     - runner: windows-latest
                       target: x86_64-pc-windows-msvc
                       rustflags: "-Ctarget-cpu=native"
-                      flags: "--features=mimalloc"
+                      flags: ""
                       cross: false
                       ext: .exe
         steps:

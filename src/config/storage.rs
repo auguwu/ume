@@ -17,6 +17,11 @@ use aws_sdk_s3::{
     config::Region,
     types::{BucketCannedAcl, ObjectCannedAcl},
 };
+use azalia::config::{
+    env,
+    merge::{strategy, Merge},
+    TryFromEnv,
+};
 use azalia::TRUTHY_REGEX;
 use azure_storage::CloudLocation;
 use bson::Document;
@@ -24,11 +29,6 @@ use eyre::{Context, Report};
 use mongodb::options::{
     Acknowledgment, AuthMechanism, ClientOptions, ReadConcern, ReadPreference,
     ReadPreferenceOptions, SelectionCriteria, ServerAddress, TagSet, WriteConcern,
-};
-use noelware_config::{
-    env,
-    merge::{strategy, Merge},
-    TryFromEnv,
 };
 use remi_azure::Credential;
 use serde::{Deserialize, Serialize};

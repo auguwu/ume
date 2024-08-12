@@ -16,7 +16,7 @@
 [package]
 name = "ume"
 description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-version = "4.0.4"
+version = "4.1.0"
 authors = ["Noel Towa <cutie@floofy.dev>"]
 edition = "2021"
 rust-version = "1.76"
@@ -25,10 +25,6 @@ repository = "https://github.com/auguwu/ume"
 [[bin]]
 name = "ume"
 path = "./src/bin/ume.rs"
-
-[features]
-default = []
-mimalloc = ["dep:mimalloc"]
 
 [dependencies]
 arboard = { version = "3.4.0", features = ["wayland-data-control"] }
@@ -49,7 +45,7 @@ eyre = "0.6.12"
 hcl-rs = "0.18.0"
 humantime = "2.1.0"
 image = "0.25.1"
-mimalloc = { version = "0.1.41", optional = true }
+mimalloc = "0.1.41"
 mime = "0.3.17"
 mongodb = { version = "2.8.2", features = ["tracing", "log"] }
 multer = "3.1.0"
@@ -81,33 +77,20 @@ which = "6.0.1"
 
 [dependencies.azalia]
 version = "0.1.0"
-git = "https://github.com/Noelware/core-rs"
-rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
-features = ["lazy", "regex"]
-
-[dependencies.noelware-config]
-version = "0.1.0"
-git = "https://github.com/Noelware/core-rs"
-rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
-features = ["derive"]
-
-[dependencies.noelware-log]
-version = "0.1.0"
-git = "https://github.com/Noelware/core-rs"
-rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
-features = ["writers"]
-
-[dependencies.noelware-remi]
-version = "0.1.0"
-git = "https://github.com/Noelware/core-rs"
-rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
-features = ["all"]
-
-[dependencies.noelware-serde]
-version = "0.1.0"
-git = "https://github.com/Noelware/core-rs"
-rev = "2ee59d191cc22a600bfd0441bd2384f2a032397d"
-features = ["tracing"]
+git = "https://github.com/Noelware/azalia"
+rev = "1e45fc052a358d067c9991c38358846749569166"
+features = [
+    "lazy",
+    "regex",
+    "config",
+    "config-derive",
+    "log",
+    "log-writers",
+    "remi",
+    "remi-all",
+    "serde",
+    "serde-tracing",
+]
 
 [build-dependencies]
 chrono = "0.4.38"

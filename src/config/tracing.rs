@@ -16,8 +16,8 @@
 pub mod otel;
 pub mod sentry;
 
+use azalia::config::{env, merge::Merge, FromEnv, TryFromEnv};
 use eyre::Report;
-use noelware_config::{env, merge::Merge, TryFromEnv};
 use serde::{Deserialize, Serialize};
 
 /// Configures the use of OpenTelemetry or Sentry to trace calls from [`tracing`]. Tracing can also
@@ -74,7 +74,7 @@ impl TryFromEnv for Config {
                     Ok(Config::OpenTelemetry(otel::Config::try_from_env()?))
                 }
 
-                "sentry" => Ok(Config::Sentry(sentry::Config::try_from_env()?)),
+                "sentry" => Ok(Config::Sentry(sentry::Config::from_env())),
                 "" => Ok(Config::Disabled),
                 out => Err(eyre!(format!("unknown tracing backend [{out}]"))),
             },

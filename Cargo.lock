@@ -801,10 +801,68 @@ dependencies = [
 [[package]]
 name = "azalia"
 version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=2ee59d191cc22a600bfd0441bd2384f2a032397d#2ee59d191cc22a600bfd0441bd2384f2a032397d"
+source = "git+https://github.com/Noelware/azalia?rev=1e45fc052a358d067c9991c38358846749569166#1e45fc052a358d067c9991c38358846749569166"
 dependencies = [
+ "azalia-config",
+ "azalia-log",
+ "azalia-remi",
+ "azalia-serde",
  "once_cell",
  "regex",
+]
+
+[[package]]
+name = "azalia-config"
+version = "0.1.0"
+source = "git+https://github.com/Noelware/azalia?rev=1e45fc052a358d067c9991c38358846749569166#1e45fc052a358d067c9991c38358846749569166"
+dependencies = [
+ "azalia-config-derive",
+]
+
+[[package]]
+name = "azalia-config-derive"
+version = "0.1.0"
+source = "git+https://github.com/Noelware/azalia?rev=1e45fc052a358d067c9991c38358846749569166#1e45fc052a358d067c9991c38358846749569166"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.71",
+]
+
+[[package]]
+name = "azalia-log"
+version = "0.1.0"
+source = "git+https://github.com/Noelware/azalia?rev=1e45fc052a358d067c9991c38358846749569166#1e45fc052a358d067c9991c38358846749569166"
+dependencies = [
+ "cfg-if",
+ "chrono",
+ "owo-colors 4.0.0",
+ "serde_json",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "azalia-remi"
+version = "0.1.0"
+source = "git+https://github.com/Noelware/azalia?rev=1e45fc052a358d067c9991c38358846749569166#1e45fc052a358d067c9991c38358846749569166"
+dependencies = [
+ "azure_core",
+ "mongodb",
+ "remi",
+ "remi-azure",
+ "remi-fs",
+ "remi-gridfs",
+ "remi-s3",
+]
+
+[[package]]
+name = "azalia-serde"
+version = "0.1.0"
+source = "git+https://github.com/Noelware/azalia?rev=1e45fc052a358d067c9991c38358846749569166#1e45fc052a358d067c9991c38358846749569166"
+dependencies = [
+ "serde",
+ "tracing",
 ]
 
 [[package]]
@@ -2955,60 +3013,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "noelware-config"
-version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=2ee59d191cc22a600bfd0441bd2384f2a032397d#2ee59d191cc22a600bfd0441bd2384f2a032397d"
-dependencies = [
- "noelware-config-derive",
-]
-
-[[package]]
-name = "noelware-config-derive"
-version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=2ee59d191cc22a600bfd0441bd2384f2a032397d#2ee59d191cc22a600bfd0441bd2384f2a032397d"
-dependencies = [
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn 2.0.71",
-]
-
-[[package]]
-name = "noelware-log"
-version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=2ee59d191cc22a600bfd0441bd2384f2a032397d#2ee59d191cc22a600bfd0441bd2384f2a032397d"
-dependencies = [
- "chrono",
- "owo-colors 4.0.0",
- "serde_json",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "noelware-remi"
-version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=2ee59d191cc22a600bfd0441bd2384f2a032397d#2ee59d191cc22a600bfd0441bd2384f2a032397d"
-dependencies = [
- "azure_core",
- "mongodb",
- "remi",
- "remi-azure",
- "remi-fs",
- "remi-gridfs",
- "remi-s3",
-]
-
-[[package]]
-name = "noelware-serde"
-version = "0.1.0"
-source = "git+https://github.com/Noelware/core-rs?rev=2ee59d191cc22a600bfd0441bd2384f2a032397d#2ee59d191cc22a600bfd0441bd2384f2a032397d"
-dependencies = [
- "serde",
- "tracing",
-]
-
-[[package]]
 name = "nom"
 version = "7.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3216,9 +3220,9 @@ checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
 name = "openssl"
-version = "0.10.64"
+version = "0.10.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95a0481286a310808298130d22dd1fef0fa571e05a8f44ec801801e84b216b1f"
+checksum = "9529f4786b70a3e8c61e11179af17ab6188ad8d0ded78c5529441ed39d4bd9c1"
 dependencies = [
  "bitflags 2.5.0",
  "cfg-if",
@@ -3248,9 +3252,9 @@ checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.102"
+version = "0.9.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c597637d56fbc83893a35eb0dd04b2b8e7a50c91e64e9493e398b5df4fb45fa2"
+checksum = "7f9e8deee91df40a943c71b917e5874b951d32a802526c85721ce3b776c929d6"
 dependencies = [
  "cc",
  "libc",
@@ -3549,30 +3553,6 @@ name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
-
-[[package]]
-name = "proc-macro-error"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
-dependencies = [
- "proc-macro-error-attr",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
- "version_check",
-]
-
-[[package]]
-name = "proc-macro-error-attr"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
-dependencies = [
- "proc-macro2",
- "quote",
- "version_check",
-]
 
 [[package]]
 name = "proc-macro2"
@@ -5234,7 +5214,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "ume"
-version = "4.0.4"
+version = "4.1.0"
 dependencies = [
  "arboard",
  "async-trait",
@@ -5259,10 +5239,6 @@ dependencies = [
  "mime",
  "mongodb",
  "multer",
- "noelware-config",
- "noelware-log",
- "noelware-remi",
- "noelware-serde",
  "num_cpus",
  "opentelemetry",
  "opentelemetry-otlp",

@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use azalia::config::{env, merge::Merge, FromEnv};
 use azalia::TRUTHY_REGEX;
-use noelware_config::{env, merge::Merge, FromEnv};
 use serde::{Deserialize, Serialize};
 use tracing::Level;
 
@@ -22,13 +22,13 @@ use tracing::Level;
 pub struct Config {
     /// Configures the log level of the Ume server's logging capabilities. The higher the level, the more verbose
     /// messages you'll get. For production environments, the default (`INFO`) is fine.
-    #[serde(with = "noelware_serde::tracing")]
+    #[serde(with = "azalia::serde::tracing")]
     #[merge(strategy = __merge_level)]
     pub level: Level,
 
     /// whether or not emit the log information as JSON blobs or not.
     #[serde(default)]
-    #[merge(strategy = noelware_config::merge::strategy::bool::only_if_falsy)]
+    #[merge(strategy = azalia::config::merge::strategy::bool::only_if_falsy)]
     pub json: bool,
 }
 
