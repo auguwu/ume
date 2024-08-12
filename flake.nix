@@ -21,7 +21,6 @@
       url = "github:oxalica/rust-overlay";
       inputs = {
         nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
       };
     };
 
@@ -58,9 +57,8 @@
         else ''$RUSTFLAGS'';
 
       ume = rustPlatform.buildRustPackage {
-        nativeBuildInputs = with pkgs; [pkg-config];
+        nativeBuildInputs = with pkgs; [pkg-config installShellFiles];
         buildInputs = with pkgs; [openssl];
-        cargoSha256 = pkgs.lib.fakeSha256;
         version = "${cargoTOML.package.version}";
         name = "ume";
         src = ./.;
@@ -68,10 +66,16 @@
         cargoLock = {
           lockFile = ./Cargo.lock;
           outputHashes = {
-            "noelware-config-0.1.0" = "sha256-4yred15se1RB2LJJ2htB8DPMfcCo9+9ZWNRFlsmbDmQ=";
-            "azalia-0.1.0" = "sha256-VKGSv1sEpKiD1IEKIViCXTT42+io28KrSeSiJrIvYAo=";
+            "azalia-0.1.0" = "sha256-9VE79T2Yry5QhYqD3BoHsq5//4V05CEih1aK2MCXJo0=";
           };
         };
+
+        postInstall = ''
+          installShellCompletion --cmd ume \
+            --bash <($out/bin/ume completions bash) \
+            --fish <($out/bin/ume completions fish) \
+            --zsh <($out/bin/ume completions zsh)
+        '';
 
         meta = with pkgs.lib; {
           description = "Easy, self-hostable, and flexible image host made in Rust";
