@@ -15,7 +15,7 @@
 
 ############ BINARY
 
-FROM --platform=${TARGETPLATFORM} rust:1.79-slim-bookworm AS build
+FROM --platform=${TARGETPLATFORM} rust:1.80-slim-bookworm AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
