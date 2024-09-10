@@ -3336,6 +3336,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "owo-colors"
+version = "5.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f1fd1e2f6b8c2caa4ede09a3c1b8fcab7b8b3c0c82987e685eb0df047b044f5"
+
+[[package]]
 name = "p256"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5141,7 +5147,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
- "owo-colors 4.0.0",
+ "owo-colors 5.0.0",
  "quote",
  "rand 0.8.5",
  "remi",
