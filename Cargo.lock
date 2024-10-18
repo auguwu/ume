@@ -1107,9 +1107,9 @@ checksum = "8f1fe948ff07f4bd06c30984e69f5b4899c516a3ef74f34df92a2df2ab535495"
 
 [[package]]
 name = "bytes"
-version = "1.6.0"
+version = "1.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "514de17de45fdb8dc022b1a7975556c53c86f9f0aa5f534b98977b171857c2c9"
+checksum = "428d9aa8fbc0670b7b8d6030a7fadd0f86151cae55e4dbbece15f3780a3dfaf3"
 
 [[package]]
 name = "bytes-utils"
@@ -2549,9 +2549,9 @@ checksum = "64e9829a50b42bb782c1df523f78d332fe371b10c661e78b7a3c34b0198e9fac"
 
 [[package]]
 name = "infer"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb33622da908807a06f9513c19b3c1ad50fab3e4137d82a78107d502075aa199"
+checksum = "bc150e5ce2330295b8616ce0e3f53250e53af31759a9dbedad1621ba29151847"
 
 [[package]]
 name = "instant"
@@ -3798,15 +3798,15 @@ dependencies = [
 
 [[package]]
 name = "remi-fs"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7ec24ece20446d91d4b73e98f36f1e6cd2bf09e94708e46449c3cf1d03a5a70"
+checksum = "0e48bfa13a249c695c3a2d4b43e273181ec1082c9b55e6911e75913915d22c1a"
 dependencies = [
  "async-trait",
  "bytes",
  "dirs",
  "file-format",
- "infer 0.15.0",
+ "infer 0.16.0",
  "remi",
  "serde",
  "serde_json",
