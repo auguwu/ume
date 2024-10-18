@@ -266,9 +266,9 @@ dependencies = [
 
 [[package]]
 name = "aws-config"
-version = "1.5.0"
+version = "1.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1234b742ac4a40a7d3459c6e3c99818271976a5a6ae3732cb415f4a9a94da7b6"
+checksum = "7198e6f03240fdceba36656d8be440297b6b82270325908c7381f37d826a74f6"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -286,7 +286,6 @@ dependencies = [
  "fastrand 2.1.0",
  "hex",
  "http 0.2.12",
- "hyper 0.14.28",
  "ring",
  "time",
  "tokio",
@@ -370,9 +369,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-sso"
-version = "1.27.0"
+version = "1.46.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aef53f254e16c00cfbfd69fa6eca4d858b7c161878db2cd248410af402d1951e"
+checksum = "0dc2faec3205d496c7e57eff685dd944203df7ce16a4116d0281c44021788a7b"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -392,9 +391,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-ssooidc"
-version = "1.28.0"
+version = "1.47.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1b673b2972c38463955e27d76c9d2ebb0452a9ce8059a0e2c9ed67efe69ef35"
+checksum = "c93c241f52bc5e0476e259c953234dab7e2a35ee207ee202e86c0095ec4951dc"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -414,9 +413,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-sts"
-version = "1.27.0"
+version = "1.46.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d461680731ce37d14396ceeb4ef326998bf9c848123f93a6191958ecd7f6cc0"
+checksum = "b259429be94a3459fa1b00c5684faee118d74f9577cc50aebadc36e507c63b5f"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -2316,7 +2315,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.7",
  "tokio",
  "tower-service",
  "tracing",
@@ -3832,9 +3831,9 @@ dependencies = [
 
 [[package]]
 name = "remi-s3"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3c45da2c904b17e98bba266828975d83693790d7e5484186541f6d978c10e7b"
+checksum = "074a62b372a4d30452382d35a1cf8c89b2467ed2c927e097f737642aea470d68"
 dependencies = [
  "async-trait",
  "aws-config",
