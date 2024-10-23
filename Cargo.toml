@@ -58,7 +58,7 @@ rand = "0.8.5"
 remi = "0.8.0"
 remi-azure = { version = "0.8.0", features = ["serde", "tracing"] }
 remi-fs = { version = "0.8.0", features = ["serde", "tracing", "file-format"] }
-remi-gridfs = { version = "0.8.0", features = ["serde", "tracing"] }
+remi-gridfs = { version = "0.9.0", features = ["serde", "tracing"] }
 remi-s3 = { version = "0.8.0", features = ["serde", "tracing"] }
 reqwest = { version = "0.12.4", features = ["multipart", "json"] }
 sentry = "0.34.0"
