@@ -33,7 +33,7 @@ aws-sdk-s3 = { version = "1.25.0", features = ["behavior-version-latest"] }
 axum = { version = "0.7.5", features = ["macros"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 axum-server = { version = "0.6.0", features = ["tls-rustls"] }
-azure_storage = "0.20.0"
+azure_storage = "0.21.0"
 bson = "2.10.0"
 cfg-if = "1.0.0"
 chrono = "0.4.38"
