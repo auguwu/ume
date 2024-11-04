@@ -25,11 +25,10 @@ use axum::{
 };
 use axum_extra::{headers::Header, TypedHeader};
 use azalia::remi::{
-    remi::{StorageService as _, UploadRequest},
+    core::{Blob, StorageService as _, UploadRequest},
     StorageService,
 };
 use rand::distributions::{Alphanumeric, DistString};
-use remi::Blob;
 use serde_json::{json, Value};
 
 pub async fn main() -> Json<Value> {
@@ -111,7 +110,7 @@ pub async fn get_image(
     if let Blob::File(file) = file {
         let ct = file
             .content_type
-            .unwrap_or_else(|| remi_fs::default_resolver(&file.data).to_string());
+            .unwrap_or_else(|| azalia::remi::fs::default_resolver(&file.data).to_string());
 
         let mime = ct.parse::<mime::Mime>().map_err(|_| {
             (
@@ -201,7 +200,7 @@ pub async fn upload_image(
             )
         })?;
 
-    let content_type = remi_fs::default_resolver(bytes.as_ref());
+    let content_type = azalia::remi::fs::default_resolver(bytes.as_ref());
     let mime = content_type.parse::<mime::Mime>().map_err(|_| {
         (
             StatusCode::BAD_REQUEST,

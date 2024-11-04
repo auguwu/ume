@@ -12,18 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+{
+  cargoTOML = builtins.fromTOML (builtins.readFile ../Cargo.toml);
+  outputHashes = {
+    "azalia-0.1.0" = "sha256-+fvpmHxO/QPQlDU7GMARx3oIJuEcCjrDj4xfaUc4CX8=";
+  };
 
-if ! has nix_direnv_version || ! nix_direnv_version 3.0.6; then
-    source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/3.0.6/direnvrc" "sha256-RYcUJaRMf8oF5LznDrlCXbkOQrywm0HDv1VjYGaJGdM="
-fi
+  rustflags = stdenv:
+    if stdenv.isLinux
+    then ''-C link-arg=-fuse-ld=mold -C target-cpu=native $RUSTFLAGS''
+    else ''$RUSTFLAGS'';
 
-# make .direnv if it doesn't exist
-mkdir -p "$(direnv_layout_dir)"
-
-watch_file flake.lock
-watch_file nix/package.nix
-watch_file nix/devshell.nix
-
-# try to use flakes, if it fails use normal nix (ie. shell.nix)
-use flake || use nix
-eval "$shellHook"
+  mkRustPlatform = rust: rust.fromRustupToolchainFile ../rust-toolchain.toml;
+  mkNixpkgsRustPlatform = pkgs: toolchain:
+    pkgs.makeRustPlatform {
+      rustc = toolchain;
+      cargo = toolchain;
+    };
+}

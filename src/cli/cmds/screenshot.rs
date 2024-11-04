@@ -139,7 +139,7 @@ async fn upload_file(cmd: &Cmd, loc: &Path, clipboard: Option<Clipboard>) -> eyr
         }
 
         let mut clipboard = clipboard.unwrap();
-        let img: image::DynamicImage = image::io::Reader::new(Cursor::new(&contents)).decode()?;
+        let img: image::DynamicImage = image::ImageReader::new(Cursor::new(&contents)).decode()?;
 
         clipboard.set_image(arboard::ImageData {
             height: img.height() as usize,
@@ -159,17 +159,20 @@ async fn upload_file(cmd: &Cmd, loc: &Path, clipboard: Option<Clipboard>) -> eyr
     info!("copying url [{url}] to clipboard!");
 
     let mut clipboard = clipboard.unwrap();
-    cfg_if::cfg_if! {
-        if #[cfg(target_os = "linux")] {
-            use arboard::SetExtLinux;
-            use std::time::{Duration, Instant};
+    #[cfg(target_os = "linux")]
+    {
+        use arboard::SetExtLinux;
+        use std::time::{Duration, Instant};
 
-            // wait ~1s to block
-            clipboard.set().wait_until(Instant::now() + Duration::from_secs(1)).text(url)?;
-        } else {
-            clipboard.set_text(url)?;
-        }
+        // wait ~1s to block
+        clipboard
+            .set()
+            .wait_until(Instant::now() + Duration::from_secs(1))
+            .text(url)?;
     }
+
+    #[cfg(not(target_os = "linux"))]
+    clipboard.set_text(url)?;
 
     info!("copied to clipboard, deleting image");
     fs::remove_file(loc).context("unable to delete file")

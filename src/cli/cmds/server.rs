@@ -18,7 +18,6 @@ use azalia::log::{writers, WriteLayer};
 use opentelemetry::{trace::TracerProvider as _, KeyValue};
 use opentelemetry_sdk::trace::TracerProvider;
 use owo_colors::{OwoColorize, Stream::Stdout};
-use remi::StorageService;
 use sentry::types::Dsn;
 use std::{
     borrow::Cow,
@@ -133,22 +132,24 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
     info!("loaded configuration from {loc}, starting Ume server...");
     let storage = match config.storage.clone() {
         crate::config::storage::Config::Filesystem(fs) => {
-            azalia::remi::StorageService::Filesystem(remi_fs::StorageService::with_config(fs))
+            azalia::remi::StorageService::Filesystem(azalia::remi::fs::StorageService::with_config(fs))
         }
 
         crate::config::storage::Config::Azure(azure) => {
-            azalia::remi::StorageService::Azure(remi_azure::StorageService::new(azure))
+            azalia::remi::StorageService::Azure(azalia::remi::azure::StorageService::new(azure))
         }
 
-        crate::config::storage::Config::GridFS(gridfs) => {
-            let client = mongodb::Client::with_options(gridfs.client_options.clone())?;
-            azalia::remi::StorageService::GridFS(remi_gridfs::StorageService::from_client(&client, gridfs))
+        crate::config::storage::Config::Gridfs(gridfs) => {
+            let client = azalia::remi::gridfs::mongodb::Client::with_options(gridfs.client_options.clone())?;
+            azalia::remi::StorageService::Gridfs(azalia::remi::gridfs::StorageService::from_client(&client, gridfs))
         }
 
-        crate::config::storage::Config::S3(s3) => azalia::remi::StorageService::S3(remi_s3::StorageService::new(s3)),
+        crate::config::storage::Config::S3(s3) => {
+            azalia::remi::StorageService::S3(azalia::remi::s3::StorageService::new(s3))
+        }
     };
 
-    storage.init().await?;
+    <azalia::remi::StorageService as azalia::remi::core::StorageService>::init(&storage).await?;
     crate::server::start_server(storage, config).await
 }
 
