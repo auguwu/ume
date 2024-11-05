@@ -846,7 +846,7 @@ name = "azalia-remi"
 version = "0.1.0"
 source = "git+https://github.com/Noelware/azalia?rev=bac66caead3a068a2e7796473af111485b7dcb49#bac66caead3a068a2e7796473af111485b7dcb49"
 dependencies = [
- "remi 0.9.1",
+ "remi",
  "remi-azure",
  "remi-fs",
  "remi-gridfs",
@@ -3776,16 +3776,6 @@ checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
 
 [[package]]
 name = "remi"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad9599a838aa4bb298fb42a834e48806dd57bb461b17453660bbec4d80568706"
-dependencies = [
- "async-trait",
- "bytes",
-]
-
-[[package]]
-name = "remi"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "64c4338dc59046b354af1f87258f88a55dc46ee4e3633c98e4026ac92e82cfaa"
@@ -3806,7 +3796,7 @@ dependencies = [
  "azure_storage_blobs",
  "bytes",
  "futures-util",
- "remi 0.9.1",
+ "remi",
  "serde",
  "tracing",
 ]
@@ -3820,7 +3810,7 @@ dependencies = [
  "etcetera",
  "file-format",
  "infer 0.16.0",
- "remi 0.9.1",
+ "remi",
  "serde",
  "serde_json",
  "tokio",
@@ -3837,7 +3827,7 @@ dependencies = [
  "bytes",
  "futures-util",
  "mongodb",
- "remi 0.9.1",
+ "remi",
  "serde",
  "tokio-util",
  "tracing",
@@ -3853,7 +3843,7 @@ dependencies = [
  "aws-credential-types",
  "aws-sdk-s3",
  "aws-smithy-runtime-api",
- "remi 0.9.1",
+ "remi",
  "serde",
  "tracing",
 ]
@@ -5106,7 +5096,7 @@ dependencies = [
  "owo-colors 4.1.0",
  "quote",
  "rand 0.8.5",
- "remi 0.8.1",
+ "remi",
  "reqwest",
  "rustc_version",
  "sentry",
