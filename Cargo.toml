@@ -39,7 +39,6 @@ clap_complete = "4.5.2"
 color-eyre = { version = "0.6.3", features = ["issue-url", "tracing-error"] }
 dotenvy = "0.15.7"
 eyre = "0.6.12"
-futures-util = "0.3.31"
 hcl-rs = "0.18.0"
 humantime = "2.1.0"
 image = "0.25.1"

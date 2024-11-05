@@ -5093,7 +5093,6 @@ dependencies = [
  "color-eyre",
  "dotenvy",
  "eyre",
- "futures-util",
  "hcl-rs",
  "humantime",
  "image",
