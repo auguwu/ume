@@ -31,7 +31,7 @@ arboard = "3.4.0"
 async-trait = "0.1.80"
 axum = { version = "0.7.7", features = ["macros"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
-axum-server = { version = "0.6.0", features = ["tls-rustls"] }
+axum-server = { version = "0.7.0", features = ["tls-rustls"] }
 bson = "2.10.0"
 chrono = "0.4.38"
 clap = { version = "4.5.4", features = ["derive", "env"] }
