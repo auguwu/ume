@@ -669,9 +669,9 @@ dependencies = [
 
 [[package]]
 name = "axum"
-version = "0.7.7"
+version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "504e3947307ac8326a5437504c517c4b56716c9d98fac0028c2acc7ca47d70ae"
+checksum = "edca88bc138befd0323b20752846e6587272d3b03b0343c8ea28a6f819e6e71f"
 dependencies = [
  "async-trait",
  "axum-core 0.4.5",
@@ -746,7 +746,7 @@ version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73c3220b188aea709cf1b6c5f9b01c3bd936bb08bd2b5184a12b35ac8131b1f9"
 dependencies = [
- "axum 0.7.7",
+ "axum 0.7.9",
  "axum-core 0.4.5",
  "bytes",
  "futures-util",
@@ -4223,7 +4223,7 @@ version = "0.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c90802b38c899a2c9e557dff25ad186362eddf755d5f5244001b172dd03bead"
 dependencies = [
- "axum 0.7.7",
+ "axum 0.7.9",
  "http 1.1.0",
  "pin-project",
  "sentry-core",
@@ -5069,7 +5069,7 @@ version = "4.0.6"
 dependencies = [
  "arboard",
  "async-trait",
- "axum 0.7.7",
+ "axum 0.7.9",
  "axum-extra",
  "axum-server",
  "azalia",
