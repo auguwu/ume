@@ -22,8 +22,9 @@ use rand::distr::{Alphanumeric, SampleString};
 use serde::{Deserialize, Serialize};
 use std::{
     env::VarError,
+    ffi::OsStr,
     fmt::Display,
-    fs::File,
+    fs::{self, File},
     ops::Deref,
     path::{Path, PathBuf},
     str::FromStr,
@@ -97,6 +98,11 @@ impl Config {
             return Some(config_path);
         }
 
+        let config_path = PathBuf::from("./config/ume.toml");
+        if config_path.exists() {
+            return Some(config_path);
+        }
+
         match std::env::var("UME_CONFIG_FILE") {
             Ok(path) => {
                 let path = Path::new(&path);
@@ -109,6 +115,11 @@ impl Config {
 
             Err(_) => {
                 let last_resort = Path::new("./config.hcl");
+                if last_resort.exists() && last_resort.is_file() {
+                    return Some(last_resort.to_path_buf());
+                }
+
+                let last_resort = Path::new("./config.toml");
                 if last_resort.exists() && last_resort.is_file() {
                     return Some(last_resort.to_path_buf());
                 }
@@ -136,9 +147,18 @@ impl Config {
         }
 
         let mut cfg = Config::try_from_env()?;
-        let file = hcl::from_reader::<Config, _>(File::open(path)?)?;
+        let file = match path.extension().and_then(OsStr::to_str) {
+            Some("toml") => toml::from_str(&fs::read_to_string(path)?)?,
+            Some("hcl") => {
+                eprintln!("[ume WARN] since v4.0.6, the HCL-based configuration format is deprecated; please update to the TOML-based format");
+                hcl::from_reader::<Config, _>(File::open(path)?)?
+            }
+
+            Some(_) | None => hcl::from_reader::<Config, _>(File::open(path)?)?,
+        };
 
         cfg.merge(file);
+
         if cfg.uploader_key.is_empty() {
             let key = __generated_uploader_key();
             eprintln!("[ume WARN] Missing a uploader key for authentication! I have generated one for you:\n

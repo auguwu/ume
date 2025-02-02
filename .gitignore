@@ -548,6 +548,7 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 distribution/helm/*.tgz
+config.toml
 config.hcl
 !src/bin/
 .direnv/
