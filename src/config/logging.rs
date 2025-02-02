@@ -1,5 +1,5 @@
 // 🐻‍❄️💐 ume: Easy, self-hostable, and flexible image host made in Rust
-// Copyright 2021-2024 Noel Towa <cutie@floofy.dev>
+// Copyright 2021-2025 Noel Towa <cutie@floofy.dev>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
