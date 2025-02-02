@@ -15,7 +15,7 @@
 
 ############ BINARY
 
-FROM --platform=${TARGETPLATFORM} rust:1.82-alpine3.19 AS build
+FROM --platform=${TARGETPLATFORM} rust:1.84.1-alpine3.21 AS build
 
 RUN apk update && apk add --no-cache git ca-certificates curl musl-dev \
     libc6-compat gcompat pkgconfig libressl-dev build-base mold \
@@ -46,7 +46,7 @@ RUN cargo build --release --bin ume
 
 ############ FINAL STAGE
 
-FROM alpine:3.20
+FROM alpine:3.21
 
 RUN apk update && apk add --no-cache bash tini curl libgcc
 WORKDIR /app/noel/ume

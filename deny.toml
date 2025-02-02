@@ -34,7 +34,6 @@ targets = [
 version = 2
 
 [bans]
-multiple-versions = "warn" # only warn since `tonic` doesn't support Axum 0.7 / Hyper 1
 wildcards = "deny"
 
 [sources]
@@ -54,6 +53,7 @@ allow = [
     "BSD-2-Clause",                   # since image@0.25.*, they included `rav1e`, which includes `v_frame`.
     "BSD-3-Clause",
     "ISC",
+    "Unicode-3.0"
 ]
 exceptions = [
     # unicode-ident includes data generated from Unicode Character Database
@@ -65,6 +65,9 @@ exceptions = [
     { name = "ring", allow = [
         "OpenSSL",
     ] },
+
+    { name = "aws-lc-sys", allow = ["OpenSSL"] },
+    { name = "tiny-keccak", allow = ["CC0-1.0"] },
 
     # Allow `error-code` to pass through since arboard uses `clipboard-win`,
     # so we will slide it. BSL is Boost Software License, not the other BSL (Business License Source).
