@@ -228,7 +228,7 @@ pub(crate) mod azure {
         config::{env, merge::Merge},
         remi::{
             self,
-            azure::{core::storage::CloudLocation, Credential},
+            azure::{CloudLocation, Credential},
         },
     };
     use eyre::Context;
@@ -258,12 +258,12 @@ pub(crate) mod azure {
         me.container.merge(other.container);
 
         match (&me.location, &other.location) {
-            (CloudLocation::Public { account: acc1 }, CloudLocation::Public { account: acc2 }) if acc1 != acc2 => {
-                me.location = CloudLocation::Public { account: acc2.clone() };
+            (CloudLocation::Public(acc1), CloudLocation::Public(acc2)) if acc1 != acc2 => {
+                me.location = CloudLocation::Public(acc2.clone());
             }
 
-            (CloudLocation::China { account: acc1 }, CloudLocation::China { account: acc2 }) if acc1 != acc2 => {
-                me.location = CloudLocation::China { account: acc2.clone() };
+            (CloudLocation::China(acc1), CloudLocation::China(acc2)) if acc1 != acc2 => {
+                me.location = CloudLocation::China(acc2.clone());
             }
 
             (_, other) => {
@@ -330,15 +330,17 @@ pub(crate) mod azure {
     fn create_location() -> eyre::Result<CloudLocation> {
         match env!(LOCATION) {
             Ok(res) => match &*res.to_ascii_lowercase() {
-                "public" | "" => Ok(CloudLocation::Public {
-                    account: env!(ACCOUNT)
-                        .with_context(|| format!("missing required environment variable: [{ACCOUNT}]"))?,
-                }),
+                "public" | "" => {
+                    Ok(CloudLocation::Public(env!(ACCOUNT).with_context(|| {
+                        format!("missing required environment variable: [{ACCOUNT}]")
+                    })?))
+                }
 
-                "china" => Ok(CloudLocation::China {
-                    account: env!(ACCOUNT)
-                        .with_context(|| format!("missing required environment variable: [{ACCOUNT}]"))?,
-                }),
+                "china" => {
+                    Ok(CloudLocation::China(env!(ACCOUNT).with_context(|| {
+                        format!("missing required environment variable: [{ACCOUNT}]")
+                    })?))
+                }
 
                 "custom" => Ok(CloudLocation::Custom {
                     account: env!(ACCOUNT)
@@ -363,14 +365,16 @@ pub(crate) mod gridfs {
         config::{env, merge::Merge},
         remi::{
             self,
-            gridfs::mongodb::options::{
-                Acknowledgment, AuthMechanism, ClientOptions, Credential, HedgedReadOptions, ReadConcern,
-                ReadPreference, ReadPreferenceOptions, SelectionCriteria, ServerAddress, TagSet, WriteConcern,
+            gridfs::mongodb::{
+                bson::Document,
+                options::{
+                    Acknowledgment, AuthMechanism, ClientOptions, Credential, HedgedReadOptions, ReadConcern,
+                    ReadPreference, ReadPreferenceOptions, SelectionCriteria, ServerAddress, TagSet, WriteConcern,
+                },
             },
         },
         TRUTHY_REGEX,
     };
-    use bson::Document;
     use eyre::Context;
     use std::{env::VarError, time::Duration};
 

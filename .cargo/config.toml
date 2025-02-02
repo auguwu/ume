@@ -20,5 +20,5 @@
 rustflags = ["-Ctarget-feature=-crt-static"]
 
 [alias]
-devserver = "cli server"
+server = "cli server"
 cli = "run --"

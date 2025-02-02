@@ -36,7 +36,7 @@ pub fn create_router() -> Router {
     Router::new()
         .route("/heartbeat", routing::get(routes::heartbeat))
         .route("/images/upload", routing::post(routes::upload_image))
-        .route("/images/:name", routing::get(routes::get_image))
+        .route("/images/{name}", routing::get(routes::get_image))
         .route("/", routing::get(routes::main))
 }
 

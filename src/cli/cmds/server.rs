@@ -15,7 +15,8 @@
 
 use crate::config::{self, tracing::otel::Kind, Config};
 use azalia::log::{writers, WriteLayer};
-use opentelemetry::{trace::TracerProvider as _, KeyValue};
+use opentelemetry::{trace::TracerProvider as _, InstrumentationScope, KeyValue};
+use opentelemetry_otlp::SpanExporter;
 use opentelemetry_sdk::trace::TracerProvider;
 use owo_colors::{OwoColorize, Stream::Stdout};
 use sentry::types::Dsn;
@@ -76,15 +77,24 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
 
     let tracer = if let config::tracing::Config::OpenTelemetry(ref otel) = config.tracing {
         let mut provider = TracerProvider::builder();
-        match otel.kind {
-            Kind::Grpc => {
-                provider =
-                    provider.with_simple_exporter(opentelemetry_otlp::new_exporter().tonic().build_span_exporter()?)
-            }
 
-            Kind::Http => {
-                provider =
-                    provider.with_simple_exporter(opentelemetry_otlp::new_exporter().http().build_span_exporter()?)
+        #[allow(deprecated)]
+        if let Some(kind) = otel.kind {
+            match kind {
+                Kind::Grpc => provider = provider.with_simple_exporter(SpanExporter::builder().with_tonic().build()?),
+                Kind::Http => provider = provider.with_simple_exporter(SpanExporter::builder().with_http().build()?),
+            }
+        } else {
+            match otel.url.scheme() {
+                "http" | "https" => {
+                    provider = provider.with_simple_exporter(SpanExporter::builder().with_http().build()?)
+                }
+
+                "grpc" | "grpcs" => {
+                    provider = provider.with_simple_exporter(SpanExporter::builder().with_tonic().build()?)
+                }
+
+                scheme => return Err(eyre!("unknown scheme: `{}`", scheme)),
             }
         };
 
@@ -98,12 +108,14 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
         attributes.push(KeyValue::new("service.name", "ume"));
         attributes.push(KeyValue::new("ume.version", crate::version()));
 
-        Some(provider.versioned_tracer(
-            "ume",
-            Some(crate::version()),
-            Some("https://opentelemetry.io/schema/1.0.0"),
-            Some(attributes),
-        ))
+        Some(
+            provider.tracer_with_scope(
+                InstrumentationScope::builder("ume")
+                    .with_version(crate::version())
+                    .with_attributes(attributes)
+                    .build(),
+            ),
+        )
     } else {
         None
     };
@@ -136,7 +148,7 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
         }
 
         crate::config::storage::Config::Azure(azure) => {
-            azalia::remi::StorageService::Azure(azalia::remi::azure::StorageService::new(azure))
+            azalia::remi::StorageService::Azure(azalia::remi::azure::StorageService::new(azure)?)
         }
 
         crate::config::storage::Config::Gridfs(gridfs) => {

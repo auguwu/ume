@@ -13,11 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use async_trait::async_trait;
 use axum::{
-    body::Body,
-    extract::FromRequest,
-    http::{header, HeaderMap, Request},
+    extract::{FromRequest, Request},
+    http::header,
     response::IntoResponse,
     Json, RequestExt,
 };
@@ -43,73 +41,88 @@ impl DerefMut for Multipart {
     }
 }
 
-#[async_trait]
-impl<S> FromRequest<S> for Multipart
-where
-    S: Send + Sync,
-{
-    type Rejection = MultipartRejection;
+impl<S: Send + Sync> FromRequest<S> for Multipart {
+    type Rejection = Rejection;
 
-    async fn from_request(req: Request<Body>, _state: &S) -> Result<Self, Self::Rejection> {
-        let boundary = boundary(req.headers())?;
+    async fn from_request(req: Request, _: &S) -> Result<Self, Self::Rejection> {
+        let Some(ct) = req.headers().get(header::CONTENT_TYPE) else {
+            return Err(Rejection::NoContentTypeAvaliable);
+        };
+
+        let value = ct.to_str().map_err(|e| {
+            tracing::error!(error = %e, "received invalid utf-8 in multipart body");
+            Rejection::InvalidUtf8ForBoundary
+        })?;
+
+        let boundary = multer::parse_boundary(value).map_err(|e| {
+            tracing::error!(error = %e, "received invalid multipart body content");
+            match e {
+                multer::Error::NoBoundary => Rejection::NoBoundary,
+                e => Rejection::Multer(e),
+            }
+        })?;
+
         let stream = req.with_limited_body().into_body();
-
         Ok(Self(multer::Multipart::new(stream.into_data_stream(), boundary)))
     }
 }
 
-fn boundary(headers: &HeaderMap) -> Result<String, MultipartRejection> {
-    let Some(val) = headers.get(header::CONTENT_TYPE) else {
-        return Err(multer::Error::NoBoundary.into());
-    };
-
-    let Ok(val) = val.to_str() else {
-        return Err(MultipartRejection::InvalidBoundary);
-    };
-
-    multer::parse_boundary(val).map_err(From::from)
-}
+///////////////////////// ERRORS //////////////////////////////////
 
 #[derive(Debug)]
-pub enum MultipartRejection {
+pub enum Rejection {
+    /// Error that occurred from the [`multer::Multipart`] instance.
     Multer(multer::Error),
-    InvalidBoundary,
+
+    /// The boundary given was an invalid UTF-8 encoded piece of data.
+    InvalidUtf8ForBoundary,
+
+    /// No `Content-Type` header was given in the request.
+    NoContentTypeAvaliable,
+
+    /// No multipart boundary was specified.
+    NoBoundary,
 }
 
-impl Display for MultipartRejection {
+impl Display for Rejection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidBoundary => f.write_str("invalid multipart boundary specified"),
-            Self::Multer(err) => Display::fmt(err, f),
+            Rejection::Multer(err) => Display::fmt(err, f),
+            Rejection::NoContentTypeAvaliable => f.write_str("no `content-type` header was specified"),
+            Rejection::NoBoundary => f.write_str("received no multipart boundary"),
+            Rejection::InvalidUtf8ForBoundary => f.write_str("received invalid utf-8 in multipart boundary decoding"),
         }
     }
 }
 
-impl std::error::Error for MultipartRejection {
-    fn cause(&self) -> Option<&dyn std::error::Error> {
+impl std::error::Error for Rejection {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Multer(err) => Some(err),
+            Rejection::Multer(err) => Some(err),
             _ => None,
         }
     }
 }
 
-impl From<multer::Error> for MultipartRejection {
+impl From<multer::Error> for Rejection {
     fn from(value: multer::Error) -> Self {
         Self::Multer(value)
     }
 }
 
-impl IntoResponse for MultipartRejection {
+impl IntoResponse for Rejection {
     fn into_response(self) -> axum::response::Response {
         Json(json!({
             "message": format!("multipart: {}", match self {
                 Self::Multer(ref err) => err_to_msg(err),
-                Self::InvalidBoundary => "received invalid multipart boundary"
+                Self::NoContentTypeAvaliable => "no `content-type` header was specified",
+                Self::NoBoundary => "received no multipart boundary",
+                Self::InvalidUtf8ForBoundary => "received invalid utf-8 in multipart boundary decoding",
             }),
+
             "details": match self {
                 Self::Multer(ref err) => expand_details_from_err(err),
-                Self::InvalidBoundary => None
+                _ => None,
             }
         }))
         .into_response()

@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![allow(deprecated)]
+
 use crate::config::Url;
 use azalia::config::{env, merge::Merge, TryFromEnv};
 use serde::{Deserialize, Serialize};
@@ -40,23 +42,6 @@ impl Merge for Kind {
             (Self::Grpc, Self::Http) | (Self::Http, Self::Grpc) => {
                 *self = other;
             }
-        }
-    }
-}
-
-impl TryFromEnv for Kind {
-    type Output = Kind;
-    type Error = eyre::Report;
-
-    fn try_from_env() -> Result<Self::Output, Self::Error> {
-        match env!("UME_TRACING_OTEL_COLLECTOR") {
-            Ok(res) => match res.as_str() {
-                "grpc" | "" => Ok(Kind::Grpc),
-                "http" => Ok(Kind::Http),
-                out => Err(eyre!(format!("unknown otel collector kind [{out}]"))),
-            },
-            Err(std::env::VarError::NotPresent) => Ok(Kind::Grpc),
-            Err(e) => Err(eyre::Report::from(e)),
         }
     }
 }
@@ -92,7 +77,11 @@ pub struct Config {
 
     /// Which kind of OpenTelemetry Collector we should configure for?
     #[serde(default)]
-    pub kind: Kind,
+    #[deprecated(
+        since = "4.0.6",
+        note = "this field will be removed in v4.1.0, ume will determine the kind of collector from the url's scheme"
+    )]
+    pub kind: Option<Kind>,
 
     /// [`Url`][url::Url] used to connect to an available OpenTelemetry collector
     #[serde(default = "__default_url")]
@@ -105,7 +94,17 @@ impl TryFromEnv for Config {
 
     fn try_from_env() -> Result<Self::Output, Self::Error> {
         Ok(Config {
-            kind: Kind::try_from_env()?,
+            kind: match env!("UME_TRACING_OTEL_COLLECTOR") {
+                Ok(res) => match res.as_str() {
+                    "grpc" | "grpcs" | "" => Some(Kind::Grpc),
+                    "http" | "https" => Some(Kind::Http),
+                    out => return Err(eyre!(format!("unknown otel collector kind [{out}]"))),
+                },
+
+                Err(std::env::VarError::NotPresent) => None,
+                Err(e) => return Err(eyre::Report::from(e)),
+            },
+
             url: match env!("UME_TRACING_OTEL_COLLECTOR_URL") {
                 Ok(val) => match val.parse::<Url>() {
                     Ok(val) => val,
@@ -148,7 +147,7 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             labels: HashMap::new(),
-            kind: Kind::Grpc,
+            kind: None,
             url: __default_url(),
         }
     }
@@ -177,7 +176,7 @@ mod tests {
             assert!(config.is_ok());
 
             let config = config.unwrap();
-            assert_eq!(config.kind, Kind::Grpc);
+            assert_eq!(config.kind, None);
         });
 
         {
@@ -186,7 +185,7 @@ mod tests {
                 assert!(config.is_ok());
 
                 let config = config.unwrap();
-                assert_eq!(config.kind, Kind::Http);
+                assert_eq!(config.kind, Some(Kind::Http));
             });
         }
     }

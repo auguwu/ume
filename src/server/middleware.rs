@@ -20,7 +20,7 @@ use axum::{
     middleware::Next,
     response::IntoResponse,
 };
-use rand::distributions::{Alphanumeric, DistString};
+use rand::distr::{Alphanumeric, SampleString};
 use std::{fmt::Display, ops::Deref, time::Instant};
 
 #[derive(FromRequestParts)]
@@ -40,7 +40,7 @@ pub struct XRequestId(String);
 impl XRequestId {
     /// Generates a new [`XRequestId`].
     pub(self) fn generate() -> XRequestId {
-        XRequestId(Alphanumeric.sample_string(&mut rand::thread_rng(), 12))
+        XRequestId(Alphanumeric.sample_string(&mut rand::rng(), 12))
     }
 }
 

@@ -28,14 +28,14 @@ use azalia::remi::{
     core::{Blob, StorageService as _, UploadRequest},
     StorageService,
 };
-use rand::distributions::{Alphanumeric, DistString};
+use rand::distr::{Alphanumeric, SampleString};
 use serde_json::{json, Value};
 
 pub async fn main() -> Json<Value> {
     Json(json!({
         "hello": "world",
         "build_info": json!({
-            "version": crate::version(),
+            "version": crate::VERSION,
             "commit": crate::COMMIT_HASH,
             "build_date": crate::BUILD_DATE
         })
@@ -233,7 +233,7 @@ pub async fn upload_image(
             ))
         }
     };
-    let name = format!("{}.{ext}", Alphanumeric.sample_string(&mut rand::thread_rng(), 6));
+    let name = format!("{}.{ext}", Alphanumeric.sample_string(&mut rand::rng(), 6));
 
     info!(file = %name, "uploading image...");
     storage

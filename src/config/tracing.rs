@@ -114,12 +114,14 @@ mod tests {
     }
 
     impl PartialEq for S {
+        #[allow(deprecated)]
         fn eq(&self, other: &Self) -> bool {
             match (&self.tracing, &other.tracing) {
                 (Config::Disabled, Config::Disabled) => true,
                 (Config::OpenTelemetry(ref otel1), Config::OpenTelemetry(ref otel2)) => {
                     otel1.kind == otel2.kind && otel1.url == otel2.url && otel1.labels == otel2.labels
                 }
+
                 (Config::Sentry(ref sentry1), Config::Sentry(ref sentry2)) => sentry1.sample_set == sentry2.sample_set,
 
                 _ => false,
@@ -144,7 +146,7 @@ mod tests {
                 tracing: Config::OpenTelemetry(otel::Config::default()),
             }))
             .unwrap(),
-            "tracing \"opentelemetry\" {\n  kind = \"grpc\"\n  url = \"grpc://localhost:4318\"\n}\n"
+            "tracing \"opentelemetry\" {\n  url = \"grpc://localhost:4318\"\n}\n"
         );
     }
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use arboard::Clipboard;
+use azalia::remi::core::Bytes;
 use chrono::Local;
 use eyre::Context;
 use reqwest::multipart::{self, Part};
@@ -25,7 +26,6 @@ use std::{
     path::{Path, PathBuf},
     process::{exit, Command, Stdio},
 };
-use tokio_util::bytes::Bytes;
 use url::Url;
 
 /// Takes a screenshot with [Flameshot](https://flameshot.org)

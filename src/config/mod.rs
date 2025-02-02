@@ -18,7 +18,7 @@ pub mod storage;
 pub mod tracing;
 
 use azalia::config::{env, merge::Merge, FromEnv, TryFromEnv};
-use rand::distributions::{Alphanumeric, DistString};
+use rand::distr::{Alphanumeric, SampleString};
 use serde::{Deserialize, Serialize};
 use std::{
     env::VarError,
@@ -154,7 +154,7 @@ If any other key replaces this, then it'll no longer be verified. It is recommen
 }
 
 fn __generated_uploader_key() -> String {
-    Alphanumeric.sample_string(&mut rand::thread_rng(), 32)
+    Alphanumeric.sample_string(&mut rand::rng(), 32)
 }
 
 /// Represents a [`url::Url`] wrapper which implements [`Merge`].

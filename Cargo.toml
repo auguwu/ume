@@ -19,7 +19,6 @@ description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host ma
 version = "4.0.6"
 authors = ["Noel Towa <cutie@floofy.dev>"]
 edition = "2021"
-rust-version = "1.78"
 repository = "https://github.com/auguwu/ume"
 
 [[bin]]
@@ -27,50 +26,46 @@ name = "ume"
 path = "./src/bin/ume.rs"
 
 [dependencies]
-arboard = "3.4.0"
-async-trait = "0.1.80"
-axum = { version = "0.7.7", features = ["macros"] }
-axum-extra = { version = "0.9.3", features = ["typed-header"] }
-axum-server = { version = "0.6.0", features = ["tls-rustls"] }
-bson = "2.10.0"
-chrono = "0.4.38"
-clap = { version = "4.5.4", features = ["derive", "env"] }
-clap_complete = "4.5.2"
+arboard = "3.4.1"
+axum = { version = "0.8.1", features = ["macros"] }
+axum-extra = { version = "0.10.0", features = ["typed-header"] }
+axum-server = { version = "0.7.1", features = ["tls-rustls"] }
+chrono = "0.4.39"
+clap = { version = "4.5.27", features = ["derive", "env"] }
+clap_complete = "4.5.44"
 color-eyre = { version = "0.6.3", features = ["issue-url", "tracing-error"] }
 dotenvy = "0.15.7"
 eyre = "0.6.12"
-hcl-rs = "0.18.0"
+hcl-rs = "0.18.4"
 humantime = "2.1.0"
-image = "0.25.1"
-mimalloc = "0.1.41"
+image = "0.25.5"
+mimalloc = "0.1.43"
 mime = "0.3.17"
 multer = "3.1.0"
 num_cpus = "1.16.0"
-opentelemetry = "0.22.0"
-opentelemetry-otlp = { version = "0.15.0", features = ["http-proto"] }
-opentelemetry_sdk = "0.22.1"
-owo-colors = "4.0.0"
-rand = "0.8.5"
-remi = "0.9.0"
-reqwest = { version = "0.12.4", features = ["multipart", "json"] }
-sentry = "0.34.0"
-sentry-tower = { version = "0.34.0", features = ["axum", "http"] }
-sentry-tracing = "0.34.0"
-serde = { version = "1.0.200", features = ["derive"] }
-serde_json = "1.0.116"
-tokio = { version = "1.37.0", features = ["full"] }
-tokio-util = { version = "0.7.11", features = ["io-util"] }
-tower-http = { version = "0.6.0", features = ["catch-panic"] }
-tracing = "0.1.40"
-tracing-opentelemetry = "0.23.0"
-tracing-subscriber = "0.3.18"
-url = "2.5.0"
-which = "7.0.0"
+opentelemetry = "0.27.1"
+opentelemetry-otlp = { version = "0.27.0", features = ["http-proto"] }
+opentelemetry_sdk = "0.27.1"
+owo-colors = "4.1.0"
+rand = "0.9.0"
+reqwest = { version = "0.12.12", features = ["multipart", "json"] }
+sentry = "0.36.0"
+sentry-tower = { version = "0.36.0", features = ["axum", "http"] }
+sentry-tracing = "0.36.0"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
+tokio = { version = "1.43.0", features = ["full"] }
+tower-http = { version = "0.6.2", features = ["catch-panic"] }
+tracing = "0.1.41"
+tracing-opentelemetry = "0.28.0"
+tracing-subscriber = "0.3.19"
+url = "2.5.4"
+which = "7.0.1"
 
 [dependencies.azalia]
 version = "0.1.0"
 git = "https://github.com/Noelware/azalia"
-rev = "bac66caead3a068a2e7796473af111485b7dcb49"
+rev = "f4600130658cfe523350222717b4530ce4d30123"
 features = [
     "lazy",
     "regex",
@@ -92,13 +87,14 @@ features = [
 ]
 
 [build-dependencies]
-chrono = "0.4.38"
-rustc_version = "0.4.0"
-which = "7.0.0"
+chrono = "0.4.39"
+rustc_version = "0.4.1"
+which = "7.0.1"
 
+# this is only here to fix conflicts between dependencies
+# i wish i would've done farming instead of this shit
 [dev-dependencies]
-quote = "1.0.36"
-syn = "2.0.60"
+proc-macro2 = "1.0.93"
 
 [package.metadata.cargo-machete]
 ignored = [
