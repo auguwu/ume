@@ -156,8 +156,7 @@ mod tests {
             S {
                 tracing: Config::OpenTelemetry(otel::Config::default())
             },
-            hcl::from_str("tracing \"opentelemetry\" {\n  kind = \"grpc\"\n  url = \"grpc://localhost:4318\"\n}\n")
-                .unwrap()
+            hcl::from_str("tracing \"opentelemetry\" {\n  url = \"grpc://localhost:4318\"\n}\n").unwrap()
         );
 
         assert_eq!(

@@ -76,7 +76,7 @@ pub struct Config {
     pub labels: HashMap<String, String>,
 
     /// Which kind of OpenTelemetry Collector we should configure for?
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     #[deprecated(
         since = "4.0.6",
         note = "this field will be removed in v4.1.0, ume will determine the kind of collector from the url's scheme"
@@ -96,8 +96,10 @@ impl TryFromEnv for Config {
         Ok(Config {
             kind: match env!("UME_TRACING_OTEL_COLLECTOR") {
                 Ok(res) => match res.as_str() {
-                    "grpc" | "grpcs" | "" => Some(Kind::Grpc),
+                    "grpc" | "grpcs" => Some(Kind::Grpc),
                     "http" | "https" => Some(Kind::Http),
+                    "" => None,
+
                     out => return Err(eyre!(format!("unknown otel collector kind [{out}]"))),
                 },
 
