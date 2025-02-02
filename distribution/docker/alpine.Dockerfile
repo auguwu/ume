@@ -46,7 +46,7 @@ RUN cargo build --release --bin ume
 
 ############ FINAL STAGE
 
-FROM alpine:3.20
+FROM alpine:3.21
 
 RUN apk update && apk add --no-cache bash tini curl libgcc
 WORKDIR /app/noel/ume
