@@ -43,9 +43,9 @@ mimalloc = "0.1.43"
 mime = "0.3.17"
 multer = "3.1.0"
 num_cpus = "1.16.0"
-opentelemetry = "0.27.1"
-opentelemetry-otlp = { version = "0.27.0", features = ["http-proto"] }
-opentelemetry_sdk = "0.27.1"
+opentelemetry = "0.28.0"
+opentelemetry-otlp = { version = "0.28.0", features = ["http-proto"] }
+opentelemetry_sdk = "0.28.0"
 owo-colors = "4.1.0"
 rand = "0.9.0"
 reqwest = { version = "0.12.12", features = ["multipart", "json"] }
