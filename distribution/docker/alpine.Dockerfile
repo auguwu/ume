@@ -15,7 +15,7 @@
 
 ############ BINARY
 
-FROM --platform=${TARGETPLATFORM} rust:1.84.1-alpine3.21 AS build
+FROM --platform=${TARGETPLATFORM} rust:1.85.0-alpine3.21 AS build
 
 RUN apk update && apk add --no-cache git ca-certificates curl musl-dev \
     libc6-compat gcompat pkgconfig libressl-dev build-base mold \
