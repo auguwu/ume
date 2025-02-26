@@ -22,13 +22,10 @@ use rand::distr::{Alphanumeric, SampleString};
 use serde::{Deserialize, Serialize};
 use std::{
     env::VarError,
-    ffi::OsStr,
-    fmt::Display,
-    fs::{self, File},
-    ops::Deref,
+    fs,
     path::{Path, PathBuf},
-    str::FromStr,
 };
+use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Merge)]
 pub struct Config {
@@ -42,21 +39,21 @@ pub struct Config {
     #[serde(default, skip_serializing_if = "Option::is_some")]
     pub sentry_dsn: Option<String>,
 
-    #[serde(default, serialize_with = "hcl::ser::block")]
+    #[serde(default)]
     pub logging: logging::Config,
 
-    #[serde(default, serialize_with = "hcl::ser::labeled_block")]
+    #[serde(default)]
     pub storage: storage::Config,
 
-    #[serde(default, serialize_with = "hcl::ser::labeled_block")]
+    #[serde(default)]
     pub tracing: tracing::Config,
 
-    #[serde(default, serialize_with = "hcl::ser::block")]
+    #[serde(default)]
     pub server: crate::server::Config,
 }
 
 fn __default_base_url() -> Url {
-    Url(url::Url::parse("http://localhost:3621").expect("failed to parse as url"))
+    url::Url::parse("http://localhost:3621").expect("failed to parse as url")
 }
 
 fn __merge_urls(url: &mut url::Url, right: url::Url) {
@@ -147,15 +144,7 @@ impl Config {
         }
 
         let mut cfg = Config::try_from_env()?;
-        let file = match path.extension().and_then(OsStr::to_str) {
-            Some("toml") => toml::from_str(&fs::read_to_string(path)?)?,
-            Some("hcl") => {
-                eprintln!("[ume WARN] since v4.0.6, the HCL-based configuration format is deprecated; please update to the TOML-based format");
-                hcl::from_reader::<Config, _>(File::open(path)?)?
-            }
-
-            Some(_) | None => hcl::from_reader::<Config, _>(File::open(path)?)?,
-        };
+        let file = toml::from_str(&fs::read_to_string(path)?)?;
 
         cfg.merge(file);
 
@@ -175,44 +164,6 @@ If any other key replaces this, then it'll no longer be verified. It is recommen
 
 fn __generated_uploader_key() -> String {
     Alphanumeric.sample_string(&mut rand::rng(), 32)
-}
-
-/// Represents a [`url::Url`] wrapper which implements [`Merge`].
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Url(url::Url);
-impl Display for Url {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.0, f)
-    }
-}
-
-impl PartialEq for Url {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-
-impl Merge for Url {
-    fn merge(&mut self, other: Self) {
-        if self.0 != other.0 {
-            *self = Url(other.0);
-        }
-    }
-}
-
-impl Deref for Url {
-    type Target = url::Url;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl FromStr for Url {
-    type Err = url::ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        url::Url::from_str(s).map(Url)
-    }
 }
 
 #[cfg(test)]

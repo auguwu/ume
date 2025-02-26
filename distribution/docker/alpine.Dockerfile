@@ -14,35 +14,59 @@
 # limitations under the License.
 
 ############ BINARY
+FROM rustlang/rust:nightly-alpine3.21 AS build
 
-FROM --platform=${TARGETPLATFORM} rust:1.84.1-alpine3.21 AS build
-
-RUN apk update && apk add --no-cache git ca-certificates curl musl-dev \
-    libc6-compat gcompat pkgconfig libressl-dev build-base mold \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+RUN apk upgrade && apk add --no-cache \
+    git                               \
+    mold                              \
+    ca-certificates                   \
+    musl-dev                          \
+    openssl-dev                       \
+    pkgconfig                         \
+    build-base
 
 WORKDIR /build
 
-ENV RUSTFLAGS="-Ctarget-cpu=native -Clink-arg=-fuse-ld=mold"
+# So, I decided that `-Zbuild-std` will work in our cases from v4.1 and higher. For now,
+# we will use a Nightly compilter as `-Zbuild-std` is a Nightly feature, which is fine.
 
-# First, we create an empty Rust project so that dependencies can be cached.
+# We need `rust-src` to be avaliable.
+RUN rustup component add rust-src
+
+ENV RUSTFLAGS="-Clink-arg=-fuse-ld=mold -Ctarget-cpu=native -Ctarget-feature=-crt-static"
+
+# So, we would like to cache `/build/target` so we don't have to build the
+# whole project. So, we will need to create a dummy project for now.
 COPY Cargo.toml .
+RUN mkdir -p src/ && \
+    echo "fn main() {}" > src/dummy.rs && \
+    sed -i 's#src/bin/ume.rs#src/dummy.rs#' Cargo.toml
 
-RUN mkdir -p src/ && echo "fn main() {}" > src/dummy.rs && sed -i 's#src/bin/ume.rs#src/dummy.rs#' Cargo.toml
-RUN --mount=type=cache,target=/build/target/ \
-    cargo build --release
+RUN --mount=type=cache,target=/build/target/                                 \
+    --mount=type=cache,target=/usr/local/cargo/git/db                        \
+    --mount=type=cache,target=/usr/local/cargo/registry/                     \
+    cargo build                                                              \
+    -Zbuild-std=std,panic_abort                                              \
+    -Zbuild-std-features="optimize_for_size,panic_immediate_abort,backtrace" \
+    --no-default-features                                                    \
+    --release
 
-# Now, we can remove `src/dummy.rs` and copy the whole project
+# Now that our dependencies should be cached (hopefully), so let's add back
+# the actual binary target
 RUN rm src/dummy.rs && sed -i 's#src/dummy.rs#src/bin/ume.rs#' Cargo.toml
 
 COPY . .
 
-# Remove the `rust-toolchain.toml` file since we expect to use `rustc` from the Docker image
-# rather from rustup.
+# We need the `rust-toolchain.toml` file removed since it'll overwrite it.
 RUN rm rust-toolchain.toml
 
-# Now build the CLI
-RUN cargo build --release --bin ume
+# Now, let's rebuild the `ume` binary.
+RUN cargo build                                                              \
+    -Zbuild-std=std,panic_abort                                              \
+    -Zbuild-std-features="optimize_for_size,panic_immediate_abort,backtrace" \
+    --locked                                                                 \
+    --no-default-features                                                    \
+    --release
 
 ############ FINAL STAGE
 

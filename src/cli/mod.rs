@@ -16,8 +16,11 @@
 mod cmds;
 pub use cmds::*;
 
+pub mod config;
+
 use azalia::log::writers;
-use std::io;
+use either::Either;
+use std::{io, str::FromStr};
 use tracing::{level_filters::LevelFilter, Level};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
@@ -63,4 +66,19 @@ impl Program {
                 .init();
         }
     }
+}
+
+// credit to:
+// https://github.com/TheAwiteb/lprs/blob/60e0812dd2d1af93a9143b17039bd7995840c9ed/src/clap_parsers.rs#L39-L61
+pub(crate) fn parse_either<L: FromStr, R: FromStr>(value: &str) -> eyre::Result<Either<L, R>>
+where
+    <L as FromStr>::Err: std::error::Error + Send + Sync + 'static,
+    <R as FromStr>::Err: std::error::Error + Send + Sync + 'static,
+{
+    value
+        .trim()
+        .parse::<L>()
+        .map_err(eyre::Report::new)
+        .map(Either::Left)
+        .or_else(|_| value.parse::<R>().map_err(eyre::Report::new).map(Either::Right))
 }

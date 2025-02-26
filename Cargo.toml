@@ -16,7 +16,7 @@
 [package]
 name = "ume"
 description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-version = "4.0.6"
+version = "4.1.0"
 authors = ["Noel Towa <cutie@floofy.dev>"]
 edition = "2021"
 repository = "https://github.com/auguwu/ume"
@@ -25,43 +25,63 @@ repository = "https://github.com/auguwu/ume"
 name = "ume"
 path = "./src/bin/ume.rs"
 
+[features]
+default = ["os-notifier"]
+
+# Allows to use the OS' notification system for `ume screenshot`. This is disabled
+# on the Docker distribution as the Docker image *should* be only used for the `ume server`
+# command.
+os-notifier = ["dep:notify-rust"]
+
 [dependencies]
-arboard = "3.4.1"
+arboard = { version = "3.4.1", features = ["wayland-data-control"] }
 axum = { version = "0.8.1", features = ["macros"] }
 axum-extra = { version = "0.10.0", features = ["typed-header"] }
 axum-server = { version = "0.7.1", features = ["tls-rustls"] }
 chrono = "0.4.39"
-clap = { version = "4.5.27", features = ["derive", "env"] }
-clap_complete = "4.5.44"
+clap = { version = "4.5.31", features = ["derive", "env"] }
+clap_complete = "4.5.46"
 color-eyre = { version = "0.6.3", features = ["issue-url", "tracing-error"] }
 dotenvy = "0.15.7"
+either = "1.14.0"
+etcetera = "0.8.0"
 eyre = "0.6.12"
-hcl-rs = "0.18.4"
 humantime = "2.1.0"
 image = "0.25.5"
 mimalloc = "0.1.43"
 mime = "0.3.17"
 multer = "3.1.0"
+notify-rust = { version = "4.11.5", optional = true }
 num_cpus = "1.16.0"
-opentelemetry = "0.27.1"
-opentelemetry-otlp = { version = "0.27.0", features = ["http-proto"] }
-opentelemetry_sdk = "0.27.1"
-owo-colors = "4.1.0"
+opentelemetry = "0.28.0"
+opentelemetry-otlp = { version = "0.28.0", features = [
+    "http-proto",
+    "grpc-tonic",
+] }
+opentelemetry_sdk = "0.28.0"
+owo-colors = "4.2.0"
 rand = "0.9.0"
-reqwest = { version = "0.12.12", features = ["multipart", "json"] }
+reqwest = { version = "0.12.12", default-features = false, features = [
+    "multipart",
+    "json",
+    "http2",
+    "charset",
+    "macos-system-configuration",
+    "rustls-tls",
+] }
 sentry = "0.36.0"
 sentry-tower = { version = "0.36.0", features = ["axum", "http"] }
 sentry-tracing = "0.36.0"
-serde = { version = "1.0.217", features = ["derive"] }
-serde_json = "1.0.138"
-tokio = { version = "1.43.0", features = ["full"] }
-toml = "0.8.19"
+serde = { version = "1.0.218", features = ["derive"] }
+serde_json = "1.0.139"
+tokio = { version = "1.43.0", features = ["rt", "macros", "net", "signal"] }
+toml = "0.8.20"
 tower-http = { version = "0.6.2", features = ["catch-panic"] }
 tracing = "0.1.41"
-tracing-opentelemetry = "0.28.0"
-tracing-subscriber = "0.3.19"
+tracing-opentelemetry = "0.29.0"
+tracing-subscriber = { version = "0.3.19", features = ["tracing-log"] }
 url = "2.5.4"
-which = "7.0.1"
+which = "7.0.2"
 
 [dependencies.azalia]
 version = "0.1.0"
@@ -72,6 +92,7 @@ features = [
     "regex",
 
     "config",
+    "config-url",
     "config-derive",
 
     "log",
@@ -90,14 +111,12 @@ features = [
 [build-dependencies]
 chrono = "0.4.39"
 rustc_version = "0.4.1"
-which = "7.0.1"
+which = "7.0.2"
 
-# this is only here to fix conflicts between dependencies
-# i wish i would've done farming instead of this shit
-[dev-dependencies]
-proc-macro2 = "1.0.93"
-
-[package.metadata.cargo-machete]
-ignored = [
-    "hcl-rs", # crate name is `hcl` but crates.io name is `hcl-rs`
-]
+[profile.release]
+codegen-units = 1 # use a single codegen unit
+opt-level = "s"   # optimize for size
+panic = "abort"   # abort the process when a panic occurs
+strip = true      # strip all debug symbols
+debug = 0         # disable debug information
+lto = true        # perform LTO on all crates (even our own)

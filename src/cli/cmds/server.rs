@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::config::{self, tracing::otel::Kind, Config};
+use crate::config::{self, Config};
 use azalia::log::{writers, WriteLayer};
-use opentelemetry::{trace::TracerProvider as _, InstrumentationScope, KeyValue};
+use opentelemetry::{trace::TracerProvider, InstrumentationScope, KeyValue};
 use opentelemetry_otlp::SpanExporter;
-use opentelemetry_sdk::trace::TracerProvider;
+use opentelemetry_sdk::trace::SdkTracerProvider;
 use owo_colors::{OwoColorize, Stream::Stdout};
 use sentry::types::Dsn;
 use std::{
@@ -76,27 +76,12 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
     });
 
     let tracer = if let config::tracing::Config::OpenTelemetry(ref otel) = config.tracing {
-        let mut provider = TracerProvider::builder();
-
-        #[allow(deprecated)]
-        if let Some(kind) = otel.kind {
-            match kind {
-                Kind::Grpc => provider = provider.with_simple_exporter(SpanExporter::builder().with_tonic().build()?),
-                Kind::Http => provider = provider.with_simple_exporter(SpanExporter::builder().with_http().build()?),
-            }
-        } else {
-            match otel.url.scheme() {
-                "http" | "https" => {
-                    provider = provider.with_simple_exporter(SpanExporter::builder().with_http().build()?)
-                }
-
-                "grpc" | "grpcs" => {
-                    provider = provider.with_simple_exporter(SpanExporter::builder().with_tonic().build()?)
-                }
-
-                scheme => return Err(eyre!("unknown scheme: `{}`", scheme)),
-            }
-        };
+        let mut provider = SdkTracerProvider::builder();
+        match otel.url.scheme() {
+            "http" | "https" => provider = provider.with_simple_exporter(SpanExporter::builder().with_http().build()?),
+            "grpc" | "grpcs" => provider = provider.with_simple_exporter(SpanExporter::builder().with_tonic().build()?),
+            scheme => return Err(eyre!("unknown scheme: `{}`", scheme)),
+        }
 
         let provider = provider.build();
         let mut attributes = otel

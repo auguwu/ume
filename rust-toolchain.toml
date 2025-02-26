@@ -14,7 +14,7 @@
 # limitations under the License.
 
 [toolchain]
-channel = "1.84"
+channel = "1.85"
 profile = "minimal"
 targets = [
     "aarch64-unknown-linux-gnu",
