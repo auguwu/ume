@@ -53,89 +53,59 @@ jobs:
             matrix:
                 rust-version: [stable, nightly]
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Setup Rust toolchain
-              uses: dtolnay/rust-toolchain@master
+            - uses: actions/checkout@v4
+            - run: rm rust-toolchain.toml
+            - uses: dtolnay/rust-toolchain@master
               with:
                 toolchain: ${{matrix.rust-version}}
-                components: clippy, rustfmt
 
-            - name: Setup Rust cache
-              uses: Swatinem/rust-cache@v2
-
-            - name: Pull dependencies
-              run: cargo build --all-features
-
-            - name: Run tests
-              run: cargo test --all-features
+            - uses: Swatinem/rust-cache@v2
+            - run: cargo build --all-features
+            - run: cargo test --all-features
     cargo-deny:
         name: '`cargo deny`'
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Install `cargo-deny`
-              uses: taiki-e/install-action@cargo-deny
+            - uses: actions/checkout@v4
+            - uses: taiki-e/install-action@cargo-deny
               with:
                   tool: cargo-deny
 
-            - name: Run "cargo deny"
-              run: cargo deny check all
+            - run: cargo deny check all
     report-missing-deps:
         name: Report Missing Dependencies
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Install `cargo-machete`
-              uses: taiki-e/install-action@cargo-machete
+            - uses: actions/checkout@v4
+            - uses: taiki-e/install-action@cargo-machete
               with:
                   tool: cargo-machete
-
-            - name: Run!
-              run: cargo machete
+            - run: cargo machete
     nix-build:
         name: Nix Build
         runs-on: ubuntu-latest
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         steps:
-            - name: Checkout source code
-              uses: actions/checkout@v4
-
-            - name: Install `nix` binary
-              uses: cachix/install-nix-action@v30
+            - uses: actions/checkout@v4
+            - uses: cachix/install-nix-action@v30
               with:
                   nix_path: nixpkgs=channel:nixos-unstable
-
-            - name: Setup Cachix
-              uses: cachix/cachix-action@v15
+            - uses: cachix/cachix-action@v15
               with:
                   name: noel
                   authToken: ${{secrets.CACHIX_AUTH_TOKEN}}
-
-            - name: Build `ume` binary
-              run: nix build .#ume
+            - run: nix build .#ume
     clippy:
         name: Clippy
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Setup Rust toolchain
-              uses: dtolnay/rust-toolchain@master
+            - uses: actions/checkout@v4
+            - uses: dtolnay/rust-toolchain@master
               with:
                 toolchain: stable
                 components: clippy, rustfmt
 
-            - name: Setup Rust cache
-              uses: Swatinem/rust-cache@v2
-
-            - name: Clippy!
-              uses: auguwu/clippy-action@1.4.0
+            - uses: Swatinem/rust-cache@v2
+            - uses: auguwu/clippy-action@1.4.0
               with:
                 token: ${{secrets.GITHUB_TOKEN}}

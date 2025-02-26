@@ -69,54 +69,45 @@ jobs:
                       cross: false
                       ext: .exe
         steps:
-            - name: Checkout source code
-              uses: actions/checkout@v4
-
-            - name: Get Git tag
-              uses: auguwu/git-tag-action@master
+            - uses: actions/checkout@v4
+            - uses: auguwu/git-tag-action@master
               id: tag
-
-            - name: Remove `rust-toolchain.toml`
-              run: rm rust-toolchain.toml
-
-            - name: Setup Rust toolchain
-              uses: dtolnay/rust-toolchain@master
+            - run: rm rust-toolchain.toml
+            - uses: dtolnay/rust-toolchain@master
               with:
                   toolchain: stable
                   components: clippy, rustfmt
                   target: ${{matrix.target}}
 
-            - name: Install `cross`
-              uses: taiki-e/cache-cargo-install-action@v2
+            - uses: taiki-e/cache-cargo-install-action@v2
               if: matrix.cross
               with:
                 tool: cross
 
-            - name: Install `mold` on Linux
-              if: matrix.runner == 'ubuntu-latest'
+            - if: matrix.runner == 'ubuntu-latest'
               uses: rui314/setup-mold@v1
 
-            - name: Setup Rust cache
-              uses: Swatinem/rust-cache@v2
+            - uses: Swatinem/rust-cache@v2
 
-            - name: Setup `VCPKG_ROOT` environment variable
-              if: matrix.runner == 'windows-latest'
+            - if: matrix.runner == 'windows-latest'
               id: vcpkg
               run: |
                   echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
                   echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-            - name: Setup vcpkg cache
-              if: matrix.runner == 'windows-latest'
+            - if: matrix.runner == 'windows-latest'
               uses: actions/cache@v4
               with:
                   key: vcpkg-cache
                   path: |
                       ${{steps.vcpkg.outputs.VCPKG_ROOT}}
 
-            - name: Install OpenSSL on Windows with `vcpkg`
-              if: matrix.runner == 'windows-latest'
+            - if: matrix.runner == 'windows-latest'
               run: vcpkg install openssl:x64-windows-static-md
+
+            # On Windows, we'll also need nasm for use with BoringSSL via aws-lc-sys.
+            - uses: ilammy/setup-nasm@v1
+              if: matrix.runner == 'windows-latest'
 
             - name: Build binary
               run: ./scripts/release${{matrix.runner == 'windows-latest' && '.ps1' || '.sh'}}
