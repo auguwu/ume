@@ -137,13 +137,14 @@ pub async fn execute(mut cmd: Cmd) -> eyre::Result<()> {
 
         #[cfg(feature = "os-notifier")]
         show_notification(cmd.system_notifications, &config, |notif| {
-            notif
-                .body(&format!(
-                    "received status code {} while running command '{}'",
-                    output.status.code().unwrap_or(-1),
-                    binary.display()
-                ))
-                .urgency(notify_rust::Urgency::Critical);
+            notif.body(&format!(
+                "received status code {} while running command '{}'",
+                output.status.code().unwrap_or(-1),
+                binary.display()
+            ));
+
+            #[cfg(target_os = "linux")]
+            notif.urgency(notify_rust::Urgency::Critical);
         });
 
         exit(1);
@@ -175,12 +176,13 @@ pub async fn execute(mut cmd: Cmd) -> eyre::Result<()> {
 
         #[cfg(feature = "os-notifier")]
         show_notification(cmd.system_notifications, &config, |notif| {
-            notif
-                .body(&format!(
-                    "received unexpected JSON payload from server `{}` [status code: {}]",
-                    server, status
-                ))
-                .urgency(notify_rust::Urgency::Critical);
+            notif.body(&format!(
+                "received unexpected JSON payload from server `{}` [status code: {}]",
+                server, status
+            ));
+
+            #[cfg(target_os = "linux")]
+            notif.urgency(notify_rust::Urgency::Critical);
         });
     }
 
@@ -192,9 +194,10 @@ pub async fn execute(mut cmd: Cmd) -> eyre::Result<()> {
 
         #[cfg(feature = "os-notifier")]
         show_notification(cmd.system_notifications, &config, |notif| {
-            notif
-                .body(&format!("received message from server: {message}"))
-                .urgency(notify_rust::Urgency::Critical);
+            notif.body(&format!("received message from server: {message}"));
+
+            #[cfg(target_os = "linux")]
+            notif.urgency(notify_rust::Urgency::Critical);
         });
 
         if cmd.no_copy || clipboard.is_none() {
