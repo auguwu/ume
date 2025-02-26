@@ -132,7 +132,7 @@ jobs:
                 files: ./.result/ume-*
 
             - name: Upload binary to S3 (${{steps.tag.outputs.version}})
-              uses: Noelware/s3-action@2.2.6
+              uses: Noelware/s3-action@2.2.7
               with:
                 enforce-path-access-style: true
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
@@ -145,7 +145,7 @@ jobs:
                 bucket: august
 
             - name: Upload binary to S3 (latest)
-              uses: Noelware/s3-action@2.2.6
+              uses: Noelware/s3-action@2.2.7
               with:
                 enforce-path-access-style: true
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
