@@ -68,6 +68,12 @@ async fn start_https_server(config: &Config, ssl: &config::ssl::Config, router: 
     let config = RustlsConfig::from_pem_file(&ssl.cert, &ssl.cert_key).await?;
 
     info!(address = %addr, "listening on HTTPS");
+
+    #[cfg(all(target_os = "linux", feature = "libsystemd"))]
+    if let Err(e) = libsystemd::daemon::notify(false, &[libsystemd::daemon::NotifyState::Ready]) {
+        warn!(error = %e, "failed to send `READY=1` to systemd");
+    }
+
     axum_server::bind_rustls(addr, config)
         .handle(handle)
         .serve(router.into_make_service())
@@ -108,6 +114,12 @@ async fn shutdown_signal(handle: Option<Handle>) {
     }
 
     warn!("received terminal signal! shutting down");
+
+    #[cfg(all(target_os = "linux", feature = "libsystemd"))]
+    if let Err(e) = libsystemd::daemon::notify(true, &[libsystemd::daemon::NotifyState::Stopping]) {
+        warn!(error = %e, "failed to send `READY=1` to systemd");
+    }
+
     if let Some(handle) = handle {
         handle.graceful_shutdown(Some(Duration::from_secs(10)));
     }
