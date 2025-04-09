@@ -1,0 +1,33 @@
+{
+    "remove_trailing_whitespace_on_save": true,
+    "ensure_final_newline_on_save": true,
+    "format_on_save": "on",
+    "formatter": "auto",
+    "languages": {
+        "TOML": {
+            "formatter": "language_server"
+        },
+        "YAML": {
+            "formatter": "prettier",
+            "tab_size": 2
+        },
+        "JSON": {
+            "formatter": "prettier"
+        },
+        "Nix": {
+            "formatter": "language_server",
+            "tab_size": 2
+        }
+    },
+    "lsp": {
+        "rust-analyzer": {
+            "initialization_options": {
+                "showUnlinkedFileNotification": false,
+                "checkOnSave": true,
+                "check": {
+                    "command": "clippy"
+                }
+            }
+        }
+    }
+}
