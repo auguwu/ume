@@ -6110,6 +6110,7 @@ dependencies = [
  "toml",
  "tower-http",
  "tracing",
+ "tracing-error",
  "tracing-opentelemetry",
  "tracing-subscriber",
  "url",

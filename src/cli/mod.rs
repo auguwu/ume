@@ -21,8 +21,8 @@ pub mod config;
 use azalia::log::writers;
 use either::Either;
 use std::{io, str::FromStr};
-use tracing::{level_filters::LevelFilter, Level};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
+use tracing::{Level, level_filters::LevelFilter};
+use tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Debug, Clone, clap::Parser)]
 #[clap(
@@ -54,15 +54,11 @@ impl Program {
                 .with(
                     azalia::log::WriteLayer::new_with(
                         io::stdout(),
-                        writers::default::Writer {
-                            print_thread: false,
-                            print_module: false,
-
-                            ..Default::default()
-                        },
+                        writers::default::Writer::default().with_thread_name(false),
                     )
                     .with_filter(LevelFilter::from_level(self.level)),
                 )
+                .with(tracing_error::ErrorLayer::default())
                 .init();
         }
     }
