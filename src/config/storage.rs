@@ -14,21 +14,25 @@
 // limitations under the License.
 
 use azalia::{
-    config::{env, merge::Merge, TryFromEnv},
+    config::{
+        env::{self, TryFromEnv},
+        merge::Merge,
+    },
     remi,
 };
 use serde::{Deserialize, Serialize};
-use std::{env::VarError, path::PathBuf};
+use std::path::PathBuf;
+
+const STORAGE_SERVICE: &str = "UME_STORAGE_SERVICE";
 
 /// Represents the configuration for configuring the data storage where
 /// ume will put all images in.
 ///
 /// ## Examples
 /// ### Filesystem
-/// ```hcl
-/// storage "filesystem" {
-///   directory = "./some/directory/that/exists"
-/// }
+/// ```toml
+/// [storage.filesystem]
+/// directory = "/var/lib/noel/ume/images"
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -57,29 +61,20 @@ impl Default for Config {
 }
 
 impl TryFromEnv for Config {
-    type Output = Config;
     type Error = eyre::Report;
 
-    fn try_from_env() -> Result<Self::Output, Self::Error> {
-        match env!("UME_STORAGE_SERVICE") {
-            Ok(input) => match &*input.to_ascii_lowercase() {
-                "filesystem" | "fs" => Ok(Config::Filesystem(remi::fs::StorageConfig {
-                    directory: env!("UME_STORAGE_FILESYSTEM_DIRECTORY", |val| PathBuf::from(val); or PathBuf::from("./data")),
-                })),
+    fn try_from_env() -> Result<Self, Self::Error> {
+        crate::config::impl_enum_based_env_value!(STORAGE_SERVICE, {
+            on match fail: |input| "environment variable `${}` is invalid: expected `filesystem`, `s3`, `azure`, or `gridfs`: received '{}' instead!" [STORAGE_SERVICE, input];
 
-                "gridfs" => Ok(Config::Gridfs(gridfs::create_config()?)),
-                "azure" => Ok(Config::Azure(azure::create_config()?)),
-                "s3" => Ok(Config::S3(s3::create_config()?)),
-                input => Err(eyre!(
-                    "unknown input [{input}]. expected either 'filesystem', 's3', 'azure', or 'gridfs'"
-                )),
-            },
+            "filesystem" | "fs" | "" => Ok(Config::Filesystem(remi::fs::StorageConfig {
+                directory: env::try_parse_or(filesystem::DIRECTORY, || PathBuf::from("./data"))?
+            }));
 
-            Err(VarError::NotPresent) => Ok(Default::default()),
-            Err(VarError::NotUnicode(_)) => Err(eyre!(
-                "environment variable `$UME_STORAGE_SERVICE` received invalid unicode as its value"
-            )),
-        }
+            "s3" => Ok(Config::S3(s3::create_config()?));
+            "gridfs" => Ok(Config::Gridfs(gridfs::create_config()?));
+            "azure" => Ok(Config::Azure(azure::create_config()?));
+        })
     }
 }
 
@@ -109,9 +104,17 @@ impl Merge for Config {
     }
 }
 
+pub(crate) mod filesystem {
+    pub const DIRECTORY: &str = "UME_STORAGE_FILESYSTEM_DIRECTORY";
+}
+
 pub(crate) mod s3 {
+    use crate::config::util;
     use azalia::{
-        config::{env, merge::Merge},
+        config::{
+            env::{self, TryFromEnvValue},
+            merge::Merge,
+        },
         remi::{
             self,
             s3::aws::{
@@ -119,9 +122,8 @@ pub(crate) mod s3 {
                 s3::types::{BucketCannedAcl, ObjectCannedAcl},
             },
         },
-        TRUTHY_REGEX,
     };
-    use std::{borrow::Cow, env::VarError, str::FromStr};
+    use std::{borrow::Cow, convert::Infallible};
 
     pub const ENABLE_SIGNER_V4_REQUESTS: &str = "UME_STORAGE_S3_ENABLE_SIGNER_V4_REQUESTS";
     pub const ENFORCE_PATH_ACCESS_STYLE: &str = "UME_STORAGE_S3_ENFORCE_PATH_ACCESS_STYLE";
@@ -168,33 +170,30 @@ pub(crate) mod s3 {
         };
     }
 
+    struct RegionEnv(Region);
+    impl TryFromEnvValue for RegionEnv {
+        type Error = Infallible;
+
+        fn try_from_env_value(value: String) -> Result<Self, Self::Error> {
+            Ok(RegionEnv(Region::new(value)))
+        }
+    }
+
     pub fn create_config() -> eyre::Result<remi::s3::StorageConfig> {
         Ok(remi::s3::StorageConfig {
-            enable_signer_v4_requests: env!(ENABLE_SIGNER_V4_REQUESTS, |val| TRUTHY_REGEX.is_match(&val); or false),
-            enforce_path_access_style: env!(ENFORCE_PATH_ACCESS_STYLE, |val| TRUTHY_REGEX.is_match(&val); or false),
-            default_object_acl: env!(DEFAULT_OBJECT_ACL, |val| ObjectCannedAcl::from_str(val.as_str()).ok(); or Some(DEFAULT_OBJECT_CANNED_ACL)),
-            default_bucket_acl: env!(DEFAULT_BUCKET_ACL, |val| BucketCannedAcl::from_str(val.as_str()).ok(); or Some(DEFAULT_BUCKET_CANNED_ACL)),
-            secret_access_key: env!(SECRET_ACCESS_KEY).map_err(|e| match e {
-                VarError::NotPresent => {
-                    eyre!("you're required to add the [{SECRET_ACCESS_KEY}] environment variable")
-                }
+            enable_signer_v4_requests: util::bool_env(ENABLE_SIGNER_V4_REQUESTS)?,
+            enforce_path_access_style: util::bool_env(ENFORCE_PATH_ACCESS_STYLE)?,
+            default_bucket_acl: util::env_from_str(DEFAULT_BUCKET_ACL, DEFAULT_BUCKET_CANNED_ACL).map(Some)?,
+            default_object_acl: util::env_from_str(DEFAULT_OBJECT_ACL, DEFAULT_OBJECT_CANNED_ACL).map(Some)?,
+            secret_access_key: env::try_parse(SECRET_ACCESS_KEY)?,
+            access_key_id: env::try_parse(ACCESS_KEY_ID)?,
+            app_name: env::try_parse_optional(APP_NAME)?,
+            endpoint: env::try_parse_optional(ENDPOINT)?,
+            prefix: env::try_parse_optional(PREFIX)?,
+            region: env::try_parse_or_else::<_, RegionEnv>(REGION, RegionEnv(Region::new(Cow::Borrowed("us-east-1"))))
+                .map(|s| Some(s.0))?,
 
-                VarError::NotUnicode(_) => eyre!("wanted valid UTF-8 for env `{SECRET_ACCESS_KEY}`"),
-            })?,
-
-            access_key_id: env!(ACCESS_KEY_ID).map_err(|e| match e {
-                VarError::NotPresent => {
-                    eyre!("you're required to add the [{ACCESS_KEY_ID}] environment variable")
-                }
-
-                VarError::NotUnicode(_) => eyre!("wanted valid UTF-8 for env `{ACCESS_KEY_ID}`"),
-            })?,
-
-            app_name: env!(APP_NAME, optional),
-            endpoint: env!(ENDPOINT, optional),
-            prefix: env!(PREFIX, optional),
-            region: env!(REGION, |val| Some(Region::new(Cow::Owned(val))); or Some(Region::new(Cow::Borrowed("us-east-1")))),
-            bucket: env!(BUCKET, optional).unwrap_or("ume".into()),
+            bucket: env::try_parse_optional(BUCKET)?.unwrap_or(String::from("ume")),
         })
     }
 
@@ -231,8 +230,6 @@ pub(crate) mod azure {
             azure::{CloudLocation, Credential},
         },
     };
-    use eyre::Context;
-    use std::env::VarError;
 
     pub const ACCESS_KEY_ACCOUNT: &str = "UME_STORAGE_AZURE_CREDENTIAL_ACCESSKEY_ACCOUNT";
     pub const ACCESS_KEY: &str = "UME_STORAGE_AZURE_CREDENTIAL_ACCESSKEY";
@@ -250,7 +247,7 @@ pub(crate) mod azure {
         Ok(remi::azure::StorageConfig {
             credentials: create_credentials_config()?,
             location: create_location()?,
-            container: env!(CONTAINER, optional).unwrap_or("ume".into()),
+            container: env::try_parse_optional(CONTAINER)?.unwrap_or(String::from("ume")),
         })
     }
 
@@ -303,80 +300,64 @@ pub(crate) mod azure {
     }
 
     fn create_credentials_config() -> eyre::Result<remi::azure::Credential> {
-        match env!(CREDENTIAL) {
-            Ok(input) => match &*input.to_ascii_lowercase() {
-                "anonymous" | "anon" | "" => Ok(remi::azure::Credential::Anonymous),
-                "accesskey" | "access_key" | "access-key" => Ok(remi::azure::Credential::AccessKey {
-                    account: env!(ACCESS_KEY_ACCOUNT).with_context(|| format!("missing required environment variable when `${CREDENTIAL}` is set to Access Key: `${ACCESS_KEY_ACCOUNT}`"))?,
-                    access_key: env!(ACCESS_KEY).with_context(|| format!("missing required environment variable when `${CREDENTIAL}` is set to Access Key: `${ACCESS_KEY}`"))?
-                }),
+        crate::config::impl_enum_based_env_value!(CREDENTIAL, {
+            on match fail: |input| "invalid input [{}] for `${}`: expected either `anonymous` (`anon` is accepted as well), \
+                `sastoken` (`sas-token`, `sas_token` is accepted as well), \
+                `accesskey` (`access-key` and `access_key` is accepted as well) \
+                or `bearer`." [input, CREDENTIAL];
 
-                "sastoken" | "sas-token" | "sas_token" => Ok(remi::azure::Credential::SASToken(
-                    env!(SAS_TOKEN).with_context(|| format!("missing required environment variable when `${CREDENTIAL}` is set to SAS Token: `${SAS_TOKEN}`"))?
-                )),
+            "anonymous" | "anon" | "" => Ok(remi::azure::Credential::Anonymous);
+            "accesskey" | "access-key" | "access_key" => Ok(remi::azure::Credential::AccessKey {
+                account: env::try_parse(ACCESS_KEY_ACCOUNT)?,
+                access_key: env::try_parse(ACCESS_KEY)?
+            });
 
-                "bearer" => Ok(remi::azure::Credential::Bearer(
-                    env!(SAS_TOKEN).with_context(|| format!("missing required environment variable when `${CREDENTIAL}` is set to SAS Token: `${BEARER}`"))?
-                )),
-
-                input => Err(eyre!("unknown input [{input}] for `${CREDENTIAL}` environment variable"))
-            },
-
-            Err(VarError::NotPresent) => Ok(remi::azure::Credential::Anonymous),
-            Err(VarError::NotUnicode(_)) => Err(eyre!("environment variable `${CREDENTIAL}` was invalid utf-8"))
-        }
+            "sastoken" | "sas-token" | "sas_token" => Ok(remi::azure::Credential::SASToken(env::try_parse(SAS_TOKEN)?));
+            "bearer" => Ok(remi::azure::Credential::Bearer(env::try_parse(BEARER)?));
+        })
     }
 
     fn create_location() -> eyre::Result<CloudLocation> {
-        match env!(LOCATION) {
-            Ok(res) => match &*res.to_ascii_lowercase() {
-                "public" | "" => {
-                    Ok(CloudLocation::Public(env!(ACCOUNT).with_context(|| {
-                        format!("missing required environment variable: [{ACCOUNT}]")
-                    })?))
-                }
+        crate::config::impl_enum_based_env_value!(LOCATION, {
+            on match fail: |input| "invalid input [{}] for `${}`: expected either: `public`, `china`, or `custom`." [input, LOCATION];
 
-                "china" => {
-                    Ok(CloudLocation::China(env!(ACCOUNT).with_context(|| {
-                        format!("missing required environment variable: [{ACCOUNT}]")
-                    })?))
-                }
-
-                "custom" => Ok(CloudLocation::Custom {
-                    account: env!(ACCOUNT)
-                        .with_context(|| format!("missing required environment variable: [{ACCOUNT}]"))?,
-
-                    uri: env!(URI).with_context(|| format!("missing required environment variable: [{ACCOUNT}]"))?,
-                }),
-
-                input => Err(eyre!(
-                    "invalid option given: {input} | expected [public, china, custom]"
-                )),
-            },
-
-            Err(VarError::NotPresent) => Err(eyre!("missing required environment variable: [{LOCATION}]")),
-            Err(VarError::NotUnicode(_)) => Err(eyre!("environment variable [{LOCATION}] was not in valid unicode")),
-        }
+            "public" | "" => Ok(CloudLocation::Public(env::try_parse(ACCOUNT)?));
+            "china" => Ok(CloudLocation::China(env::try_parse(ACCOUNT)?));
+            "custom" => Ok(CloudLocation::Custom {
+                account: env::try_parse(ACCOUNT)?,
+                uri: env::try_parse(URI)?
+            });
+        })
     }
 }
 
 pub(crate) mod gridfs {
     use azalia::{
-        config::{env, merge::Merge},
+        config::{
+            env::{self, TryFromEnvValue},
+            merge::Merge,
+        },
         remi::{
             self,
             gridfs::mongodb::{
-                bson::Document,
+                bson::{Bson, Document},
                 options::{
                     Acknowledgment, AuthMechanism, ClientOptions, Credential, HedgedReadOptions, ReadConcern,
                     ReadPreference, ReadPreferenceOptions, SelectionCriteria, ServerAddress, TagSet, WriteConcern,
                 },
             },
         },
-        TRUTHY_REGEX,
     };
+    use charted_core::ResultExt;
     use eyre::Context;
-    use std::{env::VarError, time::Duration};
+    use std::{
+        collections::{BTreeMap, HashMap},
+        convert::Infallible,
+        str::FromStr,
+        time::Duration,
+    };
+
+    use crate::config::util;
 
     pub const WRITE_CONCERN_TIMEOUT: &str = "UME_STORAGE_GRIDFS_WRITE_CONCERN_TIMEOUT";
     pub const WRITE_CONCERN_JOURNAL: &str = "UME_STORAGE_GRIDFS_WRITE_CONCERN_JOURNAL";
@@ -463,18 +444,9 @@ pub(crate) mod gridfs {
             client_options: parse_client_options()?,
             write_concern: parse_write_concern()?,
             read_concern: parse_read_concern()?,
-            chunk_size: match env!(CHUNK_SIZE) {
-                Ok(value) => value
-                    .parse()
-                    .map(Some)
-                    .with_context(|| format!("unable to parse `{value}` as a u32"))?,
-
-                Err(std::env::VarError::NotPresent) => None,
-                Err(_) => return Err(eyre!("received invalid UTF-8 for environment variable `${CHUNK_SIZE}`")),
-            },
-
-            database: env!(DATABASE, optional),
-            bucket: env!(BUCKET, optional).unwrap_or("ume".to_owned()),
+            chunk_size: env::try_parse_optional(CHUNK_SIZE)?,
+            database: env::try_parse_optional(DATABASE)?,
+            bucket: env::try_parse_optional(BUCKET)?.unwrap_or(String::from("ume")),
         })
     }
 
@@ -482,7 +454,7 @@ pub(crate) mod gridfs {
 
     fn parse_client_options() -> eyre::Result<ClientOptions> {
         Ok(ClientOptions::builder()
-            .app_name(env!(APP_NAME, optional))
+            .app_name(env::try_parse_optional(APP_NAME)?)
             .connect_timeout(parse_connect_timeout()?)
             .hosts(parse_hosts()?)
             .credential(parse_credentials()?)
@@ -490,249 +462,206 @@ pub(crate) mod gridfs {
     }
 
     fn parse_connect_timeout() -> eyre::Result<Option<Duration>> {
-        match env!(CONNECT_TIMEOUT) {
-            Ok(value) => Ok(Some(humantime::parse_duration(&value)?)),
-            Err(VarError::NotPresent) => Ok(None),
-            Err(VarError::NotUnicode(_)) => Err(eyre!(
-                "environment variable `${CONNECT_TIMEOUT}` was not a valid unicode string"
-            )),
+        match env::try_parse_optional::<_, String>(CONNECT_TIMEOUT) {
+            Ok(Some(value)) => Ok(Some(charted_core::serde::Duration::from_str(&value)?.into())),
+            Ok(None) => Ok(None),
+            Err(e) => Err(e.into()),
         }
     }
 
     fn parse_hosts() -> eyre::Result<Vec<ServerAddress>> {
-        match env!(HOSTS) {
-            Ok(res) => {
-                let mut values = Vec::new();
-                for server in res.split(',') {
-                    values.push(server.parse()?);
-                }
-
-                Ok(values)
-            }
-
-            Err(VarError::NotPresent) => Ok(vec!["localhost:27017".parse()?]),
-            Err(VarError::NotUnicode(_)) => Err(eyre!("environment variable `${HOSTS}` was not valid unicode")),
-        }
+        env::try_parse_or::<_, Vec<String>>(HOSTS, || vec!["localhost:27017".to_owned()])?
+            .into_iter()
+            .map(|v| <ServerAddress as FromStr>::from_str(&v).into_report())
+            .collect::<eyre::Result<_>>()
     }
 
     fn parse_credentials() -> eyre::Result<Option<Credential>> {
-        match env!(CREDENTIAL) {
-            Ok(value) => {
-                let (user, pass) = value
-                    .split_once(':')
-                    .ok_or_else(|| {
-                        eyre!("environment variable `${CREDENTIAL}` must be in the form of 'username:password'")
-                    })
-                    .context("if there is no username, but with a password, do: ':<password>'")
-                    .context("if there is no password, but a username, do: '<username>:'")?;
+        let Some(credential) = env::try_parse_optional::<_, String>(CREDENTIAL)? else {
+            return Ok(None);
+        };
 
-                Ok(Some(
-                    Credential::builder()
-                        .username((!user.is_empty()).then_some(user.to_owned()))
-                        .password((!pass.is_empty()).then_some(pass.to_owned()))
-                        .source(env!(CREDENTIAL_SOURCE, optional))
-                        .mechanism(match env!(CREDENTIAL_MECHANISM) {
-                            Ok(value) => match &*value.to_ascii_lowercase() {
-                                "scram-sha1" => Some(AuthMechanism::ScramSha1),
-                                "scram-sha256" => Some(AuthMechanism::ScramSha256),
-                                "x509" => Some(AuthMechanism::MongoDbX509),
-                                "gssapi" => Some(AuthMechanism::Gssapi),
-                                "plain" => Some(AuthMechanism::Plain),
-                                _ => None,
-                            },
+        let (user, pass) = credential
+            .trim()
+            .split_once(':')
+            .ok_or_else(|| {
+                eyre!(
+                    "environment variable `${}` must be in a form of 'username:password'",
+                    CREDENTIAL
+                )
+            })
+            .context("if there is no username but a password, use: ':<password>'")
+            .context("if there is no password but a username, use: '<username>:'")?;
 
-                            Err(VarError::NotPresent) => None,
-                            Err(VarError::NotUnicode(_)) => {
-                                return Err(eyre!(
-                                    "environment variable `${CREDENTIAL_MECHANISM}` was not in valid unicode"
-                                ))
-                            }
-                        })
-                        .mechanism_properties(match env!(CREDENTIAL_MECHANISM_PROPERTIES) {
-                            Ok(value) => {
-                                let mut doc = Document::new();
-                                for item in value.split(',') {
-                                    if let Some((key, value)) = item.split_once('=') {
-                                        if value.contains('=') {
-                                            continue;
-                                        }
+        Ok(Some(
+            Credential::builder()
+                .username((!user.is_empty()).then_some(user.to_owned()))
+                .password((!pass.is_empty()).then_some(pass.to_owned()))
+                .source(env::try_parse_optional(CREDENTIAL_SOURCE)?)
+                .mechanism(crate::config::impl_enum_based_env_value!(CREDENTIAL_MECHANISM, {
+                    on match fail: |input| "environment variable `${}` was invalid from given input: '{}'" [CREDENTIAL_MECHANISM, input];
 
-                                        doc.insert(key, value.to_owned());
-                                    }
-                                }
-
-                                Some(doc)
-                            }
-
-                            Err(VarError::NotPresent) => None,
-                            Err(VarError::NotUnicode(_)) => {
-                                return Err(eyre!(
-                                    "environment variable `${CREDENTIAL_MECHANISM_PROPERTIES}` was not in valid unicode"
-                                ))
-                            }
-                        })
-                        .build(),
-                ))
-            }
-
-            Err(VarError::NotPresent) => Ok(None),
-            Err(VarError::NotUnicode(_)) => Err(eyre!("environment variable `${CREDENTIAL}` was not in valid unicode")),
-        }
+                    "scram-sha1" => Some(AuthMechanism::ScramSha1);
+                    "scram-sha256" => Some(AuthMechanism::ScramSha256);
+                    "x509" => Some(AuthMechanism::MongoDbX509);
+                    "gssapi" => Some(AuthMechanism::Gssapi);
+                    "plain" => Some(AuthMechanism::Plain);
+                    _ => None;
+                }))
+                .mechanism_properties({
+                    let values = env::try_parse_or::<_, BTreeMap<String, String>>(CREDENTIAL_MECHANISM_PROPERTIES, BTreeMap::new)?;
+                    values.into_iter().map(|(key, value)| (key, Bson::String(value))).collect::<Document>()
+                })
+                .build()
+        ))
     }
 
     ///////////                               WRITE CONCERN                                   \\\\\\\\\\\
 
     fn parse_write_concern() -> eyre::Result<Option<WriteConcern>> {
-        match env!(WRITE_CONCERN) {
-            Ok(value) => Ok(Some(
-                WriteConcern::builder()
-                    .journal(env!(WRITE_CONCERN_JOURNAL, |val| TRUTHY_REGEX.is_match(&val); or false))
-                    .w(match value.parse::<u32>() {
-                        Ok(value) => Acknowledgment::Nodes(value),
-                        Err(_) => match value.as_str() {
-                            "majority" => Acknowledgment::Majority,
-                            s => Acknowledgment::Custom(s.to_owned()),
-                        },
-                    })
-                    .w_timeout(match env!(WRITE_CONCERN_TIMEOUT) {
-                        Ok(value) => Some(humantime::parse_duration(&value)?),
-                        Err(VarError::NotPresent) => None,
-                        Err(VarError::NotUnicode(_)) => {
-                            return Err(eyre!(
-                                "environment variable `${WRITE_CONCERN_TIMEOUT}` was not in valid unicode"
-                            ))
-                        }
-                    })
-                    .build(),
-            )),
+        let Some(value) = env::try_parse_optional::<_, String>(WRITE_CONCERN)? else {
+            return Ok(None);
+        };
 
-            Err(VarError::NotPresent) => Ok(None),
-            Err(VarError::NotUnicode(_)) => {
-                Err(eyre!("environment variable `${WRITE_CONCERN}` is not in valid unicode"))
-            }
-        }
+        Ok(Some(
+            WriteConcern::builder()
+                .journal(util::bool_env(WRITE_CONCERN_JOURNAL)?)
+                .w(value.parse::<u32>().map(Acknowledgment::Nodes).unwrap_or_else(|_| {
+                    match &*value.to_ascii_lowercase() {
+                        "majority" => Acknowledgment::Majority,
+                        s => Acknowledgment::Custom(s.to_owned()),
+                    }
+                }))
+                .w_timeout(match env::try_parse_optional::<_, String>(WRITE_CONCERN_TIMEOUT) {
+                    Ok(Some(value)) => Some(charted_core::serde::Duration::from_str(&value)?.into()),
+                    Ok(None) => None,
+                    Err(e) => return Err(e.into()),
+                })
+                .build(),
+        ))
     }
 
     ///////////                                READ CONCERN                                    \\\\\\\\\\\
 
     fn parse_read_concern() -> eyre::Result<Option<ReadConcern>> {
-        match env!(READ_CONCERN) {
-            Ok(val) => Ok(Some(match &*val.to_ascii_lowercase() {
-                "majority" => ReadConcern::majority(),
-                "linear" | "linearizable" => ReadConcern::linearizable(),
-                "local" => ReadConcern::local(),
-                "avaliable" => ReadConcern::available(),
-                "snapshot" => ReadConcern::snapshot(),
-                s => ReadConcern::custom(s),
-            })),
+        crate::config::impl_enum_based_env_value!(READ_CONCERN, {
+            on match fail: |_input| "(this should never happen)";
 
-            Err(VarError::NotPresent) => Ok(None),
-            Err(VarError::NotUnicode(_)) => {
-                Err(eyre!("environment variable `${WRITE_CONCERN}` is not in valid unicode"))
-            }
-        }
+            "majority" => Ok(Some(ReadConcern::majority()));
+            "linear" | "linearizable" => Ok(Some(ReadConcern::linearizable()));
+            "local" => Ok(Some(ReadConcern::local()));
+            "avaliable" => Ok(Some(ReadConcern::available()));
+            "snapshot" => Ok(Some(ReadConcern::snapshot()));
+            s => Ok(Some(ReadConcern::custom(s)));
+        })
     }
 
     ///////////                             SELECTION CRITERIA                                  \\\\\\\\\\\
 
     fn parse_selection_criteria() -> eyre::Result<Option<SelectionCriteria>> {
-        match env!(SELECTION_CRITERIA) {
-            Ok(res) => match &*res.to_ascii_lowercase() {
-                "primary" => Ok(Some(SelectionCriteria::ReadPreference(ReadPreference::Primary))),
-                "secondary" => Ok(Some(SelectionCriteria::ReadPreference(ReadPreference::Secondary {
+        crate::config::impl_enum_based_env_value!(SELECTION_CRITERIA, {
+            on match fail: |input| "invalid value for `${}`: expected `primary`, `primary-preferred`, `secondary-preferred`, `secondary`, `nearest`: received '{}' instead" [SELECTION_CRITERIA, input];
+
+            "primary" => Ok(Some(SelectionCriteria::ReadPreference(ReadPreference::Primary)));
+            "secondary" => Ok(Some(SelectionCriteria::ReadPreference(ReadPreference::Secondary {
+                options: parse_read_preference_options().map(Some)?,
+            })));
+
+            "primary-preferred" => Ok(Some(SelectionCriteria::ReadPreference(
+                ReadPreference::PrimaryPreferred {
                     options: parse_read_preference_options().map(Some)?,
-                }))),
+                },
+            )));
 
-                "primary-preferred" => Ok(Some(SelectionCriteria::ReadPreference(
-                    ReadPreference::PrimaryPreferred {
-                        options: parse_read_preference_options().map(Some)?,
-                    },
-                ))),
-
-                "secondary-preferred" => Ok(Some(SelectionCriteria::ReadPreference(
-                    ReadPreference::SecondaryPreferred {
-                        options: parse_read_preference_options().map(Some)?,
-                    },
-                ))),
-
-                "nearest" => Ok(Some(SelectionCriteria::ReadPreference(ReadPreference::Nearest {
+            "secondary-preferred" => Ok(Some(SelectionCriteria::ReadPreference(
+                ReadPreference::SecondaryPreferred {
                     options: parse_read_preference_options().map(Some)?,
-                }))),
+                },
+            )));
 
-                input => Err(eyre!("unknown input [{input}] for environment variable `${SELECTION_CRITERIA}` | expected [primary, primary-preferred, secondary, secondary-preferred, nearest]"))
-            },
-
-            Err(VarError::NotPresent) => Ok(None),
-            Err(VarError::NotUnicode(_)) => Err(eyre!("environment variable `${SELECTION_CRITERIA}` was not in valid unicode"))
-        }
+            "nearest" => Ok(Some(SelectionCriteria::ReadPreference(ReadPreference::Nearest {
+                options: parse_read_preference_options().map(Some)?,
+            })));
+        })
     }
 
     fn parse_read_preference_options() -> eyre::Result<ReadPreferenceOptions> {
         Ok(ReadPreferenceOptions::builder()
             .tag_sets(parse_tag_sets()?)
             .max_staleness(parse_max_staleness()?)
-            .hedge(parse_hedge())
+            .hedge(parse_hedge()?)
             .build())
     }
 
-    fn parse_tag_sets() -> eyre::Result<Option<Vec<TagSet>>> {
-        match env!(TAG_SETS) {
-            Ok(value) => {
-                let mut sets = Vec::new();
-                for line in value.split(',') {
+    struct TagSetParse(Vec<TagSet>);
+    impl TryFromEnvValue for TagSetParse {
+        type Error = Infallible;
+
+        fn try_from_env_value(value: String) -> Result<Self, Self::Error> {
+            let mut sets = Vec::new();
+
+            for elem in value.split(',') {
+                let elements = elem.split(';');
+                let mut map = HashMap::new();
+
+                for line in elements {
                     if let Some((key, value)) = line.split_once('=') {
                         if value.contains('=') {
                             continue;
                         }
 
-                        sets.push(TagSet::from_iter([(key.into(), value.into())]));
+                        let key = String::try_from_env_value(key.to_owned()).unwrap();
+                        let value = String::try_from_env_value(value.to_owned()).unwrap();
+
+                        map.insert(key, value);
                     }
                 }
 
-                Ok(Some(sets))
+                sets.push(map);
             }
 
-            Err(VarError::NotPresent) => Ok(None),
-            Err(VarError::NotUnicode(_)) => Err(eyre!("environment variable `${TAG_SETS}` was not in valid unicode")),
+            Ok(Self(sets))
         }
+    }
+
+    fn parse_tag_sets() -> eyre::Result<Option<Vec<TagSet>>> {
+        env::try_parse_or::<_, TagSetParse>(TAG_SETS, || TagSetParse(Vec::new()))
+            .map(|s| Some(s.0))
+            .into_report()
     }
 
     fn parse_max_staleness() -> eyre::Result<Option<Duration>> {
-        match env!(MAX_STALENESS) {
-            Ok(res) => Ok(Some(humantime::parse_duration(&res)?)),
-            Err(VarError::NotPresent) => Ok(None),
-            Err(VarError::NotUnicode(_)) => Err(eyre!(
-                "environment variable `${MAX_STALENESS}` was not in valid unicode"
-            )),
+        match env::try_parse_optional::<_, String>(MAX_STALENESS) {
+            Ok(Some(value)) => Ok(Some(charted_core::serde::Duration::from_str(&value)?.into())),
+            Ok(None) => Ok(None),
+            Err(e) => Err(e.into()),
         }
     }
 
-    fn parse_hedge() -> Option<HedgedReadOptions> {
-        if env!(HEDGE).is_err() {
-            return None;
-        }
+    fn parse_hedge() -> eyre::Result<Option<HedgedReadOptions>> {
+        let Some(_) = env::try_parse_optional::<_, String>(HEDGE)? else {
+            return Ok(None);
+        };
 
-        Some(
-            HedgedReadOptions::builder()
-                .enabled(env!(HEDGE, |val| TRUTHY_REGEX.is_match(&val); or false))
-                .build(),
-        )
+        Ok(Some(
+            HedgedReadOptions::builder().enabled(util::bool_env(HEDGE)?).build(),
+        ))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Config;
-    use azalia::config::{expand_with, TryFromEnv};
+    use azalia::config::env::{TryFromEnv, enter_with};
 
     #[test]
     fn test_filesystem_configuration() {
-        expand_with("UME_STORAGE_SERVICE", "filesystem", || {
+        enter_with("UME_STORAGE_SERVICE", "filesystem", || {
             let config = Config::try_from_env().unwrap();
             let Config::Filesystem(_) = config else { unreachable!() };
         });
 
-        expand_with("UME_STORAGE_SERVICE", "fs", || {
+        enter_with("UME_STORAGE_SERVICE", "fs", || {
             let config = Config::try_from_env().unwrap();
             let Config::Filesystem(_) = config else { unreachable!() };
         });

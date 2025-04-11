@@ -16,16 +16,24 @@
 pub mod logging;
 pub mod storage;
 pub mod tracing;
+pub mod util;
 
-use azalia::config::{env, merge::Merge, FromEnv, TryFromEnv};
+use azalia::config::{
+    env::{self, TryFromEnv},
+    merge::Merge,
+};
 use rand::distr::{Alphanumeric, SampleString};
+use sentry::types::Dsn;
 use serde::{Deserialize, Serialize};
 use std::{
-    env::VarError,
     fs,
     path::{Path, PathBuf},
 };
 use url::Url;
+
+const UPLOADER_KEY: &str = "UME_UPLOADER_KEY";
+const SENTRY_DSN: &str = "UME_SENTRY_DSN";
+const BASE_URL: &str = "UME_BASE_URL";
 
 #[derive(Debug, Clone, Serialize, Deserialize, Merge)]
 pub struct Config {
@@ -37,7 +45,7 @@ pub struct Config {
     pub base_url: Url,
 
     #[serde(default, skip_serializing_if = "Option::is_some")]
-    pub sentry_dsn: Option<String>,
+    pub sentry_dsn: Option<Dsn>,
 
     #[serde(default)]
     pub logging: logging::Config,
@@ -53,34 +61,19 @@ pub struct Config {
 }
 
 fn __default_base_url() -> Url {
-    url::Url::parse("http://localhost:3621").expect("failed to parse as url")
-}
-
-fn __merge_urls(url: &mut url::Url, right: url::Url) {
-    if *url != right {
-        *url = right;
-    }
+    Url::parse("http://localhost:3621").expect("failed to parse as url")
 }
 
 impl TryFromEnv for Config {
-    type Output = Config;
     type Error = eyre::Report;
 
-    fn try_from_env() -> Result<Self::Output, Self::Error> {
+    fn try_from_env() -> Result<Self, Self::Error> {
         Ok(Config {
-            uploader_key: env!("UME_UPLOADER_KEY").unwrap_or_default(),
-            sentry_dsn: env!("UME_SENTRY_DSN", optional),
-            base_url: match env!("UME_BASE_URL") {
-                Ok(val) => val.parse::<Url>()?,
-                Err(VarError::NotPresent) => __default_base_url(),
-                Err(_) => {
-                    return Err(eyre!(
-                        "environment variable `UME_BASE_URL` was not a valid utf-8 string"
-                    ))
-                }
-            },
+            uploader_key: env::try_parse(UPLOADER_KEY).unwrap_or_default(),
+            sentry_dsn: env::try_parse_optional(SENTRY_DSN)?,
+            base_url: env::try_parse_or(BASE_URL, __default_base_url)?,
 
-            logging: logging::Config::from_env(),
+            logging: logging::Config::try_from_env()?,
             storage: storage::Config::try_from_env()?,
             tracing: tracing::Config::try_from_env()?,
             server: crate::server::Config::try_from_env()?,
@@ -166,10 +159,56 @@ fn __generated_uploader_key() -> String {
     Alphanumeric.sample_string(&mut rand::rng(), 32)
 }
 
+macro_rules! impl_enum_based_env_value {
+    ($env:expr, {
+        on match fail: |$input:ident| $error:literal$( [$($arg:expr),*])?;
+
+        $($field:pat => $value:expr;)*
+    }) => {
+        match ::azalia::config::env::try_parse_or_else::<_, ::std::string::String>($env, ::core::default::Default::default()) {
+            Ok($input) => match &*$input.to_ascii_lowercase() {
+                $($field => $value,)*
+
+                #[allow(unreachable_patterns)]
+                _ => ::eyre::bail!($error$(, $($arg),*)?)
+            }
+
+            Err(::azalia::config::env::TryParseError::System(::std::env::VarError::NotUnicode(_))) => {
+                ::eyre::bail!("environment variable `${}` couldn't be loaded due to invalid unicode data", $env)
+            }
+
+            Err(e) => return Err(::core::convert::Into::into(e)),
+        }
+    };
+
+    ($env:expr, {
+        on match fail: $other:expr;
+
+        $($field:pat => $value:expr;)*
+    }) => {
+        match ::azalia::config::env::try_parse_or_else::<_, ::std::string::String>($env, ::core::default::Default::default()) {
+            Ok(input) => match &*input.to_ascii_lowercase() {
+                $($field => $value,)*
+
+                #[allow(unreachable_patterns)]
+                _ => ::core::result::Result::Ok($other)
+            }
+
+            Err(::azalia::config::env::TryParseError::System(::std::env::VarError::NotUnicode(_))) => {
+                ::eyre::bail!("environment variable `${}` couldn't be loaded due to invalid unicode data", $env)
+            }
+
+            Err(e) => Err(::core::convert::Into::into(e)),
+        }
+    };
+}
+
+pub(crate) use impl_enum_based_env_value;
+
 #[cfg(test)]
 mod tests {
     use super::Config;
-    use azalia::config::TryFromEnv;
+    use azalia::config::env::TryFromEnv;
 
     #[test]
     fn try_from_env() {

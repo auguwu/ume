@@ -15,7 +15,7 @@
 
 use crate::cli::{config::Config, parse_either};
 use arboard::ImageData;
-use azalia::remi::core::Bytes;
+use azalia::{config::env, remi::core::Bytes};
 use chrono::Local;
 use color_eyre::Section;
 use either::Either;
@@ -29,7 +29,7 @@ use std::{
     fs::{self, remove_file},
     io::Cursor,
     path::{Path, PathBuf},
-    process::{exit, Command, Stdio},
+    process::{Command, Stdio, exit},
 };
 use url::Url;
 
@@ -161,15 +161,40 @@ pub async fn execute(mut cmd: Cmd) -> eyre::Result<()> {
         .unwrap();
 
     let contents = fs::read(&file).map(Bytes::from)?;
+
+    let ct = azalia::remi::fs::default_resolver(&contents).parse::<mime::Mime>()?;
+    assert!(ct.type_() == mime::IMAGE);
+
+    let ext = match ct.subtype() {
+        mime::PNG => "png",
+        mime::JPEG => "jpg",
+        mime::GIF => "gif",
+        mime::SVG => "svg",
+        _ => unreachable!(),
+    };
+
     let res = client
         .post(server.join("images/upload")?)
         .header("Authorization", &uploader_key)
-        .multipart(Form::new().part("fdata", Part::stream(contents.clone())))
+        .multipart(Form::new().part(
+            "fdata",
+            Part::stream(contents.clone()).file_name(format!("unknown.{ext}")),
+        ))
         .send()
         .await?;
 
     let status = res.status();
-    let data: Value = res.json().await?;
+    let bytes = res.bytes().await?;
+
+    let data: Value = match serde_json::from_slice(&bytes) {
+        Ok(data) => data,
+        Err(e) => {
+            error!(error = %e, status.code = %status, "failed to decode data from server into JSON");
+            trace!("{}", String::from_utf8_lossy(&bytes));
+
+            return Err(e.into());
+        }
+    };
 
     if !data.is_object() {
         error!(%status, "unexpected JSON payload from server: {}", data);
@@ -217,7 +242,11 @@ pub async fn execute(mut cmd: Cmd) -> eyre::Result<()> {
         return Ok(());
     }
 
-    let url = obj["filename"].as_str().unwrap();
+    let mut url = obj["filename"].as_str().unwrap().to_owned();
+    if !url.starts_with(server.as_str()) {
+        url = server.join(&format!("images/{url}"))?.to_string();
+    }
+
     if cmd.no_copy || clipboard.is_none() {
         eprintln!("{url}");
 
@@ -238,11 +267,11 @@ pub async fn execute(mut cmd: Cmd) -> eyre::Result<()> {
         clipboard
             .set()
             .wait_until(Instant::now() + Duration::from_secs(1))
-            .text(url)?;
+            .text(&url)?;
     }
 
     #[cfg(not(target_os = "linux"))]
-    clipboard.set_text(url)?;
+    clipboard.set_text(&url)?;
 
     info!("copied to clipboard, deleting image");
     fs::remove_file(file).context("unable to delete file")?;
@@ -269,7 +298,7 @@ fn get_uploader_info(
                     return Ok((url.clone(), password.to_owned()));
                 }
 
-                bail!("expected `--uploader-key` to be present if `<SERVER>` argument is a valid URI")
+                bail!("expected `<UPLOADER KEY>` argument to be present if `<SERVER>` argument is a valid URI")
             }
 
             Ok((url.to_owned(), uploader_key.clone().unwrap()))
@@ -351,6 +380,12 @@ fn build_process(tmpdir: &Path, binary: PathBuf, args: Vec<OsString>) -> eyre::R
         cmd.stdout(file.try_clone()?)
             .stderr(Stdio::inherit())
             .stdin(Stdio::null());
+
+        // Inject QT's Wayland flag if we are on Wayland
+        // TODO(@auguwu): better detection?
+        if env::try_parse::<_, String>("WAYLAND_DISPLAY").is_ok() {
+            cmd.env("QT_QPA_PLATFORM", "wayland");
+        }
     } else {
         cmd.arg(format!("--file={}", filename.display()));
     }

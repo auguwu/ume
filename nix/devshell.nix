@@ -13,32 +13,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 {pkgs}: let
+  inherit (pkgs) mkShell lib stdenv darwin;
+  inherit (lib) makeLibraryPath optional;
+
   common = import ./common.nix;
-  rustToolchain = common.mkRustPlatform pkgs.rust-bin;
-  rustflags = common.rustflags pkgs.stdenv;
+  rustflags = common.rustflags stdenv;
+  rpath = makeLibraryPath (with pkgs; [openssl]);
+  darwinNativeBuildInputs = with darwin.apple_sdk.frameworks; [
+    CoreFoundation
+    SystemConfiguration
+  ];
+
+  linuxNativeBuildInputs = with pkgs; [mold lldb];
+
+  nativeBuildInputs = (with pkgs; [pkg-config]) ++ linuxNativeBuildInputs ++ darwinNativeBuildInputs;
+
+  buildInputs = with pkgs;
+    [
+      cargo-upgrades
+      cargo-nextest
+      cargo-machete
+      cargo-expand
+      cargo-deny
+
+      (common.mkRustPlatform rust-bin)
+      openssl
+      git
+    ]
+    ++ (optional stdenv.isLinux [glibc]);
 in
-  with pkgs;
-    mkShell {
-      LD_LIBRARY_PATH = lib.makeLibraryPath [openssl];
+  mkShell {
+    inherit buildInputs nativeBuildInputs;
 
-      nativeBuildInputs =
-        [pkg-config]
-        ++ (lib.optional stdenv.isLinux [mold lldb gdb])
-        ++ (lib.optional stdenv.isDarwin [darwin.apple_sdk.frameworks.CoreFoundation]);
+    LD_LIBRARY_PATH = rpath;
 
-      buildInputs =
-        [
-          cargo-machete
-          cargo-expand
-          cargo-deny
-
-          rustToolchain
-          openssl
-          git
-        ]
-        ++ (lib.optional stdenv.isLinux [glibc]);
-
-      shellHook = ''
-        export RUSTFLAGS="${rustflags} $RUSTFLAGS"
-      '';
-    }
+    shellHook = ''
+      export RUSTFLAGS="${rustflags} $RUSTFLAGS"
+    '';
+  }

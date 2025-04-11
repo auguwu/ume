@@ -13,10 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use azalia::config::{env, merge::Merge, FromEnv};
-use azalia::TRUTHY_REGEX;
+use azalia::config::{
+    env::{self, TryFromEnv},
+    merge::Merge,
+};
 use serde::{Deserialize, Serialize};
 use tracing::Level;
+
+pub const LEVEL: &str = "UME_LOG_LEVEL";
+pub const JSON: &str = "UME_LOG_JSON";
 
 #[derive(Debug, Clone, Merge, Serialize, Deserialize)]
 pub struct Config {
@@ -41,21 +46,14 @@ impl Default for Config {
     }
 }
 
-impl FromEnv for Config {
-    type Output = Config;
+impl TryFromEnv for Config {
+    type Error = eyre::Report;
 
-    fn from_env() -> Self::Output {
-        Config {
-            json: env!("UME_LOG_JSON", |val| TRUTHY_REGEX.is_match(&val); or false),
-            level: env!("UME_LOG_LEVEL", |val| match val.to_lowercase().as_str() {
-                "trace" => Level::TRACE,
-                "debug" => Level::DEBUG,
-                "error" => Level::ERROR,
-                "warn" => Level::WARN,
-                "info" => Level::INFO,
-                _ => __default_level(),
-            }; or __default_level()),
-        }
+    fn try_from_env() -> Result<Self, Self::Error> {
+        Ok(Config {
+            level: env::try_parse_or(LEVEL, __default_level)?,
+            json: env::try_parse_or_else(JSON, false)?,
+        })
     }
 }
 

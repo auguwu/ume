@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use crate::cli::Program;
-use azalia::config::env;
+use azalia::config::env::{self, TryParseError};
 use clap::CommandFactory;
 use clap_complete::Shell;
 use std::{io, path::PathBuf};
@@ -27,13 +27,10 @@ pub struct Cmd {
 }
 
 pub fn execute(cmd: Cmd) -> eyre::Result<()> {
-    let default_shell = match env!("SHELL", |val| val.parse::<PathBuf>().unwrap()) {
-        Ok(path) => match Shell::from_shell_path(path) {
-            Some(shell) => shell,
-            None => Shell::Bash,
-        },
-        Err(std::env::VarError::NotPresent) => Shell::Bash,
-        Err(_) => return Err(eyre!("received invalid unicode for `$SHELL` environment variable")),
+    let default_shell = match env::try_parse_or_else::<_, PathBuf>("SHELL", "/usr/bin/sh".into()) {
+        Ok(path) => Shell::from_shell_path(path).unwrap_or(Shell::Bash),
+        Err(TryParseError::System(_)) => bail!("received invalid unicode for `$SHELL`"),
+        Err(TryParseError::Parse(_)) => unreachable!(), // it should never fail
     };
 
     let shell = cmd.shell.unwrap_or(default_shell);

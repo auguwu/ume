@@ -13,19 +13,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use azalia::config::{env, merge::Merge, TryFromEnv};
-use eyre::Context;
+use azalia::config::{
+    env::{self, TryFromEnv},
+    merge::Merge,
+};
+use eyre::eyre;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+pub const CERT_KEY: &str = "UME_SERVER_SSL_CERT_KEY";
+pub const ENABLED: &str = "UME_SERVER_SSL";
+pub const CERT: &str = "UME_SERVER_SSL_CERTIFICATE";
+
 #[derive(Debug, Clone, Merge, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
     /// Location to a certificate private key.
-    #[merge(skip)]
     pub cert_key: PathBuf,
 
     /// Location to a certificate public key.
-    #[merge(skip)]
     pub cert: PathBuf,
 }
 
@@ -40,18 +46,12 @@ impl Default for Config {
 }
 
 impl TryFromEnv for Config {
-    type Output = Config;
     type Error = eyre::Report;
 
-    fn try_from_env() -> Result<Self::Output, Self::Error> {
+    fn try_from_env() -> Result<Self, Self::Error> {
         Ok(Config {
-            cert_key: env!("UME_SERVER_SSL_CERT_KEY")
-                .map(PathBuf::from)
-                .context("unable to load up `UME_SERVER_SSL_CERT_KEY` env")?,
-
-            cert: env!("UME_SERVER_SSL_CERT")
-                .map(PathBuf::from)
-                .context("unable to load up `UME_SERVER_SSL_CERT` env")?,
+            cert_key: env::try_parse(CERT_KEY).map_err(|err| eyre!("unable to load `${}`: {}", CERT_KEY, err))?,
+            cert: env::try_parse(CERT).map_err(|err| eyre!("unable to load `${}`: {}", CERT, err))?,
         })
     }
 }

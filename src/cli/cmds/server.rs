@@ -14,20 +14,18 @@
 // limitations under the License.
 
 use crate::config::{self, Config};
-use azalia::log::{writers, WriteLayer};
-use opentelemetry::{trace::TracerProvider, InstrumentationScope, KeyValue};
+use azalia::log::{WriteLayer, writers};
+use opentelemetry::{InstrumentationScope, KeyValue, trace::TracerProvider};
 use opentelemetry_otlp::SpanExporter;
 use opentelemetry_sdk::trace::SdkTracerProvider;
 use owo_colors::{OwoColorize, Stream::Stdout};
-use sentry::types::Dsn;
 use std::{
     borrow::Cow,
     io::{self, Write as _},
     path::PathBuf,
-    str::FromStr,
 };
 use tracing::level_filters::LevelFilter;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
+use tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt};
 
 /// Starts a Ume server
 #[derive(Debug, Clone, clap::Parser)]
@@ -64,13 +62,11 @@ pub async fn execute(cmd: Cmd) -> eyre::Result<()> {
             config::tracing::Config::Sentry(config::tracing::sentry::Config { sample_set }) => sample_set,
             _ => 0.5,
         },
+
         attach_stacktrace: true,
         server_name: Some(Cow::Borrowed("ume")),
         release: Some(Cow::Borrowed(crate::version())),
-        dsn: config
-            .sentry_dsn
-            .as_ref()
-            .map(|dsn| Dsn::from_str(dsn).expect("valid Sentry DSN")),
+        dsn: config.sentry_dsn.clone(),
 
         ..Default::default()
     });

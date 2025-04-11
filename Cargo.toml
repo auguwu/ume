@@ -16,9 +16,9 @@
 [package]
 name = "ume"
 description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-version = "4.1.1"
+version = "4.2.0"
 authors = ["Noel Towa <cutie@floofy.dev>"]
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/auguwu/ume"
 
 [[bin]]
@@ -46,19 +46,18 @@ dotenvy = "0.15.7"
 either = "1.14.0"
 etcetera = "0.10.0"
 eyre = "0.6.12"
-humantime = "2.1.0"
 image = "0.25.5"
 mimalloc = "0.1.43"
 mime = "0.3.17"
 multer = "3.1.0"
 notify-rust = { version = "4.11.5", optional = true }
 num_cpus = "1.16.0"
-opentelemetry = "0.28.0"
-opentelemetry-otlp = { version = "0.28.0", features = [
+opentelemetry = "0.29.1"
+opentelemetry-otlp = { version = "0.29.0", features = [
     "http-proto",
     "grpc-tonic",
 ] }
-opentelemetry_sdk = "0.28.0"
+opentelemetry_sdk = "0.29.0"
 owo-colors = "4.2.0"
 rand = "0.9.0"
 reqwest = { version = "0.12.12", default-features = false, features = [
@@ -69,44 +68,48 @@ reqwest = { version = "0.12.12", default-features = false, features = [
     "macos-system-configuration",
     "rustls-tls",
 ] }
-sentry = "0.36.0"
-sentry-tower = { version = "0.36.0", features = ["axum", "http"] }
-sentry-tracing = "0.36.0"
+sentry = "0.37.0"
+sentry-tower = { version = "0.37.0", features = ["axum", "http"] }
+sentry-tracing = "0.37.0"
 serde = { version = "1.0.218", features = ["derive"] }
 serde_json = "1.0.139"
-tokio = { version = "1.44.0", features = ["rt", "macros", "net", "signal"] }
+tokio = { version = "1.44.2", features = ["rt", "macros", "net", "signal"] }
 toml = "0.8.20"
 tower-http = { version = "0.6.2", features = ["catch-panic"] }
 tracing = "0.1.41"
-tracing-opentelemetry = "0.29.0"
+tracing-opentelemetry = "0.30.0"
 tracing-subscriber = { version = "0.3.19", features = ["tracing-log"] }
 url = "2.5.4"
 which = "7.0.2"
 
 [dependencies.azalia]
-version = "0.1.0"
-git = "https://github.com/Noelware/azalia"
-rev = "f4600130658cfe523350222717b4530ce4d30123"
+version = "0.1.5"
 features = [
-    "lazy",
     "regex",
 
     "config",
-    "config-url",
-    "config-derive",
+    "config+url",
+    "config+sentry",
+    "config+macros",
+    "config+tracing",
 
     "log",
-    "log-writers",
+    "log+writers",
 
     "remi",
-    "remi-all",
-    "remi-serde",
-    "remi-tracing",
-    "remi-export-crates",
+    "remi+all",
+    "remi+serde",
+    "remi+tracing",
+    "remi+export-crates",
 
     "serde",
-    "serde-tracing",
+    "serde+tracing",
 ]
+
+[dependencies.charted-core]
+version = "0.1.0"
+git = "https://github.com/charted-dev/charted"
+rev = "b6354382429e622e17c20072f685db736075e6c3"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libsystemd = { version = "0.7.0", optional = true }

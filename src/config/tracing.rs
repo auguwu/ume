@@ -16,9 +16,11 @@
 pub mod otel;
 pub mod sentry;
 
-use azalia::config::{env, merge::Merge, FromEnv, TryFromEnv};
+use azalia::config::{env::TryFromEnv, merge::Merge};
 use eyre::Report;
 use serde::{Deserialize, Serialize};
+
+pub const BACKEND: &str = "UME_TRACING_BACKEND";
 
 /// Configures the use of OpenTelemetry or Sentry to trace calls from [`tracing`]. Tracing can also
 /// be disabled with `tracing = "disabled"` or not adding it into your configuration file as it is
@@ -26,18 +28,15 @@ use serde::{Deserialize, Serialize};
 ///
 /// ## Example (OpenTelemetry)
 /// ```hcl
-/// tracing "opentelemetry" {
-///   labels = { "a": "b" }
-///   kind   = "otel+grpc"
-///   url    = "grpc://localhost:4318"
-/// }
+/// [tracing.opentelemetry]
+/// labels = { a = "b" }
+/// url = "grpc://localhost:4318"
 /// ```
 ///
 /// ## Example (Sentry)
 /// ```hcl
-/// tracing "sentry" {
-///   sample_rate = 0.7
-/// }
+/// [tracing.sentry]
+/// sample_set = 0.65
 /// ```
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -64,21 +63,18 @@ pub enum Config {
 }
 
 impl TryFromEnv for Config {
-    type Output = Config;
     type Error = Report;
 
-    fn try_from_env() -> Result<Self::Output, Self::Error> {
-        match env!("UME_TRACING_BACKEND") {
-            Ok(res) => match res.as_str() {
-                "opentelemetry" | "otel" => Ok(Config::OpenTelemetry(otel::Config::try_from_env()?)),
+    fn try_from_env() -> Result<Self, Self::Error> {
+        crate::config::impl_enum_based_env_value!(BACKEND, {
+            on match fail: Config::Disabled;
 
-                "sentry" => Ok(Config::Sentry(sentry::Config::from_env())),
-                "" => Ok(Config::Disabled),
-                out => Err(eyre!(format!("unknown tracing backend [{out}]"))),
-            },
-            Err(std::env::VarError::NotPresent) => Ok(Config::Disabled),
-            Err(e) => Err(Report::from(e)),
-        }
+            "opentelemetry" | "otel" => Ok(Config::OpenTelemetry(otel::Config::try_from_env()?));
+            "sentry" => Ok(Config::Sentry(sentry::Config::try_from_env()?));
+            "" => Ok(Config::Disabled);
+
+            out => bail!("unknown tracing backend: {}", out);
+        })
     }
 }
 

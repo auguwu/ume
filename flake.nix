@@ -19,9 +19,12 @@
     systems.url = "github:nix-systems/default";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    noelware = {
+      url = "github:Noelware/nixpkgs-noelware";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     flake-compat = {
@@ -34,10 +37,15 @@
     nixpkgs,
     systems,
     rust-overlay,
+    noelware,
     ...
   }: let
     eachSystem = nixpkgs.lib.genAttrs (import systems);
-    overlays = [(import rust-overlay)];
+    overlays = [
+      (import rust-overlay)
+      (import noelware)
+    ];
+
     nixpkgsFor = system:
       import nixpkgs {
         inherit system overlays;

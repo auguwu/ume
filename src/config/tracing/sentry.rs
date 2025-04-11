@@ -13,8 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use azalia::config::{env, merge::Merge, FromEnv};
+use azalia::config::{
+    env::{self, TryFromEnv},
+    merge::Merge,
+};
 use serde::{Deserialize, Serialize};
+use std::convert::Infallible;
+
+pub const SAMPLE_SET: &str = "UME_TRACING_SENTRY_SAMPLE_SET";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Merge)]
 pub struct Config {
@@ -22,15 +28,13 @@ pub struct Config {
     pub sample_set: f32,
 }
 
-impl FromEnv for Config {
-    type Output = Config;
+impl TryFromEnv for Config {
+    type Error = Infallible;
 
-    fn from_env() -> Self::Output {
-        Config {
-            sample_set: env!("UME_TRACING_SENTRY_SAMPLE_SET", |val| val.parse::<f32>())
-                .map(|x| x.unwrap_or_else(|_| __default_sample_set()))
-                .unwrap_or_else(|_| __default_sample_set()),
-        }
+    fn try_from_env() -> Result<Self, Self::Error> {
+        Ok(Config {
+            sample_set: env::try_parse_or(SAMPLE_SET, __default_sample_set).unwrap(),
+        })
     }
 }
 

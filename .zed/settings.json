@@ -28,6 +28,20 @@
                     "command": "clippy"
                 }
             }
+        },
+        "nil": {
+            "settings": {
+                "formatting": {
+                    "command": ["nix", "fmt", "--", "--"]
+                },
+                "nix": {
+                    "maxMemoryMB": 4120,
+                    "flake": {
+                        "autoArchive": true,
+                        "autoEvalInputs": true
+                    }
+                }
+            }
         }
     }
 }
