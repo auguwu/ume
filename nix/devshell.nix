@@ -25,7 +25,6 @@
   ];
 
   linuxNativeBuildInputs = with pkgs; [mold lldb];
-
   nativeBuildInputs = (with pkgs; [pkg-config]) ++ linuxNativeBuildInputs ++ darwinNativeBuildInputs;
 
   buildInputs = with pkgs;
@@ -38,6 +37,7 @@
 
       (common.mkRustPlatform rust-bin)
       openssl
+      bun
       git
     ]
     ++ (optional stdenv.isLinux [glibc]);

@@ -15,239 +15,227 @@
 
 name: Release
 on:
-    release:
-        types:
-            - published
+    push:
+        tags:
+            - 'v?[0-9]+.[0-9]+.[0-9]'
 permissions:
     packages: write
     contents: write
 jobs:
     binary:
-        name: "Build `ume` binary (${{matrix.runner}}: ${{matrix.target}})"
+        name: "Rust / Build (${{matrix.runner}}: ${{matrix.target}})"
         runs-on: ${{matrix.runner}}
         strategy:
             fail-fast: true
             matrix:
                 include:
-                    # ume (Linux x86_64)
-                    - runner: ubuntu-latest
+                    - runner: ubuntu-24.04
                       rustflags: "-Ctarget-cpu=native -Clink-arg=-fuse-ld=mold"
                       target: x86_64-unknown-linux-gnu
-                      cross: false
-                      flags: ""
+                      flags: "--all-features"
                       ext: ''
 
-                    # ume (Linux ARM64)
-                    - runner: ubuntu-latest
-                      target: aarch64-unknown-linux-gnu
-                      rustflags: ''
-                      cross: true
-                      flags: ""
-                      ext: ''
-
-                    # ume (macOS x86_64 ~ Intel)
                     - runner: macos-13
                       target: x86_64-apple-darwin
                       rustflags: "-Ctarget-cpu=native"
-                      cross: false
-                      flags: ""
+                      flags: "--features os-notifier"
                       ext: ''
 
-                    # ume (macOS ARM64 ~ Apple Silicon)
                     - runner: macos-latest
                       target: aarch64-apple-darwin
-                      rustflags: '-Ctarget-cpu=native'
-                      cross: false
-                      flags: ""
+                      rustflags: "-Ctarget-cpu=native"
+                      flags: "--features os-notifier"
                       ext: ''
 
-                    # ume (Windows x86_64)
                     - runner: windows-latest
-                      target: x86_64-pc-windows-msvc
+                      target: aarch64-apple-darwin
                       rustflags: "-Ctarget-cpu=native"
-                      flags: ""
-                      cross: false
-                      ext: .exe
+                      flags: "--features os-notifier"
+                      ext: ''
         steps:
             - uses: actions/checkout@v4
             - uses: auguwu/git-tag-action@master
               id: tag
             - run: rm rust-toolchain.toml
-            - uses: dtolnay/rust-toolchain@master
+            - uses: dtolnay/rust-toolchain@stable
               with:
-                  toolchain: stable
-                  components: clippy, rustfmt
-                  target: ${{matrix.target}}
+                target: ${{matrix.target}}
 
-            - uses: taiki-e/cache-cargo-install-action@v2
-              if: matrix.cross
-              with:
-                tool: cross
+            - name: "Windows: Setup Vcpkg"
+              if: matrix.runner == 'windows-latest'
+              run: .ci/windows/Setup-Vcpkg.ps1
 
-            - if: matrix.runner == 'ubuntu-latest'
-              uses: rui314/setup-mold@v1
-
-            - uses: Swatinem/rust-cache@v2
-
-            - if: matrix.runner == 'windows-latest'
-              id: vcpkg
-              run: |
-                  echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-                  echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-            - if: matrix.runner == 'windows-latest'
+            - name: "Windows: Cache Vcpkg"
+              if: matrix.runner == 'windows-latest'
               uses: actions/cache@v4
               with:
-                  key: vcpkg-cache
-                  path: |
-                      ${{steps.vcpkg.outputs.VCPKG_ROOT}}
+                key: vcpkg-cache
+                path: ${{env.VCPKG_ROOT}}
 
-            - if: matrix.runner == 'windows-latest'
-              run: vcpkg install openssl:x64-windows-static-md
+            - name: "Windows: Install Libraries"
+              if: matrix.runner == 'windows-latest'
+              run: .ci/windows/Install-Libraries.ps1
 
-            # On Windows, we'll also need nasm for use with BoringSSL via aws-lc-sys.
-            - uses: ilammy/setup-nasm@v1
+            - name: "Windows: Setup NASM for BoringSSL via `aws-lc-sys`"
+              uses: ilammy/setup-nasm@v1
               if: matrix.runner == 'windows-latest'
 
-            - name: Build binary
-              run: ./scripts/release${{matrix.runner == 'windows-latest' && '.ps1' || '.sh'}}
-              env:
-                BUILDTARGET: ${{matrix.target}}
-                BUILDFLAGS: ${{matrix.flags}}
-                RUSTFLAGS: ${{matrix.rustflags}}
-                CARGO: "${{matrix.cross && 'cross' || 'cargo'}}"
+            - name: Build!
+              shell: bash
+              run: |
+                directory=".ci/${RUNNER_OS,,}"
 
-            - name: Upload ume artifacts
-              uses: softprops/action-gh-release@v2
+                if [ "$RUNNER_OS" == "Windows" ]; then
+                    powershell "$directory"/Release.ps1 -BuildFlags "${{matrix.flags}}"
+                else
+                    BUILDFLAGS="${{matrix.flags}} --target=${{matrix.target}}" \
+                        RUSTFLAGS="${{matrix.rustflags}}"                      \
+                        "$directory"/release
+                fi
+
+            - uses: softprops/action-gh-release@v2
               with:
                 files: ./.result/ume-*
 
-            - name: Upload binary to S3 (${{steps.tag.outputs.version}})
-              uses: Noelware/s3-action@2.3.1
+            - name: "S3 :: Upload (${{steps.tag.outputs.version}})"
+              uses: Noelware/s3-action@2.3.0
               with:
                 enforce-path-access-style: true
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
-                secret-key: ${{secrets.S3_SECRET_KEY}}
                 path-format: $(prefix)/ume/${{steps.tag.outputs.version}}/$(file)
                 directories: .result
+                secret-key: ${{secrets.S3_SECRET_KEY}}
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
                 region: us-east-1
                 bucket: august
 
-            - name: Upload binary to S3 (latest)
-              uses: Noelware/s3-action@2.3.1
+            - name: "S3 :: Upload (latest)"
+              uses: Noelware/s3-action@2.3.0
               with:
                 enforce-path-access-style: true
                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
-                secret-key: ${{secrets.S3_SECRET_KEY}}
                 path-format: $(prefix)/ume/latest/$(file)
                 directories: .result
+                secret-key: ${{secrets.S3_SECRET_KEY}}
                 endpoint: ${{secrets.S3_ENDPOINT}}
                 prefix: /noel/artifacts
                 region: us-east-1
                 bucket: august
-    nix-build:
-        name: Nix Build
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout source code
-              uses: actions/checkout@v4
 
-            - name: Install `nix` binary
-              uses: cachix/install-nix-action@v31
-              with:
-                  nix_path: nixpkgs=channel:nixos-unstable
+#             - name: Upload binary to S3 (latest)
+#               uses: Noelware/s3-action@2.3.0
+#               with:
+#                 enforce-path-access-style: true
+#                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
+#                 secret-key: ${{secrets.S3_SECRET_KEY}}
+#                 path-format: $(prefix)/ume/latest/$(file)
+#                 directories: .result
+#                 endpoint: ${{secrets.S3_ENDPOINT}}
+#                 prefix: /noel/artifacts
+#                 region: us-east-1
+#                 bucket: august
+#     nix-build:
+#         name: Nix Build
+#         runs-on: ubuntu-latest
+#         steps:
+#             - name: Checkout source code
+#               uses: actions/checkout@v4
 
-            - name: Setup Cachix
-              uses: cachix/cachix-action@v16
-              with:
-                  name: noel
-                  authToken: ${{secrets.CACHIX_AUTH_TOKEN}}
+#             - name: Install `nix` binary
+#               uses: cachix/install-nix-action@v31
+#               with:
+#                   nix_path: nixpkgs=channel:nixos-unstable
 
-            - name: Build `ume` binary
-              run: nix build .#ume
-    docker:
-        name: Build Docker Image [${{matrix.dockerfile}}]
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: true
-            matrix:
-                dockerfile:
-                    - debian
-                    - alpine
-                include:
-                    - dockerfile: debian
-                      suffix: ""
-                      updateDescription: true
-                    - dockerfile: alpine
-                      suffix: "-alpine"
-                      updateDescription: false
-        steps:
-            - name: Checkout source code
-              uses: actions/checkout@v4
+#             - name: Setup Cachix
+#               uses: cachix/cachix-action@v16
+#               with:
+#                   name: noel
+#                   authToken: ${{secrets.CACHIX_AUTH_TOKEN}}
 
-            - name: Get Git tag
-              uses: auguwu/git-tag-action@master
-              id: tag
+#             - name: Build `ume` binary
+#               run: nix build .#ume
+#     docker:
+#         name: Build Docker Image [${{matrix.dockerfile}}]
+#         runs-on: ubuntu-latest
+#         strategy:
+#             fail-fast: true
+#             matrix:
+#                 dockerfile:
+#                     - debian
+#                     - alpine
+#                 include:
+#                     - dockerfile: debian
+#                       suffix: ""
+#                       updateDescription: true
+#                     - dockerfile: alpine
+#                       suffix: "-alpine"
+#                       updateDescription: false
+#         steps:
+#             - name: Checkout source code
+#               uses: actions/checkout@v4
 
-            - name: Get commit hash
-              id: commit-hash
-              run: echo "commit=$(git rev-parse --short=8 $GITHUB_SHA)" >> $GITHUB_OUTPUT
+#             - name: Get Git tag
+#               uses: auguwu/git-tag-action@master
+#               id: tag
 
-            - name: Login into Docker Hub
-              uses: docker/login-action@v3
-              with:
-                username: auguwu
-                password: ${{ secrets.DOCKER_PASSWORD }}
+#             - name: Get commit hash
+#               id: commit-hash
+#               run: echo "commit=$(git rev-parse --short=8 $GITHUB_SHA)" >> $GITHUB_OUTPUT
 
-            - name: Login into GitHub Container Registry
-              uses: docker/login-action@v3
-              with:
-                registry: ghcr.io
-                username: ${{github.repository_owner}}
-                password: ${{secrets.GH_TOKEN}}
+#             - name: Login into Docker Hub
+#               uses: docker/login-action@v3
+#               with:
+#                 username: auguwu
+#                 password: ${{ secrets.DOCKER_PASSWORD }}
 
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
+#             - name: Login into GitHub Container Registry
+#               uses: docker/login-action@v3
+#               with:
+#                 registry: ghcr.io
+#                 username: ${{github.repository_owner}}
+#                 password: ${{secrets.GH_TOKEN}}
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
+#             - name: Set up QEMU
+#               uses: docker/setup-qemu-action@v3
 
-            - name: Build and push!
-              uses: docker/build-push-action@v6
-              with:
-                  provenance: false
-                  platforms: linux/amd64,linux/arm64
-                  cache-from: type=gha
-                  cache-to: type=gha
-                  context: .
-                  file: ./distribution/docker/${{matrix.dockerfile}}.Dockerfile
-                  push: true
-                  sbom: true
-                  tags: |
-                      ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
-                      ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
-                      ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
-                      ghcr.io/auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
-                      auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
-                      auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
-                      auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
-                      auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
-                  labels: |
-                      org.opencontainers.image.title=ume
-                      org.opencontainers.image.description="🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-                      org.opencontainers.image.version=${{steps.tag.outputs.version}}
-                      org.opencontainers.image.revision=${{steps.commit-hash.outputs.commit}}
-                      org.opencontainers.image.licenses=Apache-2.0
-                      org.opencontainers.image.documentation=https://floofy.dev/oss/ume
-                      org.opencontainers.image.source=https://github.com/auguwu/ume/tree/${{steps.commit-hash.outputs.commit}}
+#             - name: Set up Docker Buildx
+#               uses: docker/setup-buildx-action@v3
 
-            - name: Update Docker Hub description
-              uses: peter-evans/dockerhub-description@v4
-              if: matrix.updateDescription
-              with:
-                username: auguwu
-                password: ${{secrets.DOCKER_PASSWORD}}
-                repository: auguwu/ume
-                readme-filepath: ./distribution/docker/README.md
+#             - name: Build and push!
+#               uses: docker/build-push-action@v6
+#               with:
+#                   provenance: false
+#                   platforms: linux/amd64,linux/arm64
+#                   cache-from: type=gha
+#                   cache-to: type=gha
+#                   context: .
+#                   file: ./distribution/docker/${{matrix.dockerfile}}.Dockerfile
+#                   push: true
+#                   sbom: true
+#                   tags: |
+#                       ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
+#                       ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
+#                       ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
+#                       ghcr.io/auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
+#                       auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
+#                       auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
+#                       auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
+#                       auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
+#                   labels: |
+#                       org.opencontainers.image.title=ume
+#                       org.opencontainers.image.description="🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
+#                       org.opencontainers.image.version=${{steps.tag.outputs.version}}
+#                       org.opencontainers.image.revision=${{steps.commit-hash.outputs.commit}}
+#                       org.opencontainers.image.licenses=Apache-2.0
+#                       org.opencontainers.image.documentation=https://floofy.dev/oss/ume
+#                       org.opencontainers.image.source=https://github.com/auguwu/ume/tree/${{steps.commit-hash.outputs.commit}}
+
+#             - name: Update Docker Hub description
+#               uses: peter-evans/dockerhub-description@v4
+#               if: matrix.updateDescription
+#               with:
+#                 username: auguwu
+#                 password: ${{secrets.DOCKER_PASSWORD}}
+#                 repository: auguwu/ume
+#                 readme-filepath: ./distribution/docker/README.md
