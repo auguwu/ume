@@ -156,7 +156,7 @@ dependencies = [
  "objc2-foundation",
  "parking_lot",
  "percent-encoding",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
  "wl-clipboard-rs",
  "x11rb",
 ]
@@ -898,24 +898,23 @@ dependencies = [
 
 [[package]]
 name = "azalia"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fea5629b6dd3547396b1eaa270c038a7d3f35de26689dd5ead538baf96de1949"
+checksum = "b7aec3a5dd7a1b39659c18d3a635377b9ef196c6d39b82df35ae730d059a1585"
 dependencies = [
  "azalia-config",
  "azalia-log",
  "azalia-remi",
  "azalia-serde",
- "once_cell",
  "regex",
  "rustc_version",
 ]
 
 [[package]]
 name = "azalia-config"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ff50a26aeab04d6093a5c9fca11ee8914ab3e57cce530f43604585f9125d16b"
+checksum = "8b808cb1a9bfc2643ac6fbc5671671214361b0eac48190eaa01b11f004077150"
 dependencies = [
  "azalia-config-macros",
  "sentry-types",
@@ -925,11 +924,10 @@ dependencies = [
 
 [[package]]
 name = "azalia-config-macros"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a027a14f86221f3e5678e66a4cb7e47fda552f9af3b6e4673a97e2fe688d1c7c"
+checksum = "5e09dc1a0e782a0a2574acfce6fb816dc37022068f1c237ccd81a90276d7a787"
 dependencies = [
- "heck",
  "proc-macro2",
  "quote",
  "syn 2.0.100",
@@ -937,9 +935,9 @@ dependencies = [
 
 [[package]]
 name = "azalia-log"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45dc5336e9553de238a901914dfbe724284bfb6c88c387f387fa2d6b31e2b96b"
+checksum = "9b5bad16ec41a742a82e6982c299dd455400538d456e59359822fc2a43a01482"
 dependencies = [
  "cfg-if",
  "chrono",
@@ -951,9 +949,9 @@ dependencies = [
 
 [[package]]
 name = "azalia-remi"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae7675c631866cd9f7cb684ddd32ab6506346790741ad2b3b8bd3a496efdf5e9"
+checksum = "bf342bd754988198a96101c49d2c7c7948893bae41647d201f1452e81ba11315"
 dependencies = [
  "remi",
  "remi-azure",
@@ -965,9 +963,9 @@ dependencies = [
 
 [[package]]
 name = "azalia-serde"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49316549559cd7c82998b82e7047bf500e0c97fcca4381ce63b601068378f364"
+checksum = "741e0b1fa81e9d5afe68c5067a266dac954b04d31a6fbe310de11b036bc59156"
 dependencies = [
  "serde",
  "tracing",
@@ -1953,7 +1951,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33d852cb9b869c2a9b3df2f71a3074817f01e1844f839a144f5fcef059a4eb5d"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1961,17 +1959,6 @@ name = "error-code"
 version = "3.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5d9305ccc6942a704f4335694ecd3de2ea531b114ac2d51f5f843750787a92f"
-
-[[package]]
-name = "etcetera"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "136d1b5283a1ab77bd9257427ffd09d8667ced0570b6f938942bc7568ed5b943"
-dependencies = [
- "cfg-if",
- "home",
- "windows-sys 0.48.0",
-]
 
 [[package]]
 name = "etcetera"
@@ -3024,9 +3011,9 @@ checksum = "64e9829a50b42bb782c1df523f78d332fe371b10c661e78b7a3c34b0198e9fac"
 
 [[package]]
 name = "infer"
-version = "0.16.0"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc150e5ce2330295b8616ce0e3f53250e53af31759a9dbedad1621ba29151847"
+checksum = "a588916bfdfd92e71cacef98a63d9b1f0d74d6599980d11894290e7ddefffcf7"
 
 [[package]]
 name = "instant"
@@ -3074,7 +3061,7 @@ checksum = "e19b23d53f35ce9f56aebc7d1bb4e6ac1e9c0db7ac85c8d1760c04379edced37"
 dependencies = [
  "hermit-abi 0.4.0",
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3125,7 +3112,7 @@ dependencies = [
  "portable-atomic",
  "portable-atomic-util",
  "serde",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3220,7 +3207,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -4389,7 +4376,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4635,9 +4622,9 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "remi"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60941a428437426330589644d4d39c9f722dbdf11a2f657b35088ebe586cce7f"
+checksum = "a4dc43efd6f43fdee4825724b07d5effdab488199023b9db4820dd2fe409ceef"
 dependencies = [
  "async-trait",
  "bytes",
@@ -4645,9 +4632,9 @@ dependencies = [
 
 [[package]]
 name = "remi-azure"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9139ecb62fbf0e4297e4df3dfdacaf0431069f02aa038195a587532b884ae10"
+checksum = "e9102dc4a9d6e025da74d832ca51f8a98523d515f1cb78ddb7e6fb75f81a7a49"
 dependencies = [
  "async-trait",
  "azure_core",
@@ -4662,13 +4649,13 @@ dependencies = [
 
 [[package]]
 name = "remi-fs"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebb456a861f3093c9d3c19bccd4de78f52d0eab12ff33d0c22d74cd84858ceae"
+checksum = "a0a6bf230030e14ad7746f737e77eb604da57d303d5cdae74639e1b5f9686c65"
 dependencies = [
- "etcetera 0.8.0",
+ "etcetera",
  "file-format",
- "infer 0.16.0",
+ "infer 0.19.0",
  "remi",
  "rustc_version",
  "serde",
@@ -4679,9 +4666,9 @@ dependencies = [
 
 [[package]]
 name = "remi-gridfs"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ad28621d06fdd33ccc618a6a5c3f8303bd6ef6e4618ad1f8131e6522bb5ba7a"
+checksum = "e8541a20e99befa599285728c5a35dd830801792c6c1fa7dfd2ac9b83e32c4da"
 dependencies = [
  "async-trait",
  "bytes",
@@ -4695,9 +4682,9 @@ dependencies = [
 
 [[package]]
 name = "remi-s3"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f200c93ebff3f9568135d550e0bdd168e52605891d50a1973303cc231a19e1df"
+checksum = "6a059915a5cfdb56f8ccec4ee27915f55e9405bbaf2b530693f0a28f9d32ee09"
 dependencies = [
  "aws-config",
  "aws-credential-types",
@@ -4849,7 +4836,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4862,7 +4849,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.9.4",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5586,7 +5573,7 @@ dependencies = [
  "getrandom 0.3.1",
  "once_cell",
  "rustix 0.38.44",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -6098,7 +6085,7 @@ dependencies = [
  "color-eyre",
  "dotenvy",
  "either",
- "etcetera 0.10.0",
+ "etcetera",
  "eyre",
  "image",
  "libsystemd",
