@@ -86,14 +86,16 @@ jobs:
             - name: Build!
               shell: bash
               run: |
-                directory=".ci/${RUNNER_OS,,}"
-
                 if [ "$RUNNER_OS" == "Windows" ]; then
                     powershell .ci/windows/Release.ps1 -BuildFlags "${{matrix.flags}}"
+                elif [ "$RUNNER_OS" == "Linux" ]; then
+                    BUILDFLAGS="${{matrix.flags}} --target=${{matrix.target}}" \
+                        RUSTFLAGS="${{matrix.rustflags}}"                      \
+                        .ci/linux/release
                 else
                     BUILDFLAGS="${{matrix.flags}} --target=${{matrix.target}}" \
                         RUSTFLAGS="${{matrix.rustflags}}"                      \
-                        "$directory"/release
+                        .ci/macos/release
                 fi
 
             - uses: softprops/action-gh-release@v2
