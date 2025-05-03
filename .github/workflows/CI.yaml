@@ -59,6 +59,7 @@ jobs:
               with:
                 toolchain: ${{matrix.rust-version}}
 
+            - uses: rui314/setup-mold@v1
             - uses: Swatinem/rust-cache@v2
             - run: cargo build --all-features
             - run: cargo test --all-features
@@ -77,6 +78,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
+            - uses: rui314/setup-mold@v1
             - uses: taiki-e/install-action@cargo-machete
               with:
                   tool: cargo-machete
@@ -106,6 +108,7 @@ jobs:
                 components: clippy, rustfmt
 
             - uses: Swatinem/rust-cache@v2
+            - uses: rui314/setup-mold@v1
             - uses: auguwu/clippy-action@1.4.0
               with:
                 token: ${{secrets.GITHUB_TOKEN}}

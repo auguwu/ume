@@ -16,17 +16,8 @@
 [build]
 rustflags = ["-C", "symbol-mangling-version=v0"]
 
-[target.x86_64-unknown-linux-gnu]
-linker = "clang"
-rustflags = ["-Clink-arg=-fuse-ld=mold"]
-
-[target.aarch64-unknown-linux-gnu]
-linker = "clang"
-rustflags = ["-Clink-arg=-fuse-ld=mold"]
-
 [target.x86_64-unknown-linux-musl]
-linker = "clang"
-rustflags = ["-Ctarget-feature=-crt-static", "-Clink-arg=-fuse-ld=mold"]
+rustflags = ["-Ctarget-feature=-crt-static"]
 
 [alias]
 server = "cli server"
