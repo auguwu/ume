@@ -39,7 +39,11 @@ fi
 
 prepare() {
     echo "~> install \`mold\`"
-    apt-get install -y mold
+    if [ "$EUID" -ne 0 ]; then
+        apt-get install -y mold
+    else
+        sudo apt-get install -y mold
+    fi
 }
 
 build() {
@@ -50,7 +54,7 @@ build() {
 
     local bin="$1"
 
-    export RUSTFLAGS="-C link-arg=-fuse-ld=mold -Ctarget-cpu=native $rustflags"
+    export RUSTFLAGS="-Ctarget-cpu=native $rustflags"
 
     ! [ -d "$root/.result" ] && mkdir -p "$root/.result"
     pushd "$root/.result" >/dev/null

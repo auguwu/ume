@@ -36,7 +36,7 @@ function Main {
     )
 
     if (![System.Environment]::Is64BitOperatingSystem) {
-        Write-Error ">>> \`charted\` is not supported on 32-bit systems"
+        Write-Error ">>> ume is not supported on 32-bit systems"
         Exit 1
     }
 
