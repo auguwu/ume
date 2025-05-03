@@ -36,6 +36,10 @@
       cargo-deny
 
       (common.mkRustPlatform rust-bin)
+      (wrapHelm kubernetes-helm {
+        plugins = [charted-helm-plugin];
+      })
+
       openssl
       bun
       git

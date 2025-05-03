@@ -86,7 +86,7 @@ jobs:
                 directory=".ci/${RUNNER_OS,,}"
 
                 if [ "$RUNNER_OS" == "Windows" ]; then
-                    powershell "$directory"/Release.ps1 -BuildFlags "${{matrix.flags}}"
+                    powershell .ci/windows/Release.ps1 -BuildFlags "${{matrix.flags}}"
                 else
                     BUILDFLAGS="${{matrix.flags}} --target=${{matrix.target}}" \
                         RUSTFLAGS="${{matrix.rustflags}}"                      \
@@ -119,123 +119,87 @@ jobs:
                 directories: .result
                 secret-key: ${{secrets.S3_SECRET_KEY}}
                 endpoint: ${{secrets.S3_ENDPOINT}}
-                prefix: /noel/artifacts
+                prefix: /artifacts
                 region: us-east-1
                 bucket: august
 
-#             - name: Upload binary to S3 (latest)
-#               uses: Noelware/s3-action@2.3.0
-#               with:
-#                 enforce-path-access-style: true
-#                 access-key-id: ${{secrets.S3_ACCESS_KEY}}
-#                 secret-key: ${{secrets.S3_SECRET_KEY}}
-#                 path-format: $(prefix)/ume/latest/$(file)
-#                 directories: .result
-#                 endpoint: ${{secrets.S3_ENDPOINT}}
-#                 prefix: /noel/artifacts
-#                 region: us-east-1
-#                 bucket: august
-#     nix-build:
-#         name: Nix Build
-#         runs-on: ubuntu-latest
-#         steps:
-#             - name: Checkout source code
-#               uses: actions/checkout@v4
-
-#             - name: Install `nix` binary
-#               uses: cachix/install-nix-action@v31
-#               with:
-#                   nix_path: nixpkgs=channel:nixos-unstable
-
-#             - name: Setup Cachix
-#               uses: cachix/cachix-action@v16
-#               with:
-#                   name: noel
-#                   authToken: ${{secrets.CACHIX_AUTH_TOKEN}}
-
-#             - name: Build `ume` binary
-#               run: nix build .#ume
-#     docker:
-#         name: Build Docker Image [${{matrix.dockerfile}}]
-#         runs-on: ubuntu-latest
-#         strategy:
-#             fail-fast: true
-#             matrix:
-#                 dockerfile:
-#                     - debian
-#                     - alpine
-#                 include:
-#                     - dockerfile: debian
-#                       suffix: ""
-#                       updateDescription: true
-#                     - dockerfile: alpine
-#                       suffix: "-alpine"
-#                       updateDescription: false
-#         steps:
-#             - name: Checkout source code
-#               uses: actions/checkout@v4
-
-#             - name: Get Git tag
-#               uses: auguwu/git-tag-action@master
-#               id: tag
-
-#             - name: Get commit hash
-#               id: commit-hash
-#               run: echo "commit=$(git rev-parse --short=8 $GITHUB_SHA)" >> $GITHUB_OUTPUT
-
-#             - name: Login into Docker Hub
-#               uses: docker/login-action@v3
-#               with:
-#                 username: auguwu
-#                 password: ${{ secrets.DOCKER_PASSWORD }}
-
-#             - name: Login into GitHub Container Registry
-#               uses: docker/login-action@v3
-#               with:
-#                 registry: ghcr.io
-#                 username: ${{github.repository_owner}}
-#                 password: ${{secrets.GH_TOKEN}}
-
-#             - name: Set up QEMU
-#               uses: docker/setup-qemu-action@v3
-
-#             - name: Set up Docker Buildx
-#               uses: docker/setup-buildx-action@v3
-
-#             - name: Build and push!
-#               uses: docker/build-push-action@v6
-#               with:
-#                   provenance: false
-#                   platforms: linux/amd64,linux/arm64
-#                   cache-from: type=gha
-#                   cache-to: type=gha
-#                   context: .
-#                   file: ./distribution/docker/${{matrix.dockerfile}}.Dockerfile
-#                   push: true
-#                   sbom: true
-#                   tags: |
-#                       ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
-#                       ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
-#                       ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
-#                       ghcr.io/auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
-#                       auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
-#                       auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
-#                       auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
-#                       auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
-#                   labels: |
-#                       org.opencontainers.image.title=ume
-#                       org.opencontainers.image.description="🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-#                       org.opencontainers.image.version=${{steps.tag.outputs.version}}
-#                       org.opencontainers.image.revision=${{steps.commit-hash.outputs.commit}}
-#                       org.opencontainers.image.licenses=Apache-2.0
-#                       org.opencontainers.image.documentation=https://floofy.dev/oss/ume
-#                       org.opencontainers.image.source=https://github.com/auguwu/ume/tree/${{steps.commit-hash.outputs.commit}}
-
-#             - name: Update Docker Hub description
-#               uses: peter-evans/dockerhub-description@v4
-#               if: matrix.updateDescription
-#               with:
-#                 username: auguwu
-#                 password: ${{secrets.DOCKER_PASSWORD}}
-#                 repository: auguwu/ume
-#                 readme-filepath: ./distribution/docker/README.md
+    nix-build:
+        name: Nix Build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: cachix/install-nix-action@v31
+              with:
+                  nix_path: nixpkgs=channel:nixos-unstable
+            - uses: cachix/cachix-action@v16
+              with:
+                  name: noel
+                  authToken: ${{secrets.CACHIX_AUTH_TOKEN}}
+            - run: nix build .#ume
+    docker:
+        name: Build / Docker Image [${{matrix.dockerfile}}]
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: true
+            matrix:
+                dockerfile:
+                    - debian
+                    - alpine
+                include:
+                    - dockerfile: debian
+                      suffix: ""
+                      updateDescription: true
+                    - dockerfile: alpine
+                      suffix: "-alpine"
+                      updateDescription: false
+        steps:
+            - uses: actions/checkout@v4
+            - uses: auguwu/git-tag-action@master
+              id: tag
+            - id: commit-hash
+              run: echo "commit=$(git rev-parse --short=8 $GITHUB_SHA)" >> $GITHUB_OUTPUT
+            - uses: docker/login-action@v3
+              with:
+                username: auguwu
+                password: ${{ secrets.DOCKER_PASSWORD }}
+            - uses: docker/login-action@v3
+              with:
+                registry: ghcr.io
+                username: ${{github.repository_owner}}
+                password: ${{secrets.GH_TOKEN}}
+            - uses: docker/setup-qemu-action@v3
+            - uses: docker/setup-buildx-action@v3
+            - uses: docker/build-push-action@v6
+              with:
+                  provenance: true
+                  platforms: linux/amd64,linux/arm64
+                  cache-from: type=registry,ref=auguwu/ume:buildcache
+                  cache-to: type=registry,ref=auguwu/ume:buildcache,mode=max
+                  context: .
+                  file: ./distribution/docker/${{matrix.dockerfile}}.Dockerfile
+                  push: true
+                  sbom: true
+                  tags: |
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
+                      ghcr.io/auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
+                      auguwu/ume:${{steps.tag.outputs.major}}.${{steps.tag.outputs.minor}}${{matrix.suffix}},
+                      auguwu/ume:${{steps.tag.outputs.major}}${{matrix.suffix}},
+                      auguwu/ume:${{steps.tag.outputs.version}}${{matrix.suffix}},
+                      auguwu/ume:${{matrix.dockerfile == 'alpine' && 'alpine' || 'latest' }}
+                  labels: |
+                      org.opencontainers.image.title=ume
+                      org.opencontainers.image.description="🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
+                      org.opencontainers.image.version=${{steps.tag.outputs.version}}
+                      org.opencontainers.image.revision=${{steps.commit-hash.outputs.commit}}
+                      org.opencontainers.image.licenses=Apache-2.0
+                      org.opencontainers.image.documentation=https://floofy.dev/oss/ume
+                      org.opencontainers.image.source=https://github.com/auguwu/ume/tree/${{steps.commit-hash.outputs.commit}}
+            - uses: peter-evans/dockerhub-description@v4
+              if: matrix.updateDescription
+              with:
+                username: auguwu
+                password: ${{secrets.DOCKER_PASSWORD}}
+                repository: auguwu/ume
+                readme-filepath: ./distribution/docker/README.md
