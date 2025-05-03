@@ -91,10 +91,12 @@ jobs:
                 elif [ "$RUNNER_OS" == "Linux" ]; then
                     BUILDFLAGS="${{matrix.flags}} --target=${{matrix.target}}" \
                         RUSTFLAGS="${{matrix.rustflags}}"                      \
+                        BUILDTARGET="${{matrix.target}}"                       \
                         .ci/linux/release
                 else
                     BUILDFLAGS="${{matrix.flags}} --target=${{matrix.target}}" \
                         RUSTFLAGS="${{matrix.rustflags}}"                      \
+                        BUILDTARGET="${{matrix.target}}"                       \
                         .ci/macos/release
                 fi
 

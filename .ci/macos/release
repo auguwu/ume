@@ -27,6 +27,7 @@ root=$(cd "$(dirname $0)/../.." && pwd)
 cargo=${CARGO:-cargo}
 rustflags=${RUSTFLAGS:-}
 cargoflags=${CARGOFLAGS:-}
+target=${BUILDTARGET:-}
 
 arch=""
 if noelware::arch::x86_64; then
