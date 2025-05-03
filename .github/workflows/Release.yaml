@@ -80,6 +80,9 @@ jobs:
               uses: ilammy/setup-nasm@v1
               if: matrix.runner == 'windows-latest'
 
+            - if: matrix.runner == 'ubuntu-24.04'
+              uses: rui314/setup-mold@v1
+
             - name: Build!
               shell: bash
               run: |

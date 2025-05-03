@@ -37,15 +37,6 @@ if noelware::arch::aarch64; then
     arch="aarch64"
 fi
 
-prepare() {
-    echo "~> install \`mold\`"
-    if [ "$EUID" -ne 0 ]; then
-        apt-get install -y mold
-    else
-        sudo apt-get install -y mold
-    fi
-}
-
 build() {
     if ! command -v "$cargo" >/dev/null; then
         echo "~> Missing \`cargo\` binary (defined from \`\$CARGO\`: $cargo)"
@@ -71,12 +62,6 @@ build() {
 
     popd >/dev/null
 }
-
-if noelware::isGitHubActions; then
-    noelware::startGroup "Prepare"
-    prepare
-    noelware::endGroup
-fi
 
 noelware::startGroup "Building \`linux-$arch\` binary"
 build "ume"
