@@ -372,6 +372,7 @@ pub(crate) mod gridfs {
     pub const CREDENTIAL_MECHANISM: &str = "UME_STORAGE_GRIDFS_CREDENTIAL_MECHANISM";
     pub const CREDENTIAL_SOURCE: &str = "UME_STORAGE_GRIDFS_CREDENTIAL_SOURCE";
     pub const CONNECT_TIMEOUT: &str = "UME_STORAGE_GRIDFS_CONNECT_TIMEOUT";
+    pub const REPLICA_SET: &str = "UME_STORAGE_GRIDFS_REPLICA_SET";
     pub const CREDENTIAL: &str = "UME_STORAGE_GRIDFS_CREDENTIALS";
     pub const APP_NAME: &str = "UME_STORAGE_GRIDFS_APP_NAME";
     pub const HOSTS: &str = "UME_STORAGE_GRIDFS_SERVERS";
@@ -432,6 +433,7 @@ pub(crate) mod gridfs {
             }
 
             merge_tuple!(me.client_options.credential, other.client_options.credential);
+            merge_tuple!(me.client_options.repl_set_name, other.client_options.repl_set_name);
         }
 
         me.database.merge(other.database);
@@ -458,6 +460,7 @@ pub(crate) mod gridfs {
             .connect_timeout(parse_connect_timeout()?)
             .hosts(parse_hosts()?)
             .credential(parse_credentials()?)
+            .repl_set_name(env::try_parse_optional(REPLICA_SET)?)
             .build())
     }
 
