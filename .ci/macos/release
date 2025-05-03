@@ -54,7 +54,7 @@ build() {
     echo "   $ RUSTFLAGS=\"$RUSTFLAGS\" $cargo $cargoflags build --release --locked --bin $bin $buildflags"
     "$cargo" build $cargoflags --release --locked $buildflags --bin $bin || exit 1
 
-    mv $root/target/release/"$bin" ./"$bin"-darwin-$arch
+    mv $root/target/$target/release/"$bin" ./"$bin"-darwin-$arch
     echo "~> Generating checksum                                        [binary=$bin]"
     sha256sum "$bin-linux-x86_64" > ./"$bin"-darwin-$arch.sha256
 
