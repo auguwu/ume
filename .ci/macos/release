@@ -56,7 +56,7 @@ build() {
 
     mv $root/target/$target/release/"$bin" ./"$bin"-darwin-$arch
     echo "~> Generating checksum                                        [binary=$bin]"
-    sha256sum "$bin-linux-x86_64" > ./"$bin"-darwin-$arch.sha256
+    sha256sum "$bin-darwin-$arch" > ./"$bin"-darwin-$arch.sha256
 
     echo "~> Completed. Artifacts are in $root/.result"
 
