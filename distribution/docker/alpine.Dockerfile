@@ -70,7 +70,7 @@ RUN cargo build                                                              \
 
 ############ FINAL STAGE
 
-FROM alpine:3.21
+FROM alpine:3.22
 
 RUN apk update && apk add --no-cache bash tini curl libgcc
 WORKDIR /app/noel/ume
