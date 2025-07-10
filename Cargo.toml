@@ -81,7 +81,7 @@ tracing-error = "0.2.1"
 tracing-opentelemetry = "0.30.0"
 tracing-subscriber = { version = "0.3.19", features = ["tracing-log"] }
 url = "2.5.4"
-which = "7.0.2"
+which = "8.0.0"
 
 [dependencies.azalia]
 version = "0.1.5"
@@ -118,7 +118,7 @@ libsystemd = { version = "0.7.0", optional = true }
 [build-dependencies]
 chrono = "0.4.39"
 rustc_version = "0.4.1"
-which = "7.0.2"
+which = "8.0.0"
 
 [profile.release]
 codegen-units = 1 # use a single codegen unit
