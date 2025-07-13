@@ -16,7 +16,7 @@
 [package]
 name = "ume"
 description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-version = "4.2.0"
+version = "4.2.1"
 authors = ["Noel Towa <cutie@floofy.dev>"]
 edition = "2024"
 repository = "https://github.com/auguwu/ume"
@@ -52,15 +52,15 @@ mime = "0.3.17"
 multer = "3.1.0"
 notify-rust = { version = "4.11.7", optional = true }
 num_cpus = "1.16.0"
-opentelemetry = "0.29.1"
-opentelemetry-otlp = { version = "0.29.0", features = [
+opentelemetry = "0.30.0"
+opentelemetry-otlp = { version = "0.30.0", features = [
     "http-proto",
     "grpc-tonic",
 ] }
-opentelemetry_sdk = "0.29.0"
+opentelemetry_sdk = "0.30.0"
 owo-colors = "4.2.0"
 rand = "0.9.0"
-reqwest = { version = "0.12.15", default-features = false, features = [
+reqwest = { version = "0.12.22", default-features = false, features = [
     "multipart",
     "json",
     "http2",
@@ -68,23 +68,23 @@ reqwest = { version = "0.12.15", default-features = false, features = [
     "macos-system-configuration",
     "rustls-tls",
 ] }
-sentry = "0.37.0"
-sentry-tower = { version = "0.37.0", features = ["axum", "http"] }
-sentry-tracing = "0.37.0"
+sentry = "0.41.0"
+sentry-tower = { version = "0.41.0", features = ["axum", "http"] }
+sentry-tracing = "0.41.0"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.139"
 tokio = { version = "1.44.2", features = ["rt", "macros", "net", "signal"] }
-toml = "0.8.20"
+toml = "0.9.2"
 tower-http = { version = "0.6.2", features = ["catch-panic"] }
 tracing = "0.1.41"
 tracing-error = "0.2.1"
-tracing-opentelemetry = "0.30.0"
+tracing-opentelemetry = "0.31.0"
 tracing-subscriber = { version = "0.3.19", features = ["tracing-log"] }
 url = "2.5.4"
-which = "7.0.2"
+which = "8.0.0"
 
 [dependencies.azalia]
-version = "0.1.5"
+version = "0.1.9"
 features = [
     "regex",
 
@@ -110,7 +110,7 @@ features = [
 [dependencies.charted-core]
 version = "0.1.0"
 git = "https://github.com/charted-dev/charted"
-rev = "b6354382429e622e17c20072f685db736075e6c3"
+rev = "badbe91bc6b93e4f831fc12e99db1751da8f6525"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libsystemd = { version = "0.7.0", optional = true }
@@ -118,7 +118,7 @@ libsystemd = { version = "0.7.0", optional = true }
 [build-dependencies]
 chrono = "0.4.39"
 rustc_version = "0.4.1"
-which = "7.0.2"
+which = "8.0.0"
 
 [profile.release]
 codegen-units = 1 # use a single codegen unit

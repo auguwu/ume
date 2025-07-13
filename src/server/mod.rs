@@ -47,7 +47,7 @@ pub async fn start_server(storage: StorageService, config: crate::config::Config
 
     let router = create_router()
         .layer(sentry_tower::NewSentryLayer::new_from_top())
-        .layer(sentry_tower::SentryHttpLayer::with_transaction())
+        .layer(sentry_tower::SentryHttpLayer::new().enable_transaction())
         .layer(tower_http::catch_panic::CatchPanicLayer::custom(panic_handler))
         .layer(DefaultBodyLimit::max(15 * 1024 * 1024))
         .layer(axum::middleware::from_fn(crate::server::middleware::log))
