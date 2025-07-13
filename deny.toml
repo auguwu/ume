@@ -82,3 +82,7 @@ allow = ["BSL-1.0"]
 [[licenses.exceptions]]
 name = "clipboard-win"
 allow = ["BSL-1.0"]
+
+[[licenses.exceptions]]
+name = "webpki-roots"
+allow = ["CDLA-Permissive-2.0"]

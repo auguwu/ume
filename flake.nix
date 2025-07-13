@@ -33,6 +33,22 @@
     };
   };
 
+  # Include the binary caches for my own projects and Noelware's as well.
+  nixConfig = {
+    extra-substituters = [
+      # TODO: switch to https://nix.noel.pink
+      "https://noel.cachix.org"
+
+      # TODO: switch to https://nix.noelware.org
+      "https://noelware.cachix.org"
+    ];
+
+    extra-trusted-public-keys = [
+      "noel.cachix.org-1:pQHbMJOB5h5VqYi3RV0Vv0EaeHfxARxgOhE9j013XwQ="
+      "noelware.cachix.org-1:22A8ELRjkqEycSHz+R5A5ReX2jyjU3rftsBmlD6thn0="
+    ];
+  };
+
   outputs = {
     nixpkgs,
     systems,
