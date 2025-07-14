@@ -543,6 +543,10 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
+### Helm ###
+# Chart dependencies
+**/charts/*.tgz
+
 config.toml
 !src/bin/
 .direnv/

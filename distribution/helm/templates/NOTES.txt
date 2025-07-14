@@ -1,0 +1,30 @@
+{{/*
+# 🐻‍❄️💐 ume: Easy, self-hostable, and flexible image host made in Rust
+# Copyright 2021-2025 Noel Towa <cutie@floofy.dev>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/}}
+
+Thank you for installing `noel/ume`! To visit your new server, use the following command to view it in action!
+
+Don't forget to add a new entry in `$UME_CONFIG_DIR/config.toml` to this server to be usable with the `ume screenshot` command!
+
+{{- if and .Values.ingress.enabled .Values.global.domain }}
+http://{{ .Values.global.domain }}
+{{- else if (eq .Values.service.type "ClusterIP") }}
+    export POD=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "k8s.noel.pink/name={{ include "ume.name" . }}" -o jsonpath="{.items[0].metadata.name}")
+    export PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+
+    echo "http://127.0.0.1:8080"
+    kubectl -n {{ .Release.Namespace }} port-forward $POD 8080:$PORT
+{{- end }}
