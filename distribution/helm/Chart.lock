@@ -4,9 +4,9 @@ dependencies:
   version: 2.31.3
 - name: postgresql
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.7.24
+  version: 16.7.26
 - name: mongodb
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 16.5.40
-digest: sha256:b40572e47272c84e5e88d9f6e4065e40f1c211e8ab43cf0b4316a6a84a0c03fe
-generated: "2025-08-08T20:33:00.489006389Z"
+digest: sha256:f40a322938677dda7739b51820a82d8013407ff4da7a3a908c4319d727eda399
+generated: "2025-08-14T21:03:54.155592844Z"
