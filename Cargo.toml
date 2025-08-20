@@ -16,7 +16,7 @@
 [package]
 name = "ume"
 description = "🐻‍❄️💐 Easy, self-hostable, and flexible image host made in Rust"
-version = "4.2.1"
+version = "4.2.2"
 authors = ["Noel Towa <cutie@floofy.dev>"]
 edition = "2024"
 repository = "https://github.com/auguwu/ume"
