@@ -16,11 +16,9 @@
   pkg-config,
   installShellFiles,
   openssl,
-  stdenv,
   lib,
   makeRustPlatform,
   rust-bin,
-  darwin,
 }: let
   common = import ./common.nix;
   rustToolchain = common.mkRustPlatform rust-bin;
@@ -34,12 +32,7 @@ in
     src = ../.;
 
     nativeBuildInputs = [pkg-config installShellFiles];
-    buildInputs =
-      [openssl]
-      ++ (lib.optional stdenv.isDarwin (with darwin.apple_sdk.frameworks; [
-        CoreFoundation
-        SystemConfiguration
-      ]));
+    buildInputs = [openssl];
 
     cargoLock = {
       inherit (common) outputHashes;
