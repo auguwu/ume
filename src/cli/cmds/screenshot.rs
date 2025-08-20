@@ -75,6 +75,10 @@ pub struct Cmd {
     #[arg(long, short = 't', env = "UME_TEMPDIR", default_value = None)]
     tempdir: Option<PathBuf>,
 
+    /// The file that should be uploaded to the server.
+    #[arg(long, short = 'f', env = "UME_FILE", default_value = None)]
+    file: Option<PathBuf>,
+
     /// whether if ume should copy the URL that the server generated
     /// to the system clipboard or not.
     #[arg(long, env = "UME_NO_COPY", default_value_t = false)]
@@ -126,29 +130,36 @@ pub async fn execute(mut cmd: Cmd) -> eyre::Result<()> {
     trace!("temp dir => {}", tempdir.display());
     trace!("server   => {}", server);
 
-    let (binary, arguments) = get_screenshotter_args(cmd.screenshotter)?;
+    let file = match cmd.file {
+        None => {
+            let (binary, arguments) = get_screenshotter_args(cmd.screenshotter)?;
+            let (mut c, file) = build_process(&tempdir, binary.clone(), arguments)?;
+            let output = c.output()?;
 
-    let (mut c, file) = build_process(&tempdir, binary.clone(), arguments)?;
-    let output = c.output()?;
+            if !output.status.success() {
+                error!("failed to run screenshot");
+                remove_file(file)?;
 
-    if !output.status.success() {
-        error!("failed to run screenshot");
-        remove_file(file)?;
+                #[cfg(feature = "os-notifier")]
+                show_notification(cmd.system_notifications, &config, |notif| {
+                    notif.body(&format!(
+                        "received status code {} while running command '{}'",
+                        output.status.code().unwrap_or(-1),
+                        binary.display()
+                    ));
 
-        #[cfg(feature = "os-notifier")]
-        show_notification(cmd.system_notifications, &config, |notif| {
-            notif.body(&format!(
-                "received status code {} while running command '{}'",
-                output.status.code().unwrap_or(-1),
-                binary.display()
-            ));
+                    #[cfg(target_os = "linux")]
+                    notif.urgency(notify_rust::Urgency::Critical);
+                });
 
-            #[cfg(target_os = "linux")]
-            notif.urgency(notify_rust::Urgency::Critical);
-        });
+                exit(1);
+            }
 
-        exit(1);
-    }
+            file
+        }
+
+        Some(path) => path,
+    };
 
     info!(file = %file.display(), "uploading file to server...");
 
