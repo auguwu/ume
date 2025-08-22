@@ -39,5 +39,5 @@ dependencies:
     version: 16.7.26
     repository: oci://registry-1.docker.io/bitnamicharts
   - name: mongodb
-    version: 16.5.44
+    version: 16.5.45
     repository: oci://registry-1.docker.io/bitnamicharts
