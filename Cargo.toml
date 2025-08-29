@@ -79,7 +79,7 @@ tower-http = { version = "0.6.2", features = ["catch-panic"] }
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-opentelemetry = "0.31.0"
-tracing-subscriber = { version = "0.3.19", features = ["tracing-log"] }
+tracing-subscriber = { version = "0.3.20", features = ["tracing-log"] }
 url = "2.5.4"
 which = "8.0.0"
 
