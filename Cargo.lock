@@ -305,7 +305,7 @@ dependencies = [
  "objc2-foundation",
  "parking_lot",
  "percent-encoding",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
  "wl-clipboard-rs",
  "x11rb",
 ]
@@ -1066,9 +1066,9 @@ dependencies = [
 
 [[package]]
 name = "azalia"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c2da270a244a1e0178ab5125811be968620b072cdfc4130c9ce01f474568821"
+checksum = "a31e71bbbbe0850da28622948791b110aa377aab21988dde343cecd0dd4b16bf"
 dependencies = [
  "azalia-config",
  "azalia-log",
@@ -1080,9 +1080,9 @@ dependencies = [
 
 [[package]]
 name = "azalia-config"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4866b228c48cb5a7097fa695a13df743ec0705f73fc9686ef0bb498e4d474abd"
+checksum = "f3501e510250341fd223dee3c12d6433437dfb826eec6b1c795395f0d51328ac"
 dependencies = [
  "azalia-config-macros",
  "sentry-types",
@@ -1092,9 +1092,9 @@ dependencies = [
 
 [[package]]
 name = "azalia-config-macros"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1efb6b2d26bd7e15a5777849d87095b7234d06dd768ff18b7b5b8562353f0022"
+checksum = "5a674ad3bab34501c749891556c302cfbb2073381fd4b22b34df815e231628ac"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1103,9 +1103,9 @@ dependencies = [
 
 [[package]]
 name = "azalia-log"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "992c45b246d00d056686c4b1a6b1cf7f20964c2b1b5879f2e4a673274b75e7e8"
+checksum = "41eefe472f1eebd03f8db8cd802a6e84821d8099dc6485c6dd603273b5a26433"
 dependencies = [
  "cfg-if",
  "chrono",
@@ -1117,9 +1117,9 @@ dependencies = [
 
 [[package]]
 name = "azalia-remi"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1a90708e1000f57c39065f96ed799e6329a61bd1e4801ab20b0dcb4320f088c"
+checksum = "6ee016f37c627db67d32d83907b102630e825afdcd0475f3ef7c5fbb08a93bd7"
 dependencies = [
  "remi",
  "remi-azure",
@@ -1131,9 +1131,9 @@ dependencies = [
 
 [[package]]
 name = "azalia-serde"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15199bb0b3bdc5a23fae4bf3e4213b379c998158c701794de97a219c4cc829ce"
+checksum = "e32411cc467013f43439b3bb3cfc11958817b3b7e1751954d3c6265642344c76"
 dependencies = [
  "serde",
  "tracing",
@@ -2151,7 +2151,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3270,7 +3270,7 @@ checksum = "e04d7f318608d35d4b61ddd75cbdaee86b023ebe2bd5a66ee0915f0bf93095a9"
 dependencies = [
  "hermit-abi",
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3321,7 +3321,7 @@ dependencies = [
  "portable-atomic",
  "portable-atomic-util",
  "serde",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4609,7 +4609,7 @@ dependencies = [
  "once_cell",
  "socket2 0.5.10",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4834,9 +4834,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.11.1"
+version = "1.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b544ef1b4eac5dc2db33ea63606ae9ffcfac26c1416a2806ae0bf5f56b201191"
+checksum = "23d7fd106d8c02486a8d64e778353d1cffe08ce79ac2e82f540c86d0facf6912"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -5075,7 +5075,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5088,7 +5088,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.9.4",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5881,7 +5881,7 @@ dependencies = [
  "getrandom 0.3.3",
  "once_cell",
  "rustix 1.0.7",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
