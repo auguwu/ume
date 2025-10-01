@@ -203,7 +203,7 @@ jobs:
                       org.opencontainers.image.licenses=Apache-2.0
                       org.opencontainers.image.documentation=https://floofy.dev/oss/ume
                       org.opencontainers.image.source=https://github.com/auguwu/ume/tree/${{steps.commit-hash.outputs.commit}}
-            - uses: peter-evans/dockerhub-description@v4
+            - uses: peter-evans/dockerhub-description@v5
               if: matrix.updateDescription
               with:
                 username: auguwu
