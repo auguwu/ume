@@ -44,7 +44,7 @@ clap_complete = "4.5.47"
 color-eyre = { version = "0.6.3", features = ["issue-url", "tracing-error"] }
 dotenvy = "0.15.7"
 either = "1.14.0"
-etcetera = "0.10.0"
+etcetera = "0.11.0"
 eyre = "0.6.12"
 image = "0.25.6"
 mimalloc = "0.1.46"
