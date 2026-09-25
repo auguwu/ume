@@ -37,7 +37,7 @@ os-notifier = ["dep:notify-rust"]
 arboard = { version = "3.4.1", features = ["wayland-data-control"] }
 axum = { version = "0.8.1", features = ["macros"] }
 axum-extra = { version = "0.12.0", features = ["typed-header"] }
-axum-server = { version = "0.7.2", features = ["tls-rustls"] }
+axum-server = { version = "0.8.0", features = ["tls-rustls"] }
 chrono = "0.4.39"
 clap = { version = "4.5.45", features = ["derive", "env"] }
 clap_complete = "4.5.47"
